@@ -1,0 +1,65 @@
+{
+  "name": "preorder-pro",
+  "version": "1.0.0",
+  "description": "A comprehensive Shopify app for pre-orders and back-in-stock notifications",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "vercel-build": "next build",
+    "setup": "node scripts/setup.js",
+    "deploy": "node scripts/deploy.js",
+    "db:migrate": "echo 'Please run the SQL migration manually in Supabase dashboard'",
+    "postinstall": "echo 'Run npm run setup for initial configuration'",
+    "icons:process": "node scripts/icon-integration.js process",
+    "icons:help": "node scripts/icon-integration.js"
+  },
+  "dependencies": {
+    "@headlessui/react": "^1.7.17",
+    "@heroicons/react": "^2.0.18",
+    "@shopify/admin-api-client": "^0.2.2",
+    "@supabase/supabase-js": "^2.38.4",
+    "crypto": "^1.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "next": "14.0.3",
+    "nodemailer": "^6.9.7",
+    "react": "^18",
+    "react-dom": "^18",
+    "stripe": "^14.7.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20",
+    "@types/nodemailer": "^6.4.14",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.3",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
+  },
+  "keywords": [
+    "shopify",
+    "preorder",
+    "back-in-stock",
+    "notifications",
+    "ecommerce",
+    "inventory"
+  ],
+  "author": "PreOrder Pro Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/preorder-pro.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

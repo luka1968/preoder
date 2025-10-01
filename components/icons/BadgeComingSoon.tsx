@@ -1,0 +1,30 @@
+import React from 'react';
+
+interface BadgeComingSoonProps {
+  className?: string;
+  size?: number | string;
+  color?: string;
+}
+
+export default function BadgeComingSoon({ 
+  className = '', 
+  size = 24, 
+  color = 'currentColor' 
+}: BadgeComingSoonProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="12" r="8"/>
+  <path d="M12 8v4l2.5 2.5"/>
+    </svg>
+  );
+}

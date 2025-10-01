@@ -1,0 +1,63 @@
+{
+  "version": 2,
+  "name": "preorder-pro",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "functions": {
+    "pages/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/update-schedules",
+      "schedule": "0 */6 * * *"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "X-Requested-With, Content-Type, Authorization"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/install",
+      "destination": "/api/auth/shopify"
+    }
+  ],
+  "env": {
+    "SHOPIFY_API_KEY": "@shopify_api_key",
+    "SHOPIFY_API_SECRET": "@shopify_api_secret",
+    "SHOPIFY_SCOPES": "@shopify_scopes",
+    "SHOPIFY_APP_URL": "@shopify_app_url",
+    "SHOPIFY_WEBHOOK_SECRET": "@shopify_webhook_secret",
+    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key",
+    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
+    "SUPABASE_PROJECT_ID": "@supabase_project_id",
+    "JWT_SECRET": "@jwt_secret",
+    "CRON_SECRET": "@cron_secret",
+    "SMTP_HOST": "@smtp_host",
+    "SMTP_PORT": "@smtp_port",
+    "SMTP_USER": "@smtp_user",
+    "SMTP_PASS": "@smtp_pass"
+  }
+}
