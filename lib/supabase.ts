@@ -428,7 +428,7 @@ export async function updatePreorderOrder(orderId: string, updates: Partial<Preo
 }
 
 // Email template functions
-export async function getEmailTemplate(shopId: string, templateType: EmailTemplate['template_type']): Promise<EmailTemplate | null> {
+export async function getEmailTemplate(shopId: string, templateType: string): Promise<EmailTemplate | null> {
   const { data, error } = await supabaseAdmin
     .from('email_templates')
     .select('*')

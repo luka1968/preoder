@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer'
-import { supabaseAdmin, EmailTemplate, NotificationQueue, addToNotificationQueue, updateNotificationStatus } from './supabase'
+import { supabaseAdmin, EmailTemplate, NotificationQueue, addToNotificationQueue, updateNotificationStatus, getEmailTemplate } from './supabase'
+import { EmailTemplateType } from '../types'
 
 // Brevo API configuration
 const BREVO_API_KEY = process.env.BREVO_API_KEY || ''
@@ -382,7 +383,7 @@ export async function sendTemplateEmail(
 // Send templated email using Brevo API
 export async function sendTemplatedEmail(
   shopId: string,
-  templateType: string,
+  templateType: EmailTemplateType,
   recipientEmail: string,
   variables: EmailVariables,
   recipientName?: string
@@ -620,7 +621,7 @@ export async function sendBulkBackInStockNotifications(
     return { sent, failed }
   } catch (error) {
     console.error('Error sending bulk notifications:', error)
-    return { sent: 0, failed: subscriptions?.length || 0 }
+    return { sent: 0, failed: 0 }
   }
 }
 

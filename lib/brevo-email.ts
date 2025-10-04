@@ -2,7 +2,7 @@
 // Configure BREVO_API_KEY environment variable
 
 import { supabaseAdmin, getEmailTemplate } from './supabase'
-import { EmailVariables } from '../types'
+import { EmailVariables, EmailTemplateType } from '../types'
 
 // Brevo API configuration
 const BREVO_API_KEY = process.env.BREVO_API_KEY || ''
@@ -101,7 +101,7 @@ export async function sendEmail(
 // Send templated email
 export async function sendTemplatedEmail(
   shopId: string,
-  templateType: string,
+  templateType: EmailTemplateType,
   recipientEmail: string,
   variables: EmailVariables,
   recipientName?: string
@@ -163,8 +163,8 @@ export async function sendTemplatedEmail(
   }
 }
 
-// Send back-in-stock notification
-export async function sendBackInStockNotification(
+// Send back-in-stock notification via Brevo
+export async function sendBrevoBackInStockNotification(
   shopId: string,
   customerEmail: string,
   customerName: string,
@@ -223,8 +223,8 @@ export async function sendPreorderConfirmation(
   )
 }
 
-// Send bulk back-in-stock notifications
-export async function sendBulkBackInStockNotifications(
+// Send bulk back-in-stock notifications via Brevo
+export async function sendBrevoBulkBackInStockNotifications(
   shopId: string,
   productId: string,
   variantId: string,
@@ -261,7 +261,7 @@ export async function sendBulkBackInStockNotifications(
         continue
       }
 
-      const success = await sendBackInStockNotification(
+      const success = await sendBrevoBackInStockNotification(
         shopId,
         subscription.customer_email,
         subscription.customer_name || 'Customer',
@@ -372,7 +372,7 @@ export function validateEmailConfig(): boolean {
 }
 
 // Get default email templates
-function getDefaultTemplate(templateType: string): { subject: string, html_content: string, text_content: string } | null {
+function getDefaultTemplate(templateType: EmailTemplateType): { subject: string, html_content: string, text_content: string } | null {
   const templates = {
     back_in_stock: {
       subject: '🎉 {{product_title}} is back in stock!',
@@ -437,7 +437,76 @@ We'll keep you updated on your order status and let you know when it ships!
 
 {{#if order_url}}View your order: {{order_url}}{{/if}}
 
-Thanks for shopping with {{shop_name}}!
+        Thanks for your business!
+        {{shop_name}}
+      `
+    },
+    partial_payment_created: {
+      subject: 'Payment Confirmation - {{product_title}}',
+      html_content: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">Payment Received!</h2>
+          <p>Hi {{customer_name}},</p>
+          <p>We've received your partial payment for <strong>{{product_title}}</strong>.</p>
+          <p>Amount paid: {{amount_paid}}</p>
+          <p>Remaining balance: {{remaining_balance}}</p>
+          <p>Thanks for your order!</p>
+        </div>
+      `,
+      text_content: `
+Payment Received!
+
+Hi {{customer_name}},
+
+We've received your partial payment for {{product_title}}.
+Amount paid: {{amount_paid}}
+Remaining balance: {{remaining_balance}}
+
+Thanks for your order!
+      `
+    },
+    partial_payment_reminder: {
+      subject: 'Payment Reminder - {{product_title}}',
+      html_content: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">Payment Reminder</h2>
+          <p>Hi {{customer_name}},</p>
+          <p>This is a reminder about your remaining balance for <strong>{{product_title}}</strong>.</p>
+          <p>Remaining balance: {{remaining_balance}}</p>
+          <p>Please complete your payment to secure your order.</p>
+        </div>
+      `,
+      text_content: `
+Payment Reminder
+
+Hi {{customer_name}},
+
+This is a reminder about your remaining balance for {{product_title}}.
+Remaining balance: {{remaining_balance}}
+
+Please complete your payment to secure your order.
+      `
+    },
+    deposit_confirmation: {
+      subject: 'Deposit Confirmation - {{product_title}}',
+      html_content: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #333;">Deposit Confirmed!</h2>
+          <p>Hi {{customer_name}},</p>
+          <p>We've received your deposit for <strong>{{product_title}}</strong>.</p>
+          <p>Deposit amount: {{deposit_amount}}</p>
+          <p>Your order is now confirmed!</p>
+        </div>
+      `,
+      text_content: `
+Deposit Confirmed!
+
+Hi {{customer_name}},
+
+We've received your deposit for {{product_title}}.
+Deposit amount: {{deposit_amount}}
+
+Your order is now confirmed!
       `
     }
   }

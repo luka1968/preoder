@@ -1,8 +1,18 @@
-// Export all library functions for easy importing
+// Export main library functions (avoiding conflicts)
 export * from './auth'
-export * from './email'
-export * from './brevo-email'
 export * from './shopify'
 export * from './supabase'
-export * from './utils'
 export * from './webhooks'
+
+// Email functions - use specific imports to avoid conflicts
+export { 
+  sendEmail,
+  sendBackInStockNotification,
+  sendPreorderConfirmation,
+  sendPaymentReminder,
+  sendDeliveryUpdate,
+  sendBulkBackInStockNotifications,
+  validateEmailConfig
+} from './email'
+
+// Utils - import directly when needed to avoid conflicts
