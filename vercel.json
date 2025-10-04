@@ -34,22 +34,5 @@
       "source": "/install",
       "destination": "/api/auth/shopify"
     }
-  ],
-  "env": {
-    "SHOPIFY_API_KEY": "@shopify_api_key",
-    "SHOPIFY_API_SECRET": "@shopify_api_secret",
-    "SHOPIFY_SCOPES": "@shopify_scopes",
-    "SHOPIFY_APP_URL": "@shopify_app_url",
-    "SHOPIFY_WEBHOOK_SECRET": "@shopify_webhook_secret",
-    "NEXT_PUBLIC_SUPABASE_URL": "@next_public_supabase_url",
-    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@next_public_supabase_anon_key",
-    "SUPABASE_SERVICE_ROLE_KEY": "@supabase_service_role_key",
-    "SUPABASE_PROJECT_ID": "@supabase_project_id",
-    "JWT_SECRET": "@jwt_secret",
-    "CRON_SECRET": "@cron_secret",
-    "SMTP_HOST": "@smtp_host",
-    "SMTP_PORT": "@smtp_port",
-    "SMTP_USER": "@smtp_user",
-    "SMTP_PASS": "@smtp_pass"
-  }
+  ]
 }
