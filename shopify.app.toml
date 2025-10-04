@@ -58,5 +58,11 @@ redirect_urls = [
 url = "https://your-domain.vercel.app"
 
 [web.webhooks]
-privacy_compliance_url = "https://your-domain.vercel.app/api/webhooks/privacy/customers-data-request"
-mandatory_webhooks_url = "https://your-domain.vercel.app/api/webhooks"
+privacy_compliance_url = "https://shopmall.dpdns.org/api/webhooks/privacy/customers-data-request"
+mandatory_webhooks_url = "https://shopmall.dpdns.org/api/webhooks"
+
+# Legal pages (required by Shopify)
+[web.legal]
+privacy_policy_url = "https://shopmall.dpdns.org/privacy"
+terms_of_service_url = "https://shopmall.dpdns.org/terms"
+support_url = "https://shopmall.dpdns.org/support"
