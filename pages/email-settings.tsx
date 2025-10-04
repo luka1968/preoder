@@ -136,7 +136,7 @@ export default function EmailSettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-medium text-gray-900">API Key</h3>
-                  <p className="text-sm text-gray-500">xkeysib-922c...gWKx</p>
+                  <p className="text-sm text-gray-500">xkeysib-****...****</p>
                 </div>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                   ✅ Configured

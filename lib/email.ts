@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer'
 import { supabaseAdmin, EmailTemplate, NotificationQueue, addToNotificationQueue, updateNotificationStatus } from './supabase'
 
 // Brevo API configuration
-const BREVO_API_KEY = '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'
+const BREVO_API_KEY = process.env.BREVO_API_KEY || ''
 const BREVO_API_URL = 'https://api.brevo.com/v3'
 
 // Email configuration interface
@@ -627,9 +627,6 @@ export async function sendBulkBackInStockNotifications(
 // Validate email configuration (Brevo API key)
 export function validateEmailConfig(): boolean {
   return !!BREVO_API_KEY
-  }
-
-  return true
 }
 
 // Test email function

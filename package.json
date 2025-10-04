@@ -17,7 +17,19 @@
     "db:migrate": "echo 'Please run the SQL migration manually in Supabase dashboard'",
     "postinstall": "echo 'Run npm run setup for initial configuration'",
     "icons:process": "node scripts/icon-integration.js process",
-    "icons:help": "node scripts/icon-integration.js"
+    "icons:help": "node scripts/icon-integration.js",
+    "secrets:generate": "node scripts/generate-secrets.js",
+    "env:check": "node -e \"require('./lib/env-validation').initializeEnvironment()\"",
+    "health:check": "curl -s http://localhost:3000/api/health | json_pp",
+    "deploy:auto": "node scripts/one-click-deploy.js",
+    "deploy:env": "node scripts/auto-deploy-env.js",
+    "shopify:dev": "shopify app dev",
+    "shopify:deploy": "shopify app deploy",
+    "shopify:info": "shopify app info",
+    "shopify:generate": "shopify app generate",
+    "shopify:setup": "node scripts/shopify-setup.js",
+    "security:check": "node scripts/pre-commit-security-check.js",
+    "pre-commit": "npm run security:check"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.17",
@@ -33,6 +45,8 @@
     "stripe": "^14.7.0"
   },
   "devDependencies": {
+    "@shopify/cli": "^3.50.0",
+    "@shopify/theme": "^3.50.0",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.14",

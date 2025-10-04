@@ -42,17 +42,24 @@
 
 ### ✅ 环境变量配置
 ```env
-# 必需的环境变量
-SHOPIFY_API_KEY=your_api_key
-SHOPIFY_API_SECRET=your_api_secret
+# 必需的环境变量 - 在 Vercel Dashboard 中配置
+SHOPIFY_API_KEY=your_real_api_key_from_partner_dashboard
+SHOPIFY_API_SECRET=your_real_api_secret_from_partner_dashboard
 SHOPIFY_SCOPES=read_products,write_products,read_orders,write_orders
 SHOPIFY_APP_URL=https://your-app.vercel.app
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-JWT_SECRET=your_32_character_secret
-CRON_SECRET=your_cron_secret
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_real_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_real_supabase_service_key
+JWT_SECRET=your_secure_64_character_random_string
+CRON_SECRET=your_secure_cron_secret
 ```
+
+### ⚠️ 环境变量安全检查
+- [ ] **绝不在代码中硬编码** - 所有敏感信息必须通过环境变量
+- [ ] **使用强密钥** - JWT_SECRET 至少64字符随机字符串
+- [ ] **验证URL格式** - 所有URL必须使用HTTPS
+- [ ] **替换示例值** - 确保没有使用 .env.example 中的占位符
+- [ ] **分环境配置** - 生产/预览/开发环境使用不同的密钥
 
 ### ✅ 定时任务配置
 - [ ] Vercel Cron Jobs 已配置

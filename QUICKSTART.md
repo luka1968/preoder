@@ -33,7 +33,7 @@ SMTP_PASS=your_app_password
 
 ## 3. Set Up Database
 
-1. Go to your [Supabase Dashboard](https://app.supabase.com/project/uumtumvqkmvcursfqkgs)
+1. Go to your [Supabase Dashboard](https://app.supabase.com/project/YOUR_PROJECT_ID)
 2. Navigate to SQL Editor
 3. Copy and run the migration from `supabase/migrations/001_initial_schema.sql`
 

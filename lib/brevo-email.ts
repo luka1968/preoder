@@ -1,11 +1,11 @@
 // Brevo Email Service for PreOrder Pro
-// Using Brevo API key: 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
+// Configure BREVO_API_KEY environment variable
 
 import { supabaseAdmin, getEmailTemplate } from './supabase'
 import { EmailVariables } from '../types'
 
 // Brevo API configuration
-const BREVO_API_KEY = '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'
+const BREVO_API_KEY = process.env.BREVO_API_KEY || ''
 const BREVO_API_URL = 'https://api.brevo.com/v3'
 
 // Brevo email interface

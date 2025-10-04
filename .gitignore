@@ -28,6 +28,10 @@ yarn-error.log*
 .env*.local
 .env
 .env.production
+.env.deploy
+
+# Deployment keys (sensitive information)
+DEPLOYMENT_KEYS.md
 
 # vercel
 .vercel
@@ -116,3 +120,5 @@ jspm_packages/
 
 # Supabase
 .supabase/
+
+.vercel

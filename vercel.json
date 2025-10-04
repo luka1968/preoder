@@ -1,12 +1,4 @@
 {
-  "version": 2,
-  "name": "preorder-pro",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
   "functions": {
     "pages/api/**/*.ts": {
       "maxDuration": 30
