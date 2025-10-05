@@ -11,13 +11,41 @@ const { execSync } = require('child_process');
 
 // 敏感信息模式列表
 const SENSITIVE_PATTERNS = [
-  // 通用敏感模式
-  /sk_live_[a-zA-Z0-9]+/g,  // Stripe live keys
-  /pk_live_[a-zA-Z0-9]+/g,  // Stripe live keys
-  /xkeysib-[a-zA-Z0-9\-]{50,}/g, // Brevo keys (长度检查)
-  /eyJ[a-zA-Z0-9\-_]{100,}/g, // JWT tokens (长度检查)
-  /https:\/\/[a-z0-9]{20}\.supabase\.co/g, // Supabase URLs
-  /[a-f0-9]{32}/g, // 32位十六进制密钥
+  // Stripe keys
+  /sk_live_[a-zA-Z0-9]+/g,
+  /pk_live_[a-zA-Z0-9]+/g,
+  /sk_test_[a-zA-Z0-9]+/g,
+  /pk_test_[a-zA-Z0-9]+/g,
+  
+  // Brevo/Sendinblue keys
+  /xkeysib-[a-zA-Z0-9\-]{50,}/g,
+  
+  // JWT tokens (长度检查，避免误报)
+  /eyJ[a-zA-Z0-9\-_]{100,}/g,
+  
+  // Supabase URLs和keys
+  /https:\/\/[a-z0-9]{20}\.supabase\.co/g,
+  /sb-[a-z0-9]{20}-[a-zA-Z0-9]{40}/g,
+  
+  // Shopify keys (32字符十六进制)
+  /[a-f0-9]{32}(?![a-f0-9])/g,
+  
+  // 通用API密钥模式
+  /api[_-]?key["\s]*[:=]["\s]*[a-zA-Z0-9]{20,}/gi,
+  /secret[_-]?key["\s]*[:=]["\s]*[a-zA-Z0-9]{20,}/gi,
+  /access[_-]?token["\s]*[:=]["\s]*[a-zA-Z0-9]{20,}/gi,
+  
+  // 邮箱地址（在示例文件中可能是真实的）
+  /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?=.*example|.*\.example)/g,
+  
+  // 密码模式
+  /password["\s]*[:=]["\s]*[^"\s]{8,}/gi,
+  /passwd["\s]*[:=]["\s]*[^"\s]{8,}/gi,
+  
+  // 数据库连接字符串
+  /mongodb:\/\/[^\s"']+/g,
+  /postgres:\/\/[^\s"']+/g,
+  /mysql:\/\/[^\s"']+/g,
 ];
 
 // 需要检查的文件扩展名
