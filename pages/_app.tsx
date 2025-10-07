@@ -1,5 +1,6 @@
 import type { AppProps } from 'next/app'
 import { useEffect } from 'react'
+import AppBridgeProvider from '../components/AppBridgeProvider'
 import '../styles/globals.css'
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -11,10 +12,14 @@ export default function App({ Component, pageProps }: AppProps) {
       
       if (isInShopifyAdmin) {
         // 在Shopify Admin iframe中运行的逻辑
-        console.log('Running in Shopify Admin')
+        console.log('Running in Shopify Admin iframe')
       }
     }
   }, [])
 
-  return <Component {...pageProps} />
+  return (
+    <AppBridgeProvider>
+      <Component {...pageProps} />
+    </AppBridgeProvider>
+  )
 }

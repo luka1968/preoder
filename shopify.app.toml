@@ -2,7 +2,7 @@
 
 name = "PreOrder Pro"
 client_id = "YOUR_CLIENT_ID"
-application_url = "https://your-domain.vercel.app"
+application_url = "https://shopmall.dpdns.org"
 embedded = true
 
 [access_scopes]
@@ -11,8 +11,8 @@ scopes = "write_products,read_products,write_orders,read_orders,write_customers,
 
 [auth]
 redirect_urls = [
-  "https://your-domain.vercel.app/api/auth/callback",
-  "https://your-domain.vercel.app/api/auth/shopify/callback"
+  "https://shopmall.dpdns.org/api/auth/callback",
+  "https://shopmall.dpdns.org/api/auth/shopify/callback"
 ]
 
 [webhooks]
@@ -23,7 +23,7 @@ embedded = false
 
 [build]
 automatically_update_urls_on_dev = true
-dev_store_url = "your-dev-store.myshopify.com"
+dev_store_url = "your-dev-store.com"
 include_config_on_deploy = true
 
 [app_proxy]
@@ -50,12 +50,12 @@ backend = { command = "npm run dev", port = 3000 }
 
 [web.auth]
 redirect_urls = [
-  "https://your-domain.vercel.app/api/auth/callback",
-  "https://your-domain.vercel.app/api/auth/shopify/callback"
+  "https://shopmall.dpdns.org/api/auth/callback",
+  "https://shopmall.dpdns.org/api/auth/shopify/callback"
 ]
 
 [web.application_url]
-url = "https://your-domain.vercel.app"
+url = "https://shopmall.dpdns.org"
 
 [web.webhooks]
 privacy_compliance_url = "https://shopmall.dpdns.org/api/webhooks/privacy/customers-data-request"

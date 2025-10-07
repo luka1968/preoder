@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import { useAuthenticatedFetch } from '../../hooks/useSessionToken'
 import Link from 'next/link'
 import Layout from '../../components/Layout'
 import { 

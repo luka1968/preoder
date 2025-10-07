@@ -8,15 +8,22 @@ export default function Home() {
 
   useEffect(() => {
     // 检查是否有shop参数（Shopify应用安装时会有）
-    const { shop, hmac, timestamp, code } = router.query
+    const { shop, hmac, timestamp, code, session } = router.query
 
-    if (shop) {
-      // 如果有shop参数，重定向到认证流程
-      router.push(`/api/auth/shopify?shop=${shop}`)
-    } else {
-      // 检查是否已经认证
-      checkAuthStatus()
+    if (session && shop) {
+      // 如果有会话令牌，立即重定向到应用主界面
+      router.push(`/products?shop=${shop}&session=${session}`)
+      return
     }
+
+    if (shop && !session) {
+      // 如果有shop参数但没有会话，重定向到认证流程
+      router.push(`/api/auth/shopify?shop=${shop}`)
+      return
+    }
+
+    // 检查是否已经认证
+    checkAuthStatus()
   }, [router.query])
 
   const checkAuthStatus = async () => {
