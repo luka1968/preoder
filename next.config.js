@@ -11,7 +11,7 @@ const nextConfig = {
   
   // Environment variables that should be available on the client side
   env: {
-    SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY,
+    SHOPIFY_API_KEY: process.env.SHOPIFY_API_KEY || '',
   },
 
   // API routes configuration

@@ -16,15 +16,31 @@ export default function AppBridgeProvider({ children }: AppBridgeProviderProps) 
     // 从URL参数获取shop和host信息
     const { shop, host } = router.query
     
+    // 检查是否有必需的环境变量
+    if (!process.env.NEXT_PUBLIC_SHOPIFY_API_KEY) {
+      console.warn('NEXT_PUBLIC_SHOPIFY_API_KEY is not set')
+      // 对于开发环境，创建一个模拟的app实例
+      setApp({ mock: true })
+      return
+    }
+    
     if (shop && typeof shop === 'string') {
-      // 创建App Bridge实例
-      const appBridge = createApp({
-        apiKey: process.env.NEXT_PUBLIC_SHOPIFY_API_KEY!,
-        host: (host as string) || btoa(`${shop}/admin`),
-        forceRedirect: true
-      })
+      try {
+        // 创建App Bridge实例
+        const appBridge = createApp({
+          apiKey: process.env.NEXT_PUBLIC_SHOPIFY_API_KEY!,
+          host: (host as string) || btoa(`${shop}/admin`),
+          forceRedirect: true
+        })
 
-      setApp(appBridge)
+        setApp(appBridge)
+      } catch (error) {
+        console.error('Failed to create App Bridge:', error)
+        setApp({ mock: true })
+      }
+    } else {
+      // 如果没有shop参数，创建一个模拟实例用于开发
+      setApp({ mock: true })
     }
   }, [router.query])
 
@@ -36,6 +52,48 @@ export default function AppBridgeProvider({ children }: AppBridgeProviderProps) 
           <p className="mt-4 text-gray-600">Loading Shopify App...</p>
         </div>
       </div>
+    )
+  }
+
+  // 如果是模拟模式，只使用AppProvider
+  if (app.mock) {
+    return (
+      <AppProvider
+        i18n={{
+          Polaris: {
+            Avatar: {
+              label: 'Avatar',
+              labelWithInitials: 'Avatar with initials {initials}',
+            },
+            ContextualSaveBar: {
+              save: 'Save',
+              discard: 'Discard',
+            },
+            TextField: {
+              characterCount: '{count} characters',
+            },
+            TopBar: {
+              toggleMenuLabel: 'Toggle menu',
+              SearchField: {
+                clearButtonLabel: 'Clear',
+                search: 'Search',
+              },
+            },
+            Modal: {
+              iFrameTitle: 'body markup',
+            },
+            Frame: {
+              skipToContent: 'Skip to content',
+              navigationLabel: 'Navigation',
+              Navigation: {
+                closeMobileNavigationLabel: 'Close navigation',
+              },
+            },
+          },
+        }}
+      >
+        {children}
+      </AppProvider>
     )
   }
 
