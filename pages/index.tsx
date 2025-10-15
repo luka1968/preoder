@@ -1,135 +1,136 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
+import Head from 'next/head'
 
 export default function Home() {
   const router = useRouter()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [shopParam, setShopParam] = useState('')
 
   useEffect(() => {
-    // 检查是否有shop参数（Shopify应用安装时会有）
-    const { shop, hmac, timestamp, code, session } = router.query
-
-    if (session && shop) {
-      // 如果有会话令牌，立即重定向到应用主界面
-      router.push(`/products?shop=${shop}&session=${session}`)
-      return
+    // 获取URL参数
+    const { shop, host } = router.query
+    
+    if (shop && typeof shop === 'string') {
+      setShopParam(shop)
     }
-
-    if (shop && !session) {
-      // 如果有shop参数但没有会话，重定向到认证流程
-      router.push(`/api/auth/shopify?shop=${shop}`)
-      return
-    }
-
-    // 检查是否已经认证
-    checkAuthStatus()
   }, [router.query])
 
-  const checkAuthStatus = async () => {
-    try {
-      const response = await fetch('/api/auth/check')
-      if (response.ok) {
-        // 已认证，重定向到主应用界面
-        router.push('/products')
-      } else {
-        // 未认证，显示安装界面
-        setLoading(false)
-      }
-    } catch (err) {
-      console.error('Auth check failed:', err)
-      setError('Failed to check authentication status')
-      setLoading(false)
+  const navigateToProducts = () => {
+    if (shopParam) {
+      router.push(`/products?shop=${shopParam}`)
+    } else {
+      router.push('/products')
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading PreOrder Pro...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="text-red-600 text-xl mb-4">⚠️ Error</div>
-          <p className="text-gray-600">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    )
+  const navigateToTest = () => {
+    router.push('/test-preorder')
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto py-12 px-4">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-8">
-            PreOrder Pro
-          </h1>
-          <p className="text-xl text-gray-600 mb-12">
-            Comprehensive Shopify app for pre-orders and back-in-stock notifications
-          </p>
-          
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <h2 className="text-2xl font-semibold mb-6">Install PreOrder Pro</h2>
-            <p className="text-gray-600 mb-8">
-              To use PreOrder Pro, please install it from your Shopify Admin panel.
+    <>
+      <Head>
+        <title>PreOrder Pro - Shopify预购插件</title>
+        <meta name="description" content="专业的Shopify预购解决方案" />
+      </Head>
+      
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="container mx-auto px-4 py-16">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <h1 className="text-5xl font-bold text-gray-900 mb-4">
+              PreOrder Pro
+            </h1>
+            <p className="text-xl text-gray-600 mb-8">
+              专业的Shopify预购和缺货通知解决方案
             </p>
+            {shopParam && (
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-8">
+                ✅ 已连接到商店: <strong>{shopParam}</strong>
+              </div>
+            )}
+          </div>
+
+          {/* Features Grid */}
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+              <div className="text-4xl mb-4">🛒</div>
+              <h3 className="text-xl font-semibold mb-4">智能预购</h3>
+              <p className="text-gray-600">
+                自动检测缺货商品，显示预购按钮和徽章，提升客户体验
+              </p>
+            </div>
             
-            <div className="space-y-4">
-              <div className="text-left">
-                <h3 className="font-semibold text-gray-900">Installation Steps:</h3>
-                <ol className="list-decimal list-inside mt-2 space-y-2 text-gray-600">
-                  <li>Go to your Shopify Admin</li>
-                  <li>Navigate to Apps section</li>
-                  <li>Search for "PreOrder Pro" or use the installation link</li>
-                  <li>Click "Install" to add the app to your store</li>
-                </ol>
-              </div>
-              
-              <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Note:</strong> This page is displayed because you're accessing the app directly. 
-                  Shopify apps are designed to run within the Shopify Admin interface.
-                </p>
-              </div>
+            <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+              <div className="text-4xl mb-4">📧</div>
+              <h3 className="text-xl font-semibold mb-4">到货通知</h3>
+              <p className="text-gray-600">
+                收集客户邮箱，商品到货时自动发送通知邮件
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow-lg p-8 text-center">
+              <div className="text-4xl mb-4">📊</div>
+              <h3 className="text-xl font-semibold mb-4">数据分析</h3>
+              <p className="text-gray-600">
+                跟踪预购数据，分析客户需求，优化库存管理
+              </p>
             </div>
           </div>
-          
-          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="font-semibold text-gray-900 mb-2">Pre-Orders</h3>
-              <p className="text-gray-600 text-sm">
-                Allow customers to order products before they're in stock
-              </p>
+
+          {/* Action Buttons */}
+          <div className="text-center space-y-4">
+            <div className="space-x-4">
+              <button
+                onClick={navigateToProducts}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300"
+              >
+                🚀 开始使用预购功能
+              </button>
+              
+              <button
+                onClick={navigateToTest}
+                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300"
+              >
+                🧪 测试预购功能
+              </button>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="font-semibold text-gray-900 mb-2">Notifications</h3>
-              <p className="text-gray-600 text-sm">
-                Automated back-in-stock email notifications
-              </p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="font-semibold text-gray-900 mb-2">Analytics</h3>
-              <p className="text-gray-600 text-sm">
-                Track pre-order performance and customer engagement
-              </p>
+            
+            <p className="text-sm text-gray-500 mt-4">
+              点击上方按钮开始配置您的预购功能
+            </p>
+          </div>
+
+          {/* Installation Guide */}
+          <div className="mt-16 bg-white rounded-lg shadow-lg p-8">
+            <h2 className="text-2xl font-bold mb-6 text-center">🔧 快速安装指南</h2>
+            
+            <div className="grid md:grid-cols-2 gap-8">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">1. 添加脚本到主题</h3>
+                <div className="bg-gray-100 p-4 rounded-lg">
+                  <code className="text-sm">
+                    &lt;script src="https://shopmall.dpdns.org/shopify-integration.js"&gt;&lt;/script&gt;
+                  </code>
+                </div>
+                <p className="text-sm text-gray-600 mt-2">
+                  将此脚本添加到主题的 theme.liquid 文件中
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="text-lg font-semibold mb-4">2. 测试预购功能</h3>
+                <ul className="text-sm text-gray-600 space-y-2">
+                  <li>• 访问任意缺货商品页面</li>
+                  <li>• 查看预购按钮和徽章</li>
+                  <li>• 测试预购表单提交</li>
+                  <li>• 验证邮件通知功能</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
