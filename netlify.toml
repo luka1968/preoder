@@ -1,0 +1,22 @@
+# This project is designed for Vercel deployment
+# This file is created for compatibility with deployment tools
+# Actual deployment should use Vercel
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/install"
+  to = "/api/auth/shopify"
+  status = 200
+
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+    Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
+    Access-Control-Allow-Headers = "X-Requested-With, Content-Type, Authorization"

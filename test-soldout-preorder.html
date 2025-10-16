@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试售罄预购功能</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .product {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .product-images {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            background: #f5f5f5;
+            margin-bottom: 20px;
+        }
+        .product-form {
+            margin: 20px 0;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #ccc;
+            color: #666;
+        }
+        button:disabled {
+            cursor: not-allowed;
+        }
+        .test-section {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>PreOrder Pro - 售罄预购功能测试</h1>
+    
+    <div class="test-section">
+        <h2>测试说明</h2>
+        <p>这个页面用于测试当产品售罄时，PreOrder Pro widget是否正确显示预购按钮。</p>
+        <p>修复内容：</p>
+        <ul>
+            <li>✅ 删除了错误的 <code>handleOutOfStock()</code> 方法</li>
+            <li>✅ 移除了 <code>initializeWidget()</code> 中的 <code>'out_of_stock'</code> 分支</li>
+            <li>✅ 改进了 <code>checkIfOutOfStock()</code> 方法，支持检测"Sold out"按钮文本</li>
+            <li>✅ 现在售罄时会正确调用 <code>handlePreOrder()</code> 显示预购按钮</li>
+        </ul>
+    </div>
+
+    <!-- 模拟Shopify产品页面结构 -->
+    <div class="product">
+        <h2>test 01</h2>
+        <div class="product-images">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iI2Y1ZjVmNSIvPgogIDx0ZXh0IHg9IjE1MCIgeT0iMTUwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTRweCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPuS6p+WTgeWbvueJhzwvdGV4dD4KPC9zdmc+" alt="产品图片" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        
+        <div class="product-form">
+            <p>价格: $9.99</p>
+            <form action="/cart/add" method="post">
+                <input type="hidden" name="id" value="46938880552121">
+                <button type="submit" name="add" disabled>Sold out</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 模拟Shopify全局变量 -->
+    <script>
+        window.Shopify = {
+            shop: 'test-shop.myshopify.com',
+            locale: 'zh-CN',
+            currency: { active: 'USD' }
+        };
+        
+        window.meta = {
+            product: {
+                id: 8517391474873,
+                variants: [{
+                    id: 46938880552121,
+                    inventory_quantity: 0,
+                    inventory_policy: 'deny'
+                }]
+            }
+        };
+        
+        // 模拟PreOrder配置
+        window.PREORDER_API_URL = 'http://localhost:3000/api';
+        
+        // 模拟API响应
+        const originalFetch = window.fetch;
+        window.fetch = function(url, options) {
+            if (url.includes('/api/preorder/product/')) {
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve({
+                        config: {
+                            enabled: true,
+                            preorder_type: 'out_of_stock',
+                            custom_button_text: '立即预订',
+                            custom_badge_text: '预售',
+                            badge_color: '#ff6b35'
+                        },
+                        currentStatus: 'preorder',
+                        inventoryStatus: { outOfStock: true }
+                    })
+                });
+            }
+            return originalFetch.apply(this, arguments);
+        };
+    </script>
+
+    <!-- 加载PreOrder Widget -->
+    <script src="./public/preorder-widget.js"></script>
+    
+    <script>
+        // 初始化widget
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.PreOrderWidget) {
+                const widget = new window.PreOrderWidget.PreOrderWidget();
+                widget.init();
+                window.PreOrderWidget.instance = widget;
+            }
+        });
+    </script>
+
+    <div class="test-section">
+        <h3>预期结果</h3>
+        <p>✅ 产品图片上应该显示"预售"徽章</p>
+        <p>✅ "Sold out"按钮应该被替换为"立即预订"按钮</p>
+        <p>✅ 按钮应该是可点击的（不是disabled状态）</p>
+        <p>✅ 按钮颜色应该是橙色（#ff6b35）</p>
+    </div>
+</body>
+</html>

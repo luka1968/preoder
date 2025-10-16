@@ -938,9 +938,6 @@
         case 'preorder':
           this.handlePreOrder();
           break;
-        case 'out_of_stock':
-          this.handleOutOfStock();
-          break;
         default:
           // Normal state - remove any existing preorder elements
           this.handleNormalState();
@@ -1006,10 +1003,32 @@
         return true;
       }
 
-      // Check for sold out text
+      // Check for sold out text in button
+      if (addToCartBtn) {
+        const btnText = (addToCartBtn.textContent || addToCartBtn.value || '').toLowerCase();
+        if (btnText.includes('sold out') || 
+            btnText.includes('unavailable') || 
+            btnText.includes('out of stock') ||
+            btnText.includes('缺货') ||
+            btnText.includes('售罄')) {
+          return true;
+        }
+      }
+
+      // Check for sold out elements
       const soldOutElements = document.querySelectorAll('.sold-out, .unavailable, .out-of-stock');
       if (soldOutElements.length > 0) {
         return true;
+      }
+
+      // Check for sold out text in page content
+      const soldOutTexts = document.querySelectorAll('*');
+      for (let element of soldOutTexts) {
+        const text = element.textContent?.toLowerCase() || '';
+        if ((text.includes('sold out') || text.includes('缺货') || text.includes('售罄')) && 
+            element.children.length === 0) { // Only check leaf nodes
+          return true;
+        }
       }
 
       // Check inventory from Shopify product data
@@ -1119,28 +1138,6 @@
       }
     }
 
-    handleOutOfStock() {
-      log('Handling out of stock state');
-      
-      const badgeText = t('preorder.out_of_stock.badge');
-      const badgeColor = '#dc3545';
-      const buttonText = t('preorder.out_of_stock.button');
-      
-      // Add out of stock badge
-      this.addEnhancedBadge(badgeText, badgeColor, 'out_of_stock');
-      
-      // Replace add to cart button with notification form
-      const addToCartBtn = document.querySelector('button[name="add"], input[name="add"], .btn-product-add');
-      if (addToCartBtn) {
-        const form = new BackInStockForm(this.productId, this.variantId);
-        const formElement = form.create();
-        
-        addToCartBtn.parentNode.insertBefore(formElement, addToCartBtn.nextSibling);
-        addToCartBtn.style.display = 'none';
-        
-        this.components.push(form);
-      }
-    }
 
     handleNormalState() {
       log('Handling normal state - cleaning up preorder elements');
@@ -2083,6 +2080,7 @@
 
   // Expose widget globally for manual control
   window.PreOrderWidget = window.PreOrderWidget || {};
+  window.PreOrderWidget.PreOrderWidget = PreOrderWidget;
   window.PreOrderWidget.create = () => new PreOrderWidget();
 
 })();
