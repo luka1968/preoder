@@ -15,7 +15,10 @@
 
 ```html
 <!-- PreOrder Pro 预购插件 -->
-<script src="https://shopmall.dpdns.org/shopify-integration.js"></script>
+<script>
+  window.PREORDER_APP_URL = 'https://your-vercel-app.vercel.app'; // 替换为你的Vercel应用URL
+</script>
+<script src="https://your-vercel-app.vercel.app/shopify-integration.js"></script>
 ```
 
 3. **保存并测试**
@@ -48,7 +51,10 @@
 </div>
 
 <!-- 加载预购脚本 -->
-<script src="https://shopmall.dpdns.org/shopify-integration.js"></script>
+<script>
+  window.PREORDER_APP_URL = 'https://your-vercel-app.vercel.app'; // 替换为你的Vercel应用URL
+</script>
+<script src="https://your-vercel-app.vercel.app/shopify-integration.js"></script>
 ```
 
 ### 方法3：使用Shopify App Blocks（Shopify 2.0主题）

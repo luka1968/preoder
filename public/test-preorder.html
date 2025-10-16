@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预购功能测试页面</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        .success { border-color: #28a745; background: #f8fff9; }
+        .error { border-color: #dc3545; background: #fff8f8; }
+        .warning { border-color: #ffc107; background: #fffdf5; }
+        button {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #e55a2b; }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 预购功能测试页面</h1>
+        
+        <div class="test-section">
+            <h3>1. 配置测试</h3>
+            <label>Vercel应用URL:</label>
+            <input type="url" id="appUrl" placeholder="https://your-app.vercel.app" value="">
+            <button onclick="testConfig()">测试配置</button>
+            <div id="configResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. API连接测试</h3>
+            <button onclick="testAPI()">测试API端点</button>
+            <div id="apiResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. 预购功能测试</h3>
+            <label>商店域名:</label>
+            <input type="text" id="shopDomain" placeholder="your-shop.myshopify.com" value="">
+            
+            <label>产品ID:</label>
+            <input type="text" id="productId" placeholder="123456789" value="123456789">
+            
+            <label>变体ID (可选):</label>
+            <input type="text" id="variantId" placeholder="987654321" value="">
+            
+            <label>邮箱地址:</label>
+            <input type="email" id="email" placeholder="test@example.com" value="test@example.com">
+            
+            <label>姓名 (可选):</label>
+            <input type="text" id="customerName" placeholder="张三" value="">
+            
+            <button onclick="testPreorder()">测试预购提交</button>
+            <div id="preorderResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. 集成脚本测试</h3>
+            <button onclick="testIntegrationScript()">加载集成脚本</button>
+            <button onclick="simulateShopifyPage()">模拟Shopify产品页面</button>
+            <div id="integrationResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 测试日志</h3>
+            <button onclick="clearLog()">清除日志</button>
+            <div id="testLog" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        let appUrl = '';
+        
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            logDiv.textContent += logEntry;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(logEntry);
+        }
+
+        function clearLog() {
+            document.getElementById('testLog').textContent = '';
+        }
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `test-section ${type}`;
+            element.innerHTML = `<strong>${type.toUpperCase()}:</strong> ${message}`;
+        }
+
+        function testConfig() {
+            const urlInput = document.getElementById('appUrl');
+            appUrl = urlInput.value.trim();
+            
+            if (!appUrl) {
+                showResult('configResult', '请输入Vercel应用URL', 'error');
+                log('配置测试失败：未输入URL', 'error');
+                return;
+            }
+            
+            try {
+                new URL(appUrl);
+                showResult('configResult', `配置成功：${appUrl}`, 'success');
+                log(`配置测试成功：${appUrl}`, 'success');
+                
+                // 自动设置全局变量
+                window.PREORDER_APP_URL = appUrl;
+            } catch (e) {
+                showResult('configResult', '无效的URL格式', 'error');
+                log(`配置测试失败：无效URL - ${appUrl}`, 'error');
+            }
+        }
+
+        async function testAPI() {
+            if (!appUrl) {
+                showResult('apiResult', '请先配置应用URL', 'warning');
+                return;
+            }
+            
+            try {
+                log('开始测试API连接...', 'info');
+                const response = await fetch(`${appUrl}/api/preorder/create`, {
+                    method: 'OPTIONS'
+                });
+                
+                if (response.ok) {
+                    showResult('apiResult', 'API端点可访问', 'success');
+                    log('API连接测试成功', 'success');
+                } else {
+                    showResult('apiResult', `API响应错误: ${response.status}`, 'error');
+                    log(`API连接测试失败: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult('apiResult', `API连接失败: ${error.message}`, 'error');
+                log(`API连接测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPreorder() {
+            if (!appUrl) {
+                showResult('preorderResult', '请先配置应用URL', 'warning');
+                return;
+            }
+            
+            const shopDomain = document.getElementById('shopDomain').value.trim();
+            const productId = document.getElementById('productId').value.trim();
+            const variantId = document.getElementById('variantId').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const customerName = document.getElementById('customerName').value.trim();
+            
+            if (!shopDomain || !productId || !email) {
+                showResult('preorderResult', '请填写必填字段：商店域名、产品ID、邮箱', 'error');
+                return;
+            }
+            
+            try {
+                log('开始测试预购提交...', 'info');
+                const response = await fetch(`${appUrl}/api/preorder/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        shop: shopDomain,
+                        productId: productId,
+                        variantId: variantId || null,
+                        email: email,
+                        name: customerName || null
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult('preorderResult', `预购测试成功！预购ID: ${result.preorder.id}`, 'success');
+                    log(`预购测试成功: ${JSON.stringify(result)}`, 'success');
+                } else {
+                    showResult('preorderResult', `预购测试失败: ${result.error}`, 'error');
+                    log(`预购测试失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showResult('preorderResult', `预购测试失败: ${error.message}`, 'error');
+                log(`预购测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function testIntegrationScript() {
+            if (!appUrl) {
+                showResult('integrationResult', '请先配置应用URL', 'warning');
+                return;
+            }
+            
+            try {
+                log('开始加载集成脚本...', 'info');
+                
+                // 设置全局变量
+                window.PREORDER_APP_URL = appUrl;
+                
+                // 动态加载脚本
+                const script = document.createElement('script');
+                script.src = `${appUrl}/shopify-integration.js`;
+                script.onload = () => {
+                    showResult('integrationResult', '集成脚本加载成功', 'success');
+                    log('集成脚本加载成功', 'success');
+                };
+                script.onerror = () => {
+                    showResult('integrationResult', '集成脚本加载失败', 'error');
+                    log('集成脚本加载失败', 'error');
+                };
+                
+                document.head.appendChild(script);
+            } catch (error) {
+                showResult('integrationResult', `脚本加载失败: ${error.message}`, 'error');
+                log(`脚本加载失败: ${error.message}`, 'error');
+            }
+        }
+
+        function simulateShopifyPage() {
+            log('模拟Shopify产品页面环境...', 'info');
+            
+            // 模拟Shopify全局对象
+            window.Shopify = {
+                shop: document.getElementById('shopDomain').value || 'test-shop.myshopify.com',
+                locale: 'zh-CN'
+            };
+            
+            // 模拟产品数据
+            window.meta = {
+                product: {
+                    id: parseInt(document.getElementById('productId').value) || 123456789,
+                    variants: [{
+                        id: parseInt(document.getElementById('variantId').value) || 987654321,
+                        inventory_quantity: 0,
+                        inventory_policy: 'deny'
+                    }]
+                }
+            };
+            
+            // 创建模拟的产品页面元素
+            if (!document.querySelector('.product-single__photos')) {
+                const productContainer = document.createElement('div');
+                productContainer.className = 'product-single__photos';
+                productContainer.style.cssText = 'position: relative; width: 200px; height: 200px; background: #f0f0f0; margin: 20px 0; border: 1px solid #ddd;';
+                productContainer.innerHTML = '<div style="padding: 80px 20px; text-align: center;">模拟产品图片</div>';
+                
+                const addToCartBtn = document.createElement('button');
+                addToCartBtn.name = 'add';
+                addToCartBtn.disabled = true;
+                addToCartBtn.textContent = 'Sold out';
+                addToCartBtn.style.cssText = 'margin: 10px 0; padding: 10px 20px; background: #ccc;';
+                
+                const form = document.createElement('form');
+                form.action = '/cart/add';
+                form.appendChild(addToCartBtn);
+                
+                const variantInput = document.createElement('input');
+                variantInput.type = 'hidden';
+                variantInput.name = 'id';
+                variantInput.value = document.getElementById('variantId').value || '987654321';
+                form.appendChild(variantInput);
+                
+                document.querySelector('.container').appendChild(productContainer);
+                document.querySelector('.container').appendChild(form);
+            }
+            
+            showResult('integrationResult', '已模拟Shopify产品页面环境，可以测试预购功能了', 'success');
+            log('Shopify页面环境模拟完成', 'success');
+            
+            // 如果集成脚本已加载，重新初始化
+            if (window.PreOrderIntegration) {
+                window.PreOrderIntegration.init();
+                log('重新初始化预购功能', 'info');
+            }
+        }
+
+        // 页面加载时的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            log('测试页面加载完成', 'info');
+            
+            // 尝试从URL参数获取配置
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlFromParam = urlParams.get('app_url');
+            if (urlFromParam) {
+                document.getElementById('appUrl').value = urlFromParam;
+                appUrl = urlFromParam;
+                window.PREORDER_APP_URL = urlFromParam;
+                log(`从URL参数获取应用地址: ${urlFromParam}`, 'info');
+            }
+        });
+    </script>
+</body>
+</html>

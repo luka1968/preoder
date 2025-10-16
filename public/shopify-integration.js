@@ -4,7 +4,7 @@
 
   // 配置
   const CONFIG = {
-    appUrl: 'https://shopmall.dpdns.org', // 你的应用URL
+    appUrl: window.PREORDER_APP_URL || 'https://your-vercel-app.vercel.app', // 你的Vercel应用URL
     debug: true
   };
 
