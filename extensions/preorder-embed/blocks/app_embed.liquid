@@ -3,15 +3,14 @@
   这个文件会被自动注入到 theme.liquid 的 </head> 标签前
 {% endcomment %}
 
-{% if app.metafields.preorder.enabled %}
 <script>
   // PreOrder Pro 配置
   window.PREORDER_CONFIG = {
     shop: '{{ shop.permanent_domain }}',
-    apiUrl: '{{ app.metafields.preorder.api_url | default: "https://preorder-pro-fix.vercel.app/api" }}',
-    enabled: {{ app.metafields.preorder.enabled | default: true }},
-    debug: {{ app.metafields.preorder.debug | default: false }},
-    version: '{{ app.metafields.preorder.version | default: "1.0.0" }}'
+    apiUrl: 'https://preorder-pro-fix.vercel.app/api',
+    enabled: true,
+    debug: true,
+    version: '1.0.0'
   };
   
   console.log('🚀 PreOrder Pro App Embed Block Loaded');
@@ -33,7 +32,7 @@
   
   // 动态加载预购脚本
   const script = document.createElement('script');
-  script.src = '{{ app.metafields.preorder.api_url | default: "https://preorder-pro-fix.vercel.app" }}/universal-preorder.js';
+  script.src = 'https://preorder-pro-fix.vercel.app/universal-preorder.js';
   script.async = true;
   script.onload = function() {
     console.log('✅ PreOrder Universal Widget loaded via App Embed');
@@ -129,13 +128,10 @@
 }
 </style>
 
-{% endif %}
-
 {% schema %}
 {
   "name": "PreOrder Pro",
   "target": "head",
-  "javascript": "preorder-widget.js",
   "settings": [
     {
       "type": "checkbox",

@@ -9,7 +9,7 @@ import {
 
 // 自动注入预购脚本到商店
 async function autoInjectPreorderScript(shopDomain: string, accessToken: string) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://preorder-pro-fix.vercel.app'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://shopmall.dpdns.org'
   const scriptUrl = `${appUrl}/universal-preorder.js`
   
   // 首先检查是否已经存在我们的脚本
