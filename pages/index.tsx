@@ -27,6 +27,14 @@ export default function Home() {
     router.push('/test-preorder')
   }
 
+  const navigateToAppEmbed = () => {
+    if (shopParam) {
+      router.push(`/app-embed-setup?shop=${shopParam}`)
+    } else {
+      router.push('/app-embed-setup')
+    }
+  }
+
   return (
     <>
       <Head>
@@ -80,12 +88,21 @@ export default function Home() {
 
           {/* Action Buttons */}
           <div className="text-center space-y-4">
+            <div className="space-x-4 mb-4">
+              <button
+                onClick={navigateToAppEmbed}
+                className="bg-orange-600 hover:bg-orange-700 text-white font-bold py-4 px-8 rounded-lg transition duration-300 text-lg"
+              >
+                🧱 一键启用 App Embed Block
+              </button>
+            </div>
+            
             <div className="space-x-4">
               <button
                 onClick={navigateToProducts}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300"
               >
-                🚀 开始使用预购功能
+                🚀 管理预购产品
               </button>
               
               <button
@@ -96,37 +113,43 @@ export default function Home() {
               </button>
             </div>
             
-            <p className="text-sm text-gray-500 mt-4">
-              点击上方按钮开始配置您的预购功能
+            <p className="text-gray-500 text-sm">
+              推荐：先启用 App Embed Block，然后测试预购功能
             </p>
           </div>
 
-          {/* Installation Guide */}
+          {/* App Embed Guide */}
           <div className="mt-16 bg-white rounded-lg shadow-lg p-8">
-            <h2 className="text-2xl font-bold mb-6 text-center">🔧 快速安装指南</h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">🧱 App Embed Block - 零代码集成</h2>
             
             <div className="grid md:grid-cols-2 gap-8">
               <div>
-                <h3 className="text-lg font-semibold mb-4">1. 添加脚本到主题</h3>
-                <div className="bg-gray-100 p-4 rounded-lg">
-                  <code className="text-sm">
-                    &lt;script src="https://shopmall.dpdns.org/shopify-integration.js"&gt;&lt;/script&gt;
-                  </code>
-                </div>
-                <p className="text-sm text-gray-600 mt-2">
-                  将此脚本添加到主题的 theme.liquid 文件中
-                </p>
+                <h3 className="text-lg font-semibold mb-4 text-orange-600">✨ 全新方案优势</h3>
+                <ul className="text-sm text-gray-600 space-y-2">
+                  <li>✅ <strong>无需修改主题代码</strong></li>
+                  <li>✅ <strong>自动适配所有主题</strong></li>
+                  <li>✅ <strong>用户只需一键启用</strong></li>
+                  <li>✅ <strong>Shopify 官方推荐方式</strong></li>
+                  <li>✅ <strong>安全且易于维护</strong></li>
+                </ul>
               </div>
               
               <div>
-                <h3 className="text-lg font-semibold mb-4">2. 测试预购功能</h3>
-                <ul className="text-sm text-gray-600 space-y-2">
-                  <li>• 访问任意缺货商品页面</li>
-                  <li>• 查看预购按钮和徽章</li>
-                  <li>• 测试预购表单提交</li>
-                  <li>• 验证邮件通知功能</li>
-                </ul>
+                <h3 className="text-lg font-semibold mb-4 text-blue-600">🚀 使用步骤</h3>
+                <ol className="text-sm text-gray-600 space-y-2">
+                  <li><strong>1.</strong> 点击上方"一键启用 App Embed Block"</li>
+                  <li><strong>2.</strong> 系统自动跳转到主题编辑器</li>
+                  <li><strong>3.</strong> 找到 "PreOrder Pro" 并启用</li>
+                  <li><strong>4.</strong> 保存设置，预购功能立即生效</li>
+                </ol>
               </div>
+            </div>
+            
+            <div className="mt-8 bg-gradient-to-r from-orange-50 to-blue-50 border border-orange-200 rounded-lg p-6">
+              <p className="text-center text-gray-700">
+                <strong>🎯 这是目前最佳的 Shopify 应用集成方案</strong><br />
+                无需技术知识，用户体验最佳，完全符合 Shopify 官方标准
+              </p>
             </div>
           </div>
         </div>

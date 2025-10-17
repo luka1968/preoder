@@ -1,0 +1,160 @@
+{% comment %}
+  PreOrder Pro - App Embed Block
+  这个文件会被自动注入到 theme.liquid 的 </head> 标签前
+{% endcomment %}
+
+{% if app.metafields.preorder.enabled %}
+<script>
+  // PreOrder Pro 配置
+  window.PREORDER_CONFIG = {
+    shop: '{{ shop.permanent_domain }}',
+    apiUrl: '{{ app.metafields.preorder.api_url | default: "https://preorder-pro-fix.vercel.app/api" }}',
+    enabled: {{ app.metafields.preorder.enabled | default: true }},
+    debug: {{ app.metafields.preorder.debug | default: false }},
+    version: '{{ app.metafields.preorder.version | default: "1.0.0" }}'
+  };
+  
+  console.log('🚀 PreOrder Pro App Embed Block Loaded');
+  console.log('📊 Config:', window.PREORDER_CONFIG);
+</script>
+
+<!-- 加载通用预购脚本 -->
+<script>
+(function() {
+  'use strict';
+  
+  // 防止重复加载
+  if (window.PreOrderProLoaded) {
+    console.log('✅ PreOrder Pro already loaded');
+    return;
+  }
+  
+  window.PreOrderProLoaded = true;
+  
+  // 动态加载预购脚本
+  const script = document.createElement('script');
+  script.src = '{{ "preorder-universal.js" | asset_url }}';
+  script.async = true;
+  script.onload = function() {
+    console.log('✅ PreOrder Universal Widget loaded via App Embed');
+    
+    // 触发自定义事件，通知脚本已加载
+    if (window.dispatchEvent) {
+      window.dispatchEvent(new CustomEvent('preorder:loaded', {
+        detail: { source: 'app-embed', config: window.PREORDER_CONFIG }
+      }));
+    }
+  };
+  script.onerror = function() {
+    console.error('❌ Failed to load PreOrder Universal Widget');
+  };
+  
+  document.head.appendChild(script);
+})();
+</script>
+
+<!-- 预购样式 -->
+<style>
+/* PreOrder Pro - 通用样式 */
+.preorder-btn {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%) !important;
+  color: white !important;
+  border: none !important;
+  padding: 15px 30px !important;
+  border-radius: 8px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  font-size: 16px !important;
+  margin: 10px 0 !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3) !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+.preorder-btn:hover {
+  background: linear-gradient(135deg, #e55a2b 0%, #d7831a 100%) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4) !important;
+}
+
+.preorder-badge {
+  position: absolute !important;
+  top: 12px !important;
+  right: 12px !important;
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%) !important;
+  color: white !important;
+  padding: 8px 16px !important;
+  border-radius: 20px !important;
+  font-size: 12px !important;
+  font-weight: bold !important;
+  z-index: 1000 !important;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4) !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  animation: preorderPulse 2s infinite !important;
+}
+
+@keyframes preorderPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+@keyframes preorderSlideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.preorder-btn.animate-in {
+  animation: preorderSlideIn 0.5s ease-out !important;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .preorder-btn {
+    font-size: 14px !important;
+    padding: 12px 24px !important;
+  }
+  
+  .preorder-badge {
+    font-size: 10px !important;
+    padding: 6px 12px !important;
+  }
+}
+</style>
+
+{% endif %}
+
+{% schema %}
+{
+  "name": "PreOrder Pro",
+  "target": "head",
+  "javascript": "preorder-widget.js",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "启用预购功能",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "api_url",
+      "label": "API URL",
+      "default": "https://preorder-pro-fix.vercel.app/api"
+    },
+    {
+      "type": "checkbox",
+      "id": "debug",
+      "label": "调试模式",
+      "default": false
+    }
+  ]
+}
+{% endschema %}

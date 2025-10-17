@@ -7,6 +7,64 @@ import {
   installRequiredWebhooks 
 } from '../../../lib/shopify-auth'
 
+// 自动注入预购脚本到商店
+async function autoInjectPreorderScript(shopDomain: string, accessToken: string) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://preorder-pro-fix.vercel.app'
+  const scriptUrl = `${appUrl}/universal-preorder.js`
+  
+  // 首先检查是否已经存在我们的脚本
+  const existingScripts = await getScriptTags(shopDomain, accessToken)
+  const ourScript = existingScripts.find((script: any) => 
+    script.src.includes('universal-preorder.js') || script.src.includes(appUrl)
+  )
+  
+  if (ourScript) {
+    console.log('PreOrder script already exists, skipping injection')
+    return
+  }
+  
+  // 创建新的script tag
+  const response = await fetch(`https://${shopDomain}/admin/api/2023-10/script_tags.json`, {
+    method: 'POST',
+    headers: {
+      'X-Shopify-Access-Token': accessToken,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      script_tag: {
+        event: 'onload',
+        src: scriptUrl,
+        display_scope: 'online_store'
+      }
+    })
+  })
+
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(`Failed to create script tag: ${error}`)
+  }
+
+  const result = await response.json()
+  console.log('✅ PreOrder script tag created:', result.script_tag.id)
+  return result
+}
+
+// 获取现有的script tags
+async function getScriptTags(shopDomain: string, accessToken: string) {
+  const response = await fetch(`https://${shopDomain}/admin/api/2023-10/script_tags.json`, {
+    headers: {
+      'X-Shopify-Access-Token': accessToken,
+    }
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to get script tags')
+  }
+
+  const result = await response.json()
+  return result.script_tags || []
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { shop, hmac, code, state, timestamp } = req.query
 
@@ -76,6 +134,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!webhooksInstalled) {
       console.warn('Failed to install some webhooks for:', shopDomain)
       // 不阻止安装流程，只记录警告
+    }
+
+    // 5. 自动注入预购脚本到商店
+    try {
+      await autoInjectPreorderScript(shopDomain, accessToken)
+      console.log('✅ PreOrder script auto-injected for:', shopDomain)
+    } catch (error) {
+      console.warn('⚠️ Failed to auto-inject PreOrder script for:', shopDomain, error)
+      // 不阻止安装流程，脚本注入失败不影响应用安装
     }
 
     // 5. 创建会话令牌

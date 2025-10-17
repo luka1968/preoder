@@ -34,6 +34,12 @@ include_config_on_deploy = true
 
 # Extensions configuration
 [[extensions]]
+type = "theme_app_extension"
+name = "preorder-embed"
+handle = "preorder-embed"
+directory = "extensions/preorder-embed"
+
+[[extensions]]
 type = "checkout_post_purchase"
 name = "preorder-checkout"
 handle = "preorder-checkout"

@@ -1,0 +1,19 @@
+# Shopify App Extension Configuration
+name = "preorder-embed"
+type = "theme_app_extension"
+
+[extensions.theme_app_extension]
+name = "PreOrder Pro"
+handle = "preorder-pro"
+
+[[extensions.theme_app_extension.files]]
+name = "app-embed.liquid"
+target = "layout/theme.liquid"
+
+[[extensions.theme_app_extension.files]]
+name = "preorder-widget.js"
+target = "assets/preorder-widget.js"
+
+[build]
+command = ""
+watch = []
