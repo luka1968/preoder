@@ -1,7 +1,7 @@
 name = "preorder-embed"
 type = "theme_app_extension"
 
-[[extensions]]
+[[blocks]]
 type = "app_embed"
 name = "PreOrder Pro"
-handle = "preorder-pro"
+target = "head"
