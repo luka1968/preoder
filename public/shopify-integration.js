@@ -208,16 +208,52 @@
 
   // 检查是否应该显示预购
   function shouldShowPreorder() {
-    // 简单检查：如果添加到购物车按钮被禁用，则显示预购
+    // 方法1: 检查添加到购物车按钮状态
     const addToCartBtn = document.querySelector('button[name="add"], input[name="add"], .btn-product-add');
     
     if (addToCartBtn) {
-      return addToCartBtn.disabled || 
-             addToCartBtn.textContent.includes('Sold out') ||
-             addToCartBtn.textContent.includes('缺货') ||
-             addToCartBtn.textContent.includes('售罄');
+      const btnText = addToCartBtn.textContent || addToCartBtn.value || '';
+      const isDisabled = addToCartBtn.disabled || addToCartBtn.hasAttribute('disabled');
+      const hasSoldOutText = btnText.includes('Sold out') ||
+                            btnText.includes('Unavailable') ||
+                            btnText.includes('缺货') ||
+                            btnText.includes('售罄');
+      
+      if (isDisabled || hasSoldOutText) {
+        log('✅ Button indicates sold out:', { disabled: isDisabled, text: btnText });
+        return true;
+      }
     }
 
+    // 方法2: 检查Shopify产品数据
+    if (window.meta?.product?.variants) {
+      const variants = window.meta.product.variants;
+      const variantSelect = document.querySelector('select[name="id"]');
+      const variantInput = document.querySelector('input[name="id"]');
+      const currentVariantId = variantSelect?.value || variantInput?.value;
+      
+      let targetVariant = null;
+      if (currentVariantId) {
+        targetVariant = variants.find(v => v.id.toString() === currentVariantId);
+      } else {
+        targetVariant = variants[0];
+      }
+      
+      if (targetVariant) {
+        const isOutOfStock = (
+          targetVariant.available === false ||
+          (typeof targetVariant.inventory_quantity === 'number' && targetVariant.inventory_quantity <= 0) ||
+          (targetVariant.inventory_management && targetVariant.inventory_quantity <= 0)
+        );
+        
+        if (isOutOfStock) {
+          log('✅ Variant data indicates sold out:', targetVariant);
+          return true;
+        }
+      }
+    }
+
+    log('❌ Product appears to be available');
     return false;
   }
 

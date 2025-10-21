@@ -89,13 +89,28 @@
         targetVariant = variants[0]; // 默认变体
       }
       
-      if (targetVariant && (
-        (targetVariant.inventory_quantity <= 0 && targetVariant.inventory_policy === 'deny') || 
-        !targetVariant.available
-      )) {
-        log('✅ Variant sold out via Shopify data:', targetVariant);
-        const anyButton = document.querySelector('button[name="add"], input[name="add"], .btn-product-add');
-        return { isSoldOut: true, button: anyButton };
+      if (targetVariant) {
+        // 修复：更宽松的库存检测逻辑
+        const isOutOfStock = (
+          // 检查available字段（最可靠）
+          targetVariant.available === false ||
+          // 检查库存数量为0或负数
+          (typeof targetVariant.inventory_quantity === 'number' && targetVariant.inventory_quantity <= 0) ||
+          // 检查库存管理且库存为0
+          (targetVariant.inventory_management && targetVariant.inventory_quantity <= 0)
+        );
+        
+        if (isOutOfStock) {
+          log('✅ Variant sold out via Shopify data:', targetVariant);
+          log('📊 Inventory details:', {
+            available: targetVariant.available,
+            inventory_quantity: targetVariant.inventory_quantity,
+            inventory_policy: targetVariant.inventory_policy,
+            inventory_management: targetVariant.inventory_management
+          });
+          const anyButton = document.querySelector('button[name="add"], input[name="add"], .btn-product-add');
+          return { isSoldOut: true, button: anyButton };
+        }
       }
     }
 
