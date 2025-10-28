@@ -155,14 +155,15 @@
     try {
       log('提交预购:', { productId, variantId, email, name });
       
-      // 这里可以调用你的API
-      const response = await fetch(`${CONFIG.appUrl}/api/preorder/create`, {
+      // 调用预购 API
+      const apiUrl = CONFIG.apiUrl || 'https://shopmall.dpdns.org/api';
+      const response = await fetch(`${apiUrl}/preorder/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          shop: window.Shopify?.shop || '',
+          shop: window.Shopify?.shop || window.location.hostname,
           productId,
           variantId,
           email,
@@ -170,14 +171,17 @@
         })
       });
 
+      const result = await response.json();
+      
       if (response.ok) {
-        alert('✅ 预购成功！我们会在商品到货时通知您。');
+        alert('✅ 预购成功！\n\n我们已收到您的预购信息。\n商品到货时会通知您。');
       } else {
-        throw new Error('预购失败');
+        console.error('预购失败:', result);
+        throw new Error(result.error || '预购失败');
       }
     } catch (error) {
       log('预购错误:', error);
-      alert('❌ 预购失败，请稍后重试。');
+      alert('❌ 预购失败：' + error.message + '\n\n请稍后重试。');
     }
   }
 
