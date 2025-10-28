@@ -1,7 +1,9 @@
-name = "preorder-embed"
-type = "theme_app_extension"
+api_version = "2024-01"
 
-[[blocks]]
-type = "app_embed"
+[[extensions]]
+type = "theme"
 name = "PreOrder Pro"
+
+[[extensions.targeting]]
 target = "head"
+module = "./blocks/app_embed.liquid"

@@ -130,26 +130,47 @@
 
 {% schema %}
 {
-  "name": "PreOrder Pro",
+  "name": "PreOrder Pro - 预购插件",
   "target": "head",
   "settings": [
+    {
+      "type": "paragraph",
+      "content": "自动为缺货商品显示预购按钮，无需修改主题代码。"
+    },
     {
       "type": "checkbox",
       "id": "enabled",
       "label": "启用预购功能",
-      "default": true
+      "default": true,
+      "info": "关闭后将不显示预购按钮"
     },
     {
       "type": "text",
       "id": "api_url",
       "label": "API URL",
-      "default": "https://preorder-pro-fix.vercel.app/api"
+      "default": "https://preorder-pro-fix.vercel.app/api",
+      "info": "预购API服务器地址"
     },
     {
       "type": "checkbox",
       "id": "debug",
       "label": "调试模式",
-      "default": false
+      "default": false,
+      "info": "启用后会在浏览器控制台显示详细日志"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "预购按钮文本",
+      "default": "立即预订 Pre-Order Now",
+      "info": "自定义预购按钮显示的文字"
+    },
+    {
+      "type": "text",
+      "id": "badge_text",
+      "label": "预购徽章文本",
+      "default": "预售 Pre-Order",
+      "info": "自定义预购徽章显示的文字"
     }
   ]
 }
