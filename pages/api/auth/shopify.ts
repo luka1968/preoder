@@ -153,22 +153,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const scope = tokenData.scope
 
     // 3. 保存店铺信息到数据库
-    const { error: dbError } = await supabaseAdmin
+    console.log('💾 准备保存店铺信息到数据库...')
+    
+    const shopData = {
+      shop_domain: shopDomain,
+      access_token: accessToken,
+      scope: scope,
+      plan: 'free',
+      active: true
+    }
+    
+    console.log('📝 店铺数据:', { ...shopData, access_token: '***' })
+    
+    const { data: savedShop, error: dbError } = await supabaseAdmin
       .from('shops')
-      .upsert({
-        shop_domain: shopDomain,
-        access_token: accessToken,
-        scope: scope,
-        installed_at: new Date().toISOString(),
-        is_active: true,
-      }, {
+      .upsert(shopData, {
         onConflict: 'shop_domain'
       })
+      .select()
 
     if (dbError) {
-      console.error('Failed to save shop data for:', shopDomain, dbError)
-      return res.status(500).json({ error: 'Failed to save shop data' })
+      console.error('❌ 数据库保存失败:', {
+        message: dbError.message,
+        code: dbError.code,
+        details: dbError.details,
+        hint: dbError.hint
+      })
+      return res.status(500).send(`保存失败: ${dbError.message}`)
     }
+
+    console.log('✅ 店铺信息保存成功:', savedShop)
 
     // 4. 自动注入预购脚本到商店
     try {
