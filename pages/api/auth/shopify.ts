@@ -1,11 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { 
-  verifyOAuthCallback, 
-  getAccessToken, 
-  saveShopData, 
-  createSessionToken,
-  installRequiredWebhooks 
-} from '../../../lib/shopify-auth'
+import crypto from 'crypto'
+import { supabaseAdmin } from '../../../lib/supabase'
 
 // 自动注入预购脚本到商店
 async function autoInjectPreorderScript(shopDomain: string, accessToken: string) {
@@ -110,33 +105,72 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('Processing OAuth callback for shop:', shopDomain)
 
     // 1. 验证HMAC签名
-    if (!verifyOAuthCallback(req.query)) {
+    const apiSecret = process.env.SHOPIFY_API_SECRET
+    if (!apiSecret) {
+      return res.status(500).json({ error: 'Missing API secret' })
+    }
+
+    const queryParams = { ...req.query }
+    delete queryParams.hmac
+    delete queryParams.signature
+    
+    const sortedParams = Object.keys(queryParams)
+      .sort()
+      .map(key => `${key}=${queryParams[key]}`)
+      .join('&')
+
+    const calculatedHmac = crypto
+      .createHmac('sha256', apiSecret)
+      .update(sortedParams)
+      .digest('hex')
+
+    if (calculatedHmac !== hmac) {
       console.error('HMAC verification failed for shop:', shopDomain)
       return res.status(401).json({ error: 'Invalid HMAC signature' })
     }
 
     // 2. 用code换取access token
-    const accessToken = await getAccessToken(shopDomain, code as string)
-    if (!accessToken) {
+    const tokenUrl = `https://${shopDomain}/admin/oauth/access_token`
+    const tokenResponse = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        client_id: apiKey,
+        client_secret: apiSecret,
+        code: code,
+      }),
+    })
+
+    if (!tokenResponse.ok) {
       console.error('Failed to get access token for shop:', shopDomain)
       return res.status(500).json({ error: 'Failed to get access token' })
     }
 
+    const tokenData = await tokenResponse.json()
+    const accessToken = tokenData.access_token
+    const scope = tokenData.scope
+
     // 3. 保存店铺信息到数据库
-    const saved = await saveShopData(shopDomain, accessToken)
-    if (!saved) {
-      console.error('Failed to save shop data for:', shopDomain)
+    const { error: dbError } = await supabaseAdmin
+      .from('shops')
+      .upsert({
+        shop_domain: shopDomain,
+        access_token: accessToken,
+        scope: scope,
+        installed_at: new Date().toISOString(),
+        is_active: true,
+      }, {
+        onConflict: 'shop_domain'
+      })
+
+    if (dbError) {
+      console.error('Failed to save shop data for:', shopDomain, dbError)
       return res.status(500).json({ error: 'Failed to save shop data' })
     }
 
-    // 4. 安装必需的webhooks
-    const webhooksInstalled = await installRequiredWebhooks(shopDomain, accessToken)
-    if (!webhooksInstalled) {
-      console.warn('Failed to install some webhooks for:', shopDomain)
-      // 不阻止安装流程，只记录警告
-    }
-
-    // 5. 自动注入预购脚本到商店
+    // 4. 自动注入预购脚本到商店
     try {
       await autoInjectPreorderScript(shopDomain, accessToken)
       console.log('✅ PreOrder script auto-injected for:', shopDomain)
@@ -145,18 +179,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // 不阻止安装流程，脚本注入失败不影响应用安装
     }
 
-    // 5. 创建会话令牌
-    const sessionToken = createSessionToken(shopDomain)
-
-    // 6. 设置会话cookie
-    res.setHeader('Set-Cookie', [
-      `shopify_session=${sessionToken}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=86400`,
-      `shop_domain=${shopDomain}; Secure; SameSite=None; Path=/; Max-Age=86400`
-    ])
-
-    // 7. 立即重定向到应用主界面
-    console.log('Authentication successful, redirecting to app UI for:', shopDomain)
-    return res.redirect(`/?shop=${shopDomain}&session=${sessionToken}`)
+    // 5. 重定向到成功页面
+    console.log('Authentication successful for:', shopDomain)
+    return res.redirect(`${appUrl}/install-success?shop=${shopDomain}`)
 
   } catch (error) {
     console.error('Shopify auth error:', error)
