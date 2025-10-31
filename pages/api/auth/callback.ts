@@ -85,8 +85,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         shop_domain: shopDomain,
         access_token: access_token,
         scope: scope,
-        installed_at: new Date().toISOString(),
-        is_active: true,
+        plan: 'free',
+        active: true
       }, {
         onConflict: 'shop_domain'
       })

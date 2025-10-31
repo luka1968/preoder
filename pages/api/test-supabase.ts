@@ -27,8 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       shop_domain: 'test-' + Date.now() + '.myshopify.com',
       access_token: 'test_token_' + Date.now(),
       scope: 'read_products,write_products',
-      installed_at: new Date().toISOString(),
-      is_active: true
+      plan: 'free',
+      active: true
     }
 
     const { data: insertData, error: insertError } = await supabaseAdmin

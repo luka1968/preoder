@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // 查询 shops 表
     const { data: shopData, error: shopError } = await supabaseAdmin
       .from('shops')
-      .select('shop_domain, installed_at, is_active, scope')
+      .select('shop_domain, installed_at, active, scope')
       .eq('shop_domain', shop)
       .single()
 
@@ -36,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       shop: {
         domain: shopData.shop_domain,
         installed_at: shopData.installed_at,
-        is_active: shopData.is_active,
+        is_active: shopData.active,
         scope: shopData.scope,
         has_access_token: true
       },
