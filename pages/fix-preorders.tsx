@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import Layout from '../components/Layout'
 
 interface PreorderAnalysis {
   id: number
@@ -85,7 +84,7 @@ export default function FixPreordersPage() {
   }
 
   return (
-    <Layout>
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">修复预购订单</h1>
@@ -234,6 +233,6 @@ export default function FixPreordersPage() {
           </div>
         )}
       </div>
-    </Layout>
+    </div>
   )
 }
