@@ -91,6 +91,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // 2. 创建 Shopify Draft Order（如果有 access token）
     let draftOrder = null
+    let draftOrderError = null
+    
     if (accessToken && variantId) {
       try {
         console.log('📝 创建 Shopify Draft Order...')
@@ -98,6 +100,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         
         // 确保 variantId 是数字类型
         const numericVariantId = parseInt(variantId.toString().replace(/\D/g, ''), 10)
+        
+        if (isNaN(numericVariantId)) {
+          throw new Error(`Invalid variant ID: ${variantId}`)
+        }
+        
+        const requestBody = {
+          draft_order: {
+            line_items: [
+              {
+                variant_id: numericVariantId,
+                quantity: 1,
+              }
+            ],
+            customer: {
+              email: email,
+              first_name: name || email.split('@')[0],
+            },
+            tags: 'preorder',
+            note: `预购订单 - 客户邮箱: ${email}`,
+            email: email,
+          }
+        }
+        
+        console.log('📤 Draft Order 请求体:', JSON.stringify(requestBody, null, 2))
         
         const draftOrderResponse = await fetch(
           `https://${shop}/admin/api/2023-10/draft_orders.json`,
@@ -107,28 +133,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               'X-Shopify-Access-Token': accessToken,
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              draft_order: {
-                line_items: [
-                  {
-                    variant_id: numericVariantId,
-                    quantity: 1,
-                  }
-                ],
-                customer: {
-                  email: email,
-                  first_name: name || email.split('@')[0],
-                },
-                tags: 'preorder',
-                note: `预购订单 - 客户邮箱: ${email}`,
-                email: email,
-              }
-            })
+            body: JSON.stringify(requestBody)
           }
         )
 
+        const responseText = await draftOrderResponse.text()
+        console.log('📥 Draft Order 响应状态:', draftOrderResponse.status)
+        console.log('📥 Draft Order 响应内容:', responseText)
+
         if (draftOrderResponse.ok) {
-          draftOrder = await draftOrderResponse.json()
+          draftOrder = JSON.parse(responseText)
           console.log('✅ Draft Order 创建成功:', draftOrder.draft_order.id)
           
           // 更新数据库记录，关联 draft order ID
@@ -137,33 +151,49 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               .from('preorders')
               .update({ 
                 shopify_draft_order_id: draftOrder.draft_order.id.toString(),
-                shopify_draft_order_name: draftOrder.draft_order.name
+                shopify_draft_order_name: draftOrder.draft_order.name,
+                updated_at: new Date().toISOString()
               })
               .eq('id', savedPreorder.id)
             
             if (updateResult.error) {
               console.error('❌ 更新数据库失败:', updateResult.error)
             } else {
-              console.log('✅ 数据库更新成功')
+              console.log('✅ 数据库更新成功，Draft Order ID:', draftOrder.draft_order.id)
             }
           }
         } else {
-          const errorText = await draftOrderResponse.text()
-          console.error('❌ Draft Order 创建失败:', errorText)
+          draftOrderError = responseText
+          console.error('❌ Draft Order 创建失败 (HTTP ' + draftOrderResponse.status + '):', responseText)
           console.error('请求详情:', {
             url: `https://${shop}/admin/api/2023-10/draft_orders.json`,
+            shop,
             variantId: numericVariantId,
             email,
-            hasAccessToken: !!accessToken
+            hasAccessToken: !!accessToken,
+            accessTokenLength: accessToken?.length
           })
+          
+          // 尝试解析错误信息
+          try {
+            const errorJson = JSON.parse(responseText)
+            console.error('❌ Shopify API 错误详情:', errorJson)
+          } catch (e) {
+            // 无法解析为 JSON
+          }
         }
-      } catch (draftError) {
+      } catch (draftError: any) {
+        draftOrderError = draftError.message
         console.error('❌ Draft Order 异常:', draftError)
+        console.error('异常堆栈:', draftError.stack)
       }
     } else {
-      console.log('⚠️ 跳过 Draft Order 创建:', { 
+      const reason = !accessToken ? '缺少 access token' : '缺少 variant ID'
+      console.log('⚠️ 跳过 Draft Order 创建:', reason, { 
         hasAccessToken: !!accessToken, 
-        hasVariantId: !!variantId 
+        hasVariantId: !!variantId,
+        shop,
+        productId
       })
     }
 
@@ -177,7 +207,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         productId: productId,
         status: 'pending',
         draftOrderId: draftOrder?.draft_order?.id,
-        draftOrderName: draftOrder?.draft_order?.name
+        draftOrderName: draftOrder?.draft_order?.name,
+        draftOrderCreated: !!draftOrder,
+        draftOrderError: draftOrderError
+      },
+      debug: {
+        hasAccessToken: !!accessToken,
+        hasVariantId: !!variantId,
+        shop,
+        savedToDatabase: !!savedPreorder
       }
     })
 

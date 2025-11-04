@@ -123,12 +123,65 @@
 
   // 获取产品信息
   function getProductInfo() {
-    const productId = window.meta?.product?.id || 
-                     document.querySelector('[data-product-id]')?.dataset.productId ||
-                     new URLSearchParams(window.location.search).get('product');
+    // 尝试多种方式获取 productId
+    let productId = null;
     
-    const variantId = new URLSearchParams(window.location.search).get('variant') ||
-                     window.meta?.product?.variants?.[0]?.id;
+    // 方法1: 从 window.meta
+    if (window.meta?.product?.id) {
+      productId = window.meta.product.id;
+    }
+    
+    // 方法2: 从 data 属性
+    if (!productId) {
+      const productEl = document.querySelector('[data-product-id]');
+      if (productEl) {
+        productId = productEl.dataset.productId;
+      }
+    }
+    
+    // 方法3: 从 URL
+    if (!productId) {
+      productId = new URLSearchParams(window.location.search).get('product');
+    }
+    
+    // 方法4: 从 Shopify 全局对象
+    if (!productId && window.ShopifyAnalytics?.meta?.product?.id) {
+      productId = window.ShopifyAnalytics.meta.product.id;
+    }
+    
+    // 尝试多种方式获取 variantId
+    let variantId = null;
+    
+    // 方法1: 从 URL 参数
+    variantId = new URLSearchParams(window.location.search).get('variant');
+    
+    // 方法2: 从选中的变体
+    if (!variantId) {
+      const variantSelect = document.querySelector('select[name="id"]');
+      if (variantSelect) {
+        variantId = variantSelect.value;
+      }
+    }
+    
+    // 方法3: 从隐藏的 input
+    if (!variantId) {
+      const variantInput = document.querySelector('input[name="id"]');
+      if (variantInput) {
+        variantId = variantInput.value;
+      }
+    }
+    
+    // 方法4: 从 window.meta
+    if (!variantId && window.meta?.product?.variants?.[0]?.id) {
+      variantId = window.meta.product.variants[0].id;
+    }
+    
+    // 方法5: 从 Shopify 全局对象
+    if (!variantId && window.ShopifyAnalytics?.meta?.product?.variants?.[0]?.id) {
+      variantId = window.ShopifyAnalytics.meta.product.variants[0].id;
+    }
+    
+    log('📦 Product Info:', { productId, variantId });
 
     return { productId, variantId };
   }
@@ -170,7 +223,41 @@
   // 处理预购点击
   async function handlePreorderClick(productId, variantId) {
     log('🛒 PreOrder button clicked', { productId, variantId });
-    showPreorderModal();
+    
+    // 显示输入表单
+    showPreorderForm(productId, variantId);
+  }
+  
+  // 提交预购到后端
+  async function submitPreorder(productId, variantId, email, name) {
+    try {
+      const response = await fetch(`${CONFIG.apiUrl}/preorder/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          shop: CONFIG.shop,
+          productId: productId,
+          variantId: variantId,
+          email: email,
+          name: name
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        log('✅ Preorder submitted successfully', result);
+        return { success: true, data: result };
+      } else {
+        log('❌ Preorder submission failed', result);
+        return { success: false, error: result.error || 'Unknown error' };
+      }
+    } catch (error) {
+      log('❌ Preorder submission error', error);
+      return { success: false, error: error.message };
+    }
   }
 
   // 创建预购徽章
@@ -181,8 +268,123 @@
     return badge;
   }
 
-  // 显示预购模态框
-  function showPreorderModal() {
+  // 显示预购表单
+  function showPreorderForm(productId, variantId) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      background: rgba(0, 0, 0, 0.5) !important;
+      z-index: 10000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      animation: fadeIn 0.3s ease-out !important;
+    `;
+
+    const content = document.createElement('div');
+    content.style.cssText = `
+      background: white !important;
+      padding: 40px !important;
+      border-radius: 12px !important;
+      max-width: 400px !important;
+      width: 90% !important;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    `;
+
+    content.innerHTML = `
+      <div style="font-size: 48px; margin-bottom: 20px; text-align: center;">🛒</div>
+      <h2 style="color: #333; margin-bottom: 16px; font-size: 24px; text-align: center;">预购商品</h2>
+      <p style="color: #666; margin-bottom: 24px; line-height: 1.5; text-align: center;">
+        商品到货后我们会立即通知您
+      </p>
+      <form id="preorder-form" style="text-align: left;">
+        <div style="margin-bottom: 16px;">
+          <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">邮箱 *</label>
+          <input type="email" id="preorder-email" required 
+                 style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;"
+                 placeholder="your@email.com">
+        </div>
+        <div style="margin-bottom: 24px;">
+          <label style="display: block; margin-bottom: 8px; color: #333; font-weight: 500;">姓名</label>
+          <input type="text" id="preorder-name" 
+                 style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;"
+                 placeholder="您的姓名（可选）">
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <button type="button" id="cancel-btn"
+                  style="flex: 1; background: #f5f5f5; color: #666; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+            取消
+          </button>
+          <button type="submit" id="submit-btn"
+                  style="flex: 1; background: #ff6b35; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+            提交预购
+          </button>
+        </div>
+        <div id="preorder-message" style="margin-top: 16px; padding: 12px; border-radius: 6px; display: none;"></div>
+      </form>
+    `;
+
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+
+    // 绑定事件
+    const form = content.querySelector('#preorder-form');
+    const cancelBtn = content.querySelector('#cancel-btn');
+    const submitBtn = content.querySelector('#submit-btn');
+    const messageDiv = content.querySelector('#preorder-message');
+
+    cancelBtn.addEventListener('click', () => {
+      modal.remove();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = content.querySelector('#preorder-email').value;
+      const name = content.querySelector('#preorder-name').value;
+
+      // 禁用提交按钮
+      submitBtn.disabled = true;
+      submitBtn.textContent = '提交中...';
+
+      // 提交预购
+      const result = await submitPreorder(productId, variantId, email, name);
+
+      if (result.success) {
+        messageDiv.style.display = 'block';
+        messageDiv.style.background = '#d4edda';
+        messageDiv.style.color = '#155724';
+        messageDiv.textContent = '✅ 预购成功！我们会在商品到货时通知您。';
+        
+        setTimeout(() => {
+          modal.remove();
+        }, 3000);
+      } else {
+        messageDiv.style.display = 'block';
+        messageDiv.style.background = '#f8d7da';
+        messageDiv.style.color = '#721c24';
+        messageDiv.textContent = '❌ 提交失败：' + (result.error || '请稍后重试');
+        
+        submitBtn.disabled = false;
+        submitBtn.textContent = '提交预购';
+      }
+    });
+
+    // 点击背景关闭
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+  }
+  
+  // 显示成功模态框
+  function showSuccessModal() {
     const modal = document.createElement('div');
     modal.style.cssText = `
       position: fixed !important;
@@ -214,10 +416,7 @@
       <div style="font-size: 48px; margin-bottom: 20px;">🎉</div>
       <h2 style="color: #333; margin-bottom: 16px; font-size: 24px;">预购成功！</h2>
       <p style="color: #666; margin-bottom: 24px; line-height: 1.5;">
-        恭喜！App Embed Block 预购功能完美运行！<br>
-        <strong>✅ 无需手动修改主题代码</strong><br>
-        <strong>✅ 自动适配所有主题</strong><br>
-        <strong>✅ 用户只需一键启用</strong>
+        我们会在商品到货时通过邮件通知您
       </p>
       <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" 
               style="background: #ff6b35; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">
