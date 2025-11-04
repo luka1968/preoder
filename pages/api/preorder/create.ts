@@ -94,9 +94,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (accessToken && variantId) {
       try {
         console.log('📝 创建 Shopify Draft Order...')
+        console.log('使用参数:', { shop, variantId, email, name })
+        
+        // 确保 variantId 是数字类型
+        const numericVariantId = parseInt(variantId.toString().replace(/\D/g, ''), 10)
         
         const draftOrderResponse = await fetch(
-          `https://${shop}/admin/api/2024-01/draft_orders.json`,
+          `https://${shop}/admin/api/2023-10/draft_orders.json`,
           {
             method: 'POST',
             headers: {
@@ -107,7 +111,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               draft_order: {
                 line_items: [
                   {
-                    variant_id: variantId,
+                    variant_id: numericVariantId,
                     quantity: 1,
                   }
                 ],
@@ -129,21 +133,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           
           // 更新数据库记录，关联 draft order ID
           if (savedPreorder) {
-            await supabaseAdmin
+            const updateResult = await supabaseAdmin
               .from('preorders')
               .update({ 
-                shopify_draft_order_id: draftOrder.draft_order.id,
+                shopify_draft_order_id: draftOrder.draft_order.id.toString(),
                 shopify_draft_order_name: draftOrder.draft_order.name
               })
               .eq('id', savedPreorder.id)
+            
+            if (updateResult.error) {
+              console.error('❌ 更新数据库失败:', updateResult.error)
+            } else {
+              console.log('✅ 数据库更新成功')
+            }
           }
         } else {
           const errorText = await draftOrderResponse.text()
           console.error('❌ Draft Order 创建失败:', errorText)
+          console.error('请求详情:', {
+            url: `https://${shop}/admin/api/2023-10/draft_orders.json`,
+            variantId: numericVariantId,
+            email,
+            hasAccessToken: !!accessToken
+          })
         }
       } catch (draftError) {
         console.error('❌ Draft Order 异常:', draftError)
       }
+    } else {
+      console.log('⚠️ 跳过 Draft Order 创建:', { 
+        hasAccessToken: !!accessToken, 
+        hasVariantId: !!variantId 
+      })
     }
 
     // 返回成功响应
