@@ -11,8 +11,7 @@ scopes = "write_products,read_products,write_orders,read_orders,write_customers,
 
 [auth]
 redirect_urls = [
-  "https://shopmall.dpdns.org/api/auth/callback",
-  "https://shopmall.dpdns.org/api/auth/shopify/callback"
+  "https://shopmall.dpdns.org/api/auth/shopify"
 ]
 
 [webhooks]
@@ -56,8 +55,7 @@ backend = { command = "npm run dev", port = 3000 }
 
 [web.auth]
 redirect_urls = [
-  "https://shopmall.dpdns.org/api/auth/callback",
-  "https://shopmall.dpdns.org/api/auth/shopify/callback"
+  "https://shopmall.dpdns.org/api/auth/shopify"
 ]
 
 [web.application_url]
