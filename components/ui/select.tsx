@@ -20,3 +20,11 @@ export function Select({ value, onChange, children, className = '', disabled = f
     </select>
   )
 }
+
+// Additional exports for compatibility
+export const SelectTrigger = Select
+export const SelectValue = ({ children }: { children?: React.ReactNode }) => <>{children}</>
+export const SelectContent = ({ children }: { children: React.ReactNode }) => <>{children}</>
+export const SelectItem = ({ value, children }: { value: string; children: React.ReactNode }) => (
+  <option value={value}>{children}</option>
+)

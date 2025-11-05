@@ -38,3 +38,16 @@ export function CardContent({ children, className = '' }: CardContentProps) {
     </div>
   )
 }
+
+interface CardTitleProps {
+  children: React.ReactNode
+  className?: string
+}
+
+export function CardTitle({ children, className = '' }: CardTitleProps) {
+  return (
+    <h3 className={`text-lg font-semibold ${className}`}>
+      {children}
+    </h3>
+  )
+}
