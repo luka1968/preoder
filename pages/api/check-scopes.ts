@@ -18,12 +18,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .from('shops')
       .select('shop_domain, scope')
       .eq('shop_domain', shop)
-      .single()
+      .maybeSingle()
     
     if (shopError) {
+      return res.status(500).json({
+        error: '数据库查询错误',
+        details: shopError.message
+      })
+    }
+    
+    if (!shopData) {
       return res.status(404).json({
         error: '店铺未找到',
-        details: shopError.message
+        details: `店铺 ${shop} 未在数据库中找到，可能需要先安装应用`,
+        shop,
+        envScope,
+        envHasWriteDraftOrders
       })
     }
     
