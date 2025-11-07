@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 name = "PreOrder Pro"
-client_id = "61745622bf8d460b0b8c5132d951a388"
+client_id = "your_shopify_client_id_here"
 application_url = "https://shopmall.dpdns.org"
 embedded = true
 
@@ -11,7 +11,7 @@ scopes = "write_products,read_products,write_orders,read_orders,write_customers,
 
 [auth]
 redirect_urls = [
-  "https://shopmall.dpdns.org/api/auth/shopify"
+  "https://shopmall.dpdns.org/api/auth/callback"
 ]
 
 [webhooks]
@@ -55,7 +55,7 @@ backend = { command = "npm run dev", port = 3000 }
 
 [web.auth]
 redirect_urls = [
-  "https://shopmall.dpdns.org/api/auth/shopify"
+  "https://shopmall.dpdns.org/api/auth/callback"
 ]
 
 [web.application_url]
