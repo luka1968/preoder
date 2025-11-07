@@ -10,7 +10,7 @@
   // 获取配置
   const CONFIG = window.PREORDER_CONFIG || {
     shop: window.Shopify?.shop || window.location.hostname,
-    apiUrl: 'https://preorder-pro-fix.vercel.app/api',
+    apiUrl: 'https://shopmall.dpdns.org/api',
     enabled: true,
     debug: false
   };
