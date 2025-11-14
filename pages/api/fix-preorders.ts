@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // 1. 获取预购记录
     const { data: preorder, error: preorderError } = await supabaseAdmin
-      .from('preorders')
+      .from('preorder_orders')
       .select('*')
       .eq('id', preorderId)
       .single()
@@ -110,10 +110,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // 6. 更新数据库
     const { error: updateError } = await supabaseAdmin
-      .from('preorders')
+      .from('preorder_orders')
       .update({
-        shopify_draft_order_id: draftOrder.draft_order.id.toString(),
-        shopify_draft_order_name: draftOrder.draft_order.name,
+        shopify_order_id: draftOrder.draft_order.id.toString(),
         updated_at: new Date().toISOString()
       })
       .eq('id', preorderId)

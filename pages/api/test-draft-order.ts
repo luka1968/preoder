@@ -153,16 +153,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log('💾 保存到数据库...')
     
     const { data: preorder, error: preorderError } = await supabaseAdmin
-      .from('preorders')
+      .from('preorder_orders')
       .insert([{
-        shop_domain: shop,
+        shop_id: shopData.id,
         product_id: draftOrder.draft_order.line_items[0].product_id.toString(),
         variant_id: variantId,
         customer_email: email,
-        customer_name: name || null,
-        status: 'pending',
-        shopify_draft_order_id: draftOrder.draft_order.id.toString(),
-        shopify_draft_order_name: draftOrder.draft_order.name,
+        total_amount: (draftOrder.draft_order.line_items[0].quantity * draftOrder.draft_order.line_items[0].price).toString(),
+        paid_amount: '0.00',
+        payment_status: 'pending',
+        fulfillment_status: 'pending',
+        shopify_order_id: draftOrder.draft_order.id.toString(),
+        order_tags: [],
         created_at: new Date().toISOString()
       }])
       .select()

@@ -43,28 +43,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: '邮箱格式不正确' })
     }
 
-    // 获取店铺的 access token
+    // 获取店铺的 ID 和 access token
     const { data: shopData, error: shopError } = await supabaseAdmin
       .from('shops')
-      .select('access_token')
+      .select('id, access_token')
       .eq('shop_domain', shop)
       .single()
 
     if (shopError || !shopData) {
       console.error('❌ 店铺未找到:', shop)
-      // 即使找不到店铺，也保存预购记录
+      return res.status(404).json({ error: '店铺未找到' })
     }
 
-    const accessToken = shopData?.access_token
+    const shopId = shopData.id
+    const accessToken = shopData.access_token
 
-    // 创建预购记录到数据库
+    // 创建预购订单记录到数据库 (使用preorder_orders表)
     const preorderData = {
-      shop_domain: shop,
+      shop_id: shopId,
       product_id: productId,
       variant_id: variantId || null,
       customer_email: email,
-      customer_name: name || null,
-      status: 'pending',
+      total_amount: '0.00',
+      paid_amount: '0.00',
+      payment_status: 'pending',
+      fulfillment_status: 'pending',
+      order_tags: [],
       created_at: new Date().toISOString()
     }
 
@@ -74,7 +78,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let savedPreorder = null
     try {
       const { data, error } = await supabaseAdmin
-        .from('preorders')
+        .from('preorder_orders')
         .insert([preorderData])
         .select()
         .single()
@@ -148,10 +152,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           // 更新数据库记录，关联 draft order ID
           if (savedPreorder) {
             const updateResult = await supabaseAdmin
-              .from('preorders')
+              .from('preorder_orders')
               .update({ 
-                shopify_draft_order_id: draftOrder.draft_order.id.toString(),
-                shopify_draft_order_name: draftOrder.draft_order.name,
+                shopify_order_id: draftOrder.draft_order.id.toString(),
                 updated_at: new Date().toISOString()
               })
               .eq('id', savedPreorder.id)

@@ -12,7 +12,7 @@ export default async function handler(
   try {
     // 获取所有预购记录
     const { data, error } = await supabaseAdmin
-      .from('preorders')
+      .from('preorder_orders')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(100);

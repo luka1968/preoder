@@ -27,9 +27,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // 查询该店铺的预购记录数量
     const { count, error: countError } = await supabaseAdmin
-      .from('preorders')
+      .from('preorder_orders')
       .select('*', { count: 'exact', head: true })
-      .eq('shop_domain', shop)
+      .eq('shop_id', shopData.id)
 
     return res.status(200).json({
       found: true,

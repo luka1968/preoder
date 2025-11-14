@@ -26,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // 2. 检查最近的预购记录
     const { data: preorders, error: preordersError } = await supabaseAdmin
-      .from('preorders')
+      .from('preorder_orders')
       .select('*')
       .eq('shop_domain', shop)
       .order('created_at', { ascending: false })

@@ -70,19 +70,18 @@ async function createPreorderHandler(req: NextApiRequest, res: NextApiResponse) 
 
     // Create the preorder
     const { data: preorder, error: preorderError } = await supabaseAdmin
-      .from('preorders')
+      .from('preorder_orders')
       .insert({
         shop_id: shopId,
         product_id,
         variant_id,
         customer_email,
-        customer_name,
         total_amount,
-        deposit_amount: deposit_amount || total_amount,
-        remaining_amount: deposit_amount ? 
-          (parseFloat(total_amount) - parseFloat(deposit_amount)).toString() : '0',
+        paid_amount: deposit_amount || total_amount,
         payment_status: deposit_amount && parseFloat(deposit_amount) < parseFloat(total_amount) ? 
           'partial' : 'pending',
+        fulfillment_status: 'pending',
+        order_tags: [],
         created_at: new Date().toISOString()
       })
       .select()

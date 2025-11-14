@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     // 1. 获取所有预购记录
     const { data: preorders, error: preordersError } = await supabaseAdmin
-      .from('preorders')
+      .from('preorder_orders')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(10)
