@@ -2,6 +2,64 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import crypto from 'crypto'
 import { supabaseAdmin } from '../../../lib/supabase'
 
+// 自动注入预购脚本到商店
+async function autoInjectPreorderScript(shopDomain: string, accessToken: string) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://shopmall.dpdns.org'
+  const scriptUrl = `${appUrl}/universal-preorder.js`
+  
+  // 首先检查是否已经存在我们的脚本
+  const existingScripts = await getScriptTags(shopDomain, accessToken)
+  const ourScript = existingScripts.find((script: any) => 
+    script.src.includes('universal-preorder.js') || script.src.includes(appUrl)
+  )
+  
+  if (ourScript) {
+    console.log('PreOrder script already exists, skipping injection')
+    return
+  }
+  
+  // 创建新的script tag
+  const response = await fetch(`https://${shopDomain}/admin/api/2023-10/script_tags.json`, {
+    method: 'POST',
+    headers: {
+      'X-Shopify-Access-Token': accessToken,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      script_tag: {
+        event: 'onload',
+        src: scriptUrl,
+        display_scope: 'online_store'
+      }
+    })
+  })
+
+  if (!response.ok) {
+    const error = await response.text()
+    throw new Error(`Failed to create script tag: ${error}`)
+  }
+
+  const result = await response.json()
+  console.log('✅ PreOrder script tag created:', result.script_tag.id)
+  return result
+}
+
+// 获取现有的script tags
+async function getScriptTags(shopDomain: string, accessToken: string) {
+  const response = await fetch(`https://${shopDomain}/admin/api/2023-10/script_tags.json`, {
+    headers: {
+      'X-Shopify-Access-Token': accessToken,
+    }
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to get script tags')
+  }
+
+  const result = await response.json()
+  return result.script_tags || []
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -10,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { code, hmac, shop, state } = req.query
 
-    console.log('📥 OAuth回调接收:', { shop, hasCode: !!code, hasHmac: !!hmac })
+    console.log('📥 OAuth回调接收 (/api/auth/callback):', { shop, hasCode: !!code, hasHmac: !!hmac })
 
     // 验证必需参数
     if (!code || !shop || !hmac) {
@@ -19,6 +77,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const shopDomain = shop as string
+
+    // 验证店铺域名格式
+    if (!shopDomain.match(/^[a-zA-Z0-9][a-zA-Z0-9\-]*\.myshopify\.com$/)) {
+      return res.status(400).json({ error: 'Invalid shop domain' })
+    }
 
     // 验证 HMAC
     const apiSecret = process.env.SHOPIFY_API_SECRET
@@ -98,6 +161,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     console.log('✅ 保存到数据库成功:', shopDomain)
+
+    // 自动注入预购脚本到商店
+    try {
+      await autoInjectPreorderScript(shopDomain, access_token)
+      console.log('✅ PreOrder script auto-injected for:', shopDomain)
+    } catch (error) {
+      console.warn('⚠️ Failed to auto-inject PreOrder script for:', shopDomain, error)
+      // 不阻止安装流程，脚本注入失败不影响应用安装
+    }
 
     // 重定向到成功页面
     const appUrl = process.env.SHOPIFY_APP_URL || process.env.NEXT_PUBLIC_APP_URL
