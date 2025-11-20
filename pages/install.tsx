@@ -23,7 +23,7 @@ export default function Install() {
     }
 
     // 重定向到安装 API
-    window.location.href = `/api/auth/install?shop=${cleanDomain}`
+    window.location.href = `/api/auth/shopify?shop=${cleanDomain}`
   }
 
   return (

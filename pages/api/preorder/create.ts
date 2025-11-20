@@ -200,27 +200,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
     }
 
-    // 返回成功响应
-    return res.status(200).json({
-      success: true,
-      message: '预购提交成功！我们会在商品到货时通知您。',
-      preorder: {
-        id: savedPreorder?.id || `temp_${Date.now()}`,
-        email: email,
-        productId: productId,
-        status: 'pending',
-        draftOrderId: draftOrder?.draft_order?.id,
-        draftOrderName: draftOrder?.draft_order?.name,
-        draftOrderCreated: !!draftOrder,
-        draftOrderError: draftOrderError
-      },
-      debug: {
-        hasAccessToken: !!accessToken,
-        hasVariantId: !!variantId,
-        shop,
-        savedToDatabase: !!savedPreorder
-      }
-    })
+    // 根据 Draft Order 创建结果返回响应
+    if (draftOrderError) {
+      // 如果创建失败，返回 500 错误和详细信息
+      return res.status(500).json({
+        success: false,
+        error: '在 Shopify 中创建草稿订单失败。',
+        details: draftOrderError,
+        preorder_id: savedPreorder?.id
+      })
+    } else {
+      // 如果成功，返回 200 成功响应
+      return res.status(200).json({
+        success: true,
+        message: '预购提交成功！我们会在商品到货时通知您。',
+        preorder: {
+          id: savedPreorder?.id || `temp_${Date.now()}`,
+          email: email,
+          productId: productId,
+          status: 'pending',
+          draftOrderId: draftOrder?.draft_order?.id,
+          draftOrderName: draftOrder?.draft_order?.name,
+          draftOrderCreated: !!draftOrder,
+          draftOrderError: null
+        },
+        debug: {
+          hasAccessToken: !!accessToken,
+          hasVariantId: !!variantId,
+          shop,
+          savedToDatabase: !!savedPreorder
+        }
+      })
+    }
 
   } catch (error: any) {
     console.error('❌ 预购处理错误:', error)

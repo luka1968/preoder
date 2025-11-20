@@ -1,6 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { verifyWebhookSignature } from '../../../lib/shopify'
-import { supabaseAdmin } from '../../../lib/supabase'
+import { getRawBodyFromRequest } from '../../../lib/raw-body'
+import { handleAppUninstalled, verifyShopifyWebhook } from '../../../lib/webhooks'
+import { AppUninstalledWebhook } from '../../../types'
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -8,42 +15,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // 验证webhook签名
-    const isValid = verifyWebhookSignature(req.body, req.headers)
-    if (!isValid) {
-      console.error('Invalid webhook signature for app uninstall')
+    // Get raw body for verification
+    const rawBody = await getRawBodyFromRequest(req)
+    const rawBodyString = rawBody.toString('utf8')
+
+    // Verify webhook signature
+    if (!verifyShopifyWebhook(req, rawBodyString)) {
       return res.status(401).json({ error: 'Unauthorized' })
     }
 
     const shop = req.headers['x-shopify-shop-domain'] as string
-    console.log('🗑️ App uninstalled for shop:', shop)
+    const payload = JSON.parse(rawBodyString) as AppUninstalledWebhook
 
-    // 获取商店的access token
-    const { data: shopData } = await supabaseAdmin
-      .from('shops')
-      .select('access_token')
-      .eq('shop_domain', shop)
-      .single()
-
-    if (shopData?.access_token) {
-      // 自动删除我们注入的script tag
-      try {
-        await autoRemovePreorderScript(shop, shopData.access_token)
-        console.log('✅ PreOrder script auto-removed for:', shop)
-      } catch (error) {
-        console.warn('⚠️ Failed to auto-remove PreOrder script for:', shop, error)
-      }
+    if (!shop) {
+      return res.status(400).json({ error: 'Missing shop domain' })
     }
 
-    // 删除商店数据（可选，根据需求决定）
-    await supabaseAdmin
-      .from('shops')
-      .delete()
-      .eq('shop_domain', shop)
+    // Handle the app uninstalled event using the centralized handler
+    await handleAppUninstalled(payload, shop)
 
-    console.log('✅ Shop data cleaned up for:', shop)
+    // Additional cleanup if needed (script tag removal logic can be moved to handleAppUninstalled if not already there)
+    // For now, we'll keep the centralized handler logic which marks shop as inactive
+
     res.status(200).json({ success: true })
-
   } catch (error) {
     console.error('App uninstall webhook error:', error)
     res.status(500).json({ error: 'Internal server error' })
@@ -53,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 // 自动删除预购脚本
 async function autoRemovePreorderScript(shopDomain: string, accessToken: string) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://preorder-pro-fix.vercel.app'
-  
+
   // 获取所有script tags
   const response = await fetch(`https://${shopDomain}/admin/api/2023-10/script_tags.json`, {
     headers: {
@@ -69,7 +63,7 @@ async function autoRemovePreorderScript(shopDomain: string, accessToken: string)
   const scriptTags = result.script_tags || []
 
   // 找到我们的script tag
-  const ourScriptTag = scriptTags.find((tag: any) => 
+  const ourScriptTag = scriptTags.find((tag: any) =>
     tag.src.includes(appUrl) || tag.src.includes('universal-preorder.js')
   )
 

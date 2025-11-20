@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { 
-  getShopByDomain, 
-  getBackInStockSubscriptions, 
+import {
+  getShopByDomain,
+  getBackInStockSubscriptions,
   updateSubscriptionStatus,
   createPreorderOrder,
   updatePreorderOrder,
@@ -9,24 +9,26 @@ import {
   updateShop,
   supabaseAdmin
 } from './supabase'
-import { 
+import {
   sendPreorderConfirmation
 } from './brevo-email'
 import {
   sendBulkBackInStockNotifications
 } from './email'
 import { verifyWebhookSignature, createWebhook, getWebhooks, deleteWebhook } from './shopify'
-import { 
-  ProductUpdateWebhook, 
-  OrderCreateWebhook, 
-  OrderUpdateWebhook, 
-  AppUninstalledWebhook 
+import {
+  ProductUpdateWebhook,
+  OrderCreateWebhook,
+  OrderUpdateWebhook,
+  AppUninstalledWebhook
 } from '../types'
 
 // Webhook verification middleware
-export function verifyShopifyWebhook(req: NextApiRequest): boolean {
+export function verifyShopifyWebhook(req: NextApiRequest, rawBody?: string): boolean {
   const signature = req.headers['x-shopify-hmac-sha256'] as string
-  const body = JSON.stringify(req.body)
+
+  // Use provided raw body or fallback to JSON.stringify (which is unreliable)
+  const body = rawBody || JSON.stringify(req.body)
 
   if (!signature) {
     console.error('Missing webhook signature')
@@ -57,7 +59,7 @@ export async function handleProductUpdate(payload: ProductUpdateWebhook, shop: s
       const hasInventory = variant.inventory_quantity > 0
       const allowsOverselling = variant.inventory_policy === 'continue'
       const isTracked = variant.inventory_management !== null
-      
+
       return !isTracked || hasInventory || allowsOverselling
     })
 
@@ -90,8 +92,8 @@ export async function handleProductUpdate(payload: ProductUpdateWebhook, shop: s
 }
 
 async function processVariantBackInStock(
-  shopId: string, 
-  product: ProductUpdateWebhook, 
+  shopId: string,
+  product: ProductUpdateWebhook,
   variant: any
 ): Promise<void> {
   try {
@@ -156,7 +158,7 @@ export async function handleOrderCreate(payload: OrderCreateWebhook, shop: strin
 
     // Check if this is a pre-order (look for pre-order tags or line item properties)
     const isPreorder = isPreorderOrder(payload)
-    
+
     if (!isPreorder) {
       console.log(`Order ${payload.id} is not a pre-order`)
       return
@@ -201,7 +203,7 @@ function isPreorderOrder(order: OrderCreateWebhook): boolean {
 function isPreorderLineItem(lineItem: any): boolean {
   // Check line item properties for pre-order indicators
   if (lineItem.properties) {
-    return lineItem.properties.some((prop: any) => 
+    return lineItem.properties.some((prop: any) =>
       prop.name.toLowerCase().includes('preorder') ||
       prop.name.toLowerCase().includes('pre-order') ||
       prop.value.toLowerCase().includes('preorder')
@@ -248,8 +250,8 @@ async function processPreorderLineItem(
     })
 
     // Send pre-order confirmation email
-    const customerName = order.customer ? 
-      `${order.customer.first_name} ${order.customer.last_name}`.trim() : 
+    const customerName = order.customer ?
+      `${order.customer.first_name} ${order.customer.last_name}`.trim() :
       'Customer'
 
     await sendPreorderConfirmation(
@@ -398,7 +400,7 @@ export async function handleAppUninstalled(payload: AppUninstalledWebhook, shop:
     )
 
     // Mark shop as inactive instead of deleting (for data retention)
-    await updateShop(shopData.id, { 
+    await updateShop(shopData.id, {
       active: false,
       updated_at: new Date().toISOString()
     })
@@ -406,7 +408,7 @@ export async function handleAppUninstalled(payload: AppUninstalledWebhook, shop:
     // Optionally: Cancel all active subscriptions
     await supabaseAdmin
       .from('back_in_stock_subscriptions')
-      .update({ 
+      .update({
         status: 'cancelled',
         updated_at: new Date().toISOString()
       })
@@ -524,9 +526,9 @@ export async function registerWebhooks(accessToken: string, shop: string): Promi
 export async function cleanupWebhooks(accessToken: string, shop: string): Promise<void> {
   try {
     const existingWebhooks = await getWebhooks(accessToken, shop)
-    
+
     // Filter webhooks created by this app
-    const appWebhooks = existingWebhooks.filter(webhook => 
+    const appWebhooks = existingWebhooks.filter(webhook =>
       webhook.address.includes(process.env.SHOPIFY_APP_URL || '')
     )
 

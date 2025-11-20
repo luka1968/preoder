@@ -2,19 +2,31 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { handleOrderUpdate, verifyShopifyWebhook } from '../../../../lib/webhooks'
 import { OrderUpdateWebhook } from '../../../../types'
 
+import { getRawBodyFromRequest } from '../../../../lib/raw-body'
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
   try {
+    // Get raw body for verification
+    const rawBody = await getRawBodyFromRequest(req)
+    const rawBodyString = rawBody.toString('utf8')
+
     // Verify webhook signature
-    if (!verifyShopifyWebhook(req)) {
+    if (!verifyShopifyWebhook(req, rawBodyString)) {
       return res.status(401).json({ error: 'Unauthorized' })
     }
 
     const shop = req.headers['x-shopify-shop-domain'] as string
-    const payload = req.body as OrderUpdateWebhook
+    const payload = JSON.parse(rawBodyString) as OrderUpdateWebhook
 
     if (!shop) {
       return res.status(400).json({ error: 'Missing shop domain' })

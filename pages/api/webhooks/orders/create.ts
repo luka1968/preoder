@@ -1,6 +1,15 @@
 import { NextApiRequest, NextApiResponse } from 'next'
+
 import { handleOrderCreate, verifyShopifyWebhook } from '../../../../lib/webhooks'
+import { getRawBodyFromRequest } from '../../../../lib/raw-body'
+
 import { OrderCreateWebhook } from '../../../../types'
+
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -8,13 +17,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    // Get raw body for verification
+    const rawBody = await getRawBodyFromRequest(req)
+    const rawBodyString = rawBody.toString('utf8')
+
     // Verify webhook signature
-    if (!verifyShopifyWebhook(req)) {
+    if (!verifyShopifyWebhook(req, rawBodyString)) {
       return res.status(401).json({ error: 'Unauthorized' })
     }
 
     const shop = req.headers['x-shopify-shop-domain'] as string
-    const payload = req.body as OrderCreateWebhook
+    const payload = JSON.parse(rawBodyString) as OrderCreateWebhook
 
     if (!shop) {
       return res.status(400).json({ error: 'Missing shop domain' })

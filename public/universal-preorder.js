@@ -2,7 +2,7 @@
 // 这个文件需要可以通过 https://your-app.vercel.app/universal-preorder.js 访问
 
 // 直接加载修复后的脚本
-(function() {
+(function () {
   'use strict';
 
   console.log('🚀 PreOrder Universal Widget (App Embed) Loading...');
@@ -65,16 +65,16 @@
   // 检测售罄状态
   function detectSoldOutStatus() {
     log('🔍 Detecting sold out status...');
-    
+
     // 方法1: 检查disabled按钮的文本
     const buttons = document.querySelectorAll(SOLD_OUT_SELECTORS.join(', '));
     for (let button of buttons) {
       const text = (button.textContent || button.value || '').toLowerCase();
-      if (text.includes('sold out') || 
-          text.includes('unavailable') || 
-          text.includes('out of stock') ||
-          text.includes('缺货') ||
-          text.includes('售罄')) {
+      if (text.includes('sold out') ||
+        text.includes('unavailable') ||
+        text.includes('out of stock') ||
+        text.includes('缺货') ||
+        text.includes('售罄')) {
         log('✅ Found sold out button:', button);
         return { isSoldOut: true, button: button };
       }
@@ -84,14 +84,14 @@
     if (window.meta?.product?.variants) {
       const variants = window.meta.product.variants;
       const currentVariantId = new URLSearchParams(window.location.search).get('variant');
-      
+
       let targetVariant = null;
       if (currentVariantId) {
         targetVariant = variants.find(v => v.id.toString() === currentVariantId);
       } else {
         targetVariant = variants[0]; // 默认变体
       }
-      
+
       if (targetVariant) {
         // 修复：更宽松的库存检测逻辑
         const isOutOfStock = (
@@ -102,7 +102,7 @@
           // 检查库存管理且库存为0
           (targetVariant.inventory_management && targetVariant.inventory_quantity <= 0)
         );
-        
+
         if (isOutOfStock) {
           log('✅ Variant sold out via Shopify data:', targetVariant);
           log('📊 Inventory details:', {
@@ -125,63 +125,116 @@
   function getProductInfo() {
     // 尝试多种方式获取 productId
     let productId = null;
-    
+
     // 方法1: 从 window.meta
     if (window.meta?.product?.id) {
       productId = window.meta.product.id;
+      log('✅ productId from window.meta:', productId);
     }
-    
+
     // 方法2: 从 data 属性
     if (!productId) {
       const productEl = document.querySelector('[data-product-id]');
       if (productEl) {
         productId = productEl.dataset.productId;
+        log('✅ productId from data-product-id:', productId);
       }
     }
-    
+
     // 方法3: 从 URL
     if (!productId) {
       productId = new URLSearchParams(window.location.search).get('product');
+      if (productId) log('✅ productId from URL:', productId);
     }
-    
+
     // 方法4: 从 Shopify 全局对象
     if (!productId && window.ShopifyAnalytics?.meta?.product?.id) {
       productId = window.ShopifyAnalytics.meta.product.id;
+      log('✅ productId from ShopifyAnalytics:', productId);
     }
-    
+
     // 尝试多种方式获取 variantId
     let variantId = null;
-    
+
     // 方法1: 从 URL 参数
     variantId = new URLSearchParams(window.location.search).get('variant');
-    
-    // 方法2: 从选中的变体
+    if (variantId) {
+      log('✅ variantId from URL:', variantId);
+    }
+
+    // 方法2: 从选中的变体 select
     if (!variantId) {
       const variantSelect = document.querySelector('select[name="id"]');
       if (variantSelect) {
         variantId = variantSelect.value;
+        log('✅ variantId from select[name="id"]:', variantId);
       }
     }
-    
+
     // 方法3: 从隐藏的 input
     if (!variantId) {
       const variantInput = document.querySelector('input[name="id"]');
       if (variantInput) {
         variantId = variantInput.value;
+        log('✅ variantId from input[name="id"]:', variantInput.value);
       }
     }
-    
-    // 方法4: 从 window.meta
-    if (!variantId && window.meta?.product?.variants?.[0]?.id) {
-      variantId = window.meta.product.variants[0].id;
+
+    // 方法4: 从 window.meta 当前选中的变体
+    if (!variantId && window.meta?.product?.variants) {
+      const variants = window.meta.product.variants;
+      // 尝试从 URL 参数获取
+      const urlVariantId = new URLSearchParams(window.location.search).get('variant');
+      if (urlVariantId) {
+        variantId = urlVariantId;
+        log('✅ variantId from URL (meta check):', variantId);
+      } else if (variants.length > 0) {
+        // 使用第一个可用的变体
+        variantId = variants[0].id;
+        log('✅ variantId from first variant:', variantId);
+      }
     }
-    
+
     // 方法5: 从 Shopify 全局对象
     if (!variantId && window.ShopifyAnalytics?.meta?.product?.variants?.[0]?.id) {
       variantId = window.ShopifyAnalytics.meta.product.variants[0].id;
+      log('✅ variantId from ShopifyAnalytics:', variantId);
     }
-    
-    log('📦 Product Info:', { productId, variantId });
+
+    // 方法6: 从 product form 的 data 属性
+    if (!variantId) {
+      const productForm = document.querySelector('form[action*="/cart/add"]');
+      if (productForm) {
+        const variantInput = productForm.querySelector('input[name="id"], select[name="id"]');
+        if (variantInput) {
+          variantId = variantInput.value;
+          log('✅ variantId from product form:', variantId);
+        }
+      }
+    }
+
+    // 方法7: 从 Shopify.theme 全局对象（某些主题）
+    if (!variantId && typeof Shopify !== 'undefined' && Shopify.theme) {
+      // 某些主题会在这里存储当前选中的变体
+      if (Shopify.theme.selectedVariantId) {
+        variantId = Shopify.theme.selectedVariantId;
+        log('✅ variantId from Shopify.theme:', variantId);
+      }
+    }
+
+    // 警告：如果没有 variantId
+    if (!variantId) {
+      console.warn('⚠️ 无法获取 variantId - Draft Order 可能无法创建！');
+      console.warn('调试信息:', {
+        hasWindowMeta: !!window.meta,
+        hasShopifyAnalytics: !!window.ShopifyAnalytics,
+        hasProductForm: !!document.querySelector('form[action*="/cart/add"]'),
+        hasVariantSelect: !!document.querySelector('select[name="id"]'),
+        hasVariantInput: !!document.querySelector('input[name="id"]')
+      });
+    }
+
+    log('📦 最终产品信息:', { productId, variantId });
 
     return { productId, variantId };
   }
@@ -198,7 +251,7 @@
     // 点击事件
     button.addEventListener('click', async (e) => {
       e.preventDefault();
-      
+
       // 添加点击动画
       button.style.transform = 'scale(0.98)';
       setTimeout(() => {
@@ -207,7 +260,7 @@
 
       // 获取产品信息
       const { productId, variantId } = getProductInfo();
-      
+
       // 调用预购API或显示预购表单
       try {
         await handlePreorderClick(productId, variantId);
@@ -223,11 +276,11 @@
   // 处理预购点击
   async function handlePreorderClick(productId, variantId) {
     log('🛒 PreOrder button clicked', { productId, variantId });
-    
+
     // 显示输入表单
     showPreorderForm(productId, variantId);
   }
-  
+
   // 提交预购到后端
   async function submitPreorder(productId, variantId, email, name) {
     try {
@@ -244,9 +297,9 @@
           name: name
         })
       });
-      
+
       const result = await response.json();
-      
+
       if (response.ok && result.success) {
         log('✅ Preorder submitted successfully', result);
         return { success: true, data: result };
@@ -344,7 +397,7 @@
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       const email = content.querySelector('#preorder-email').value;
       const name = content.querySelector('#preorder-name').value;
 
@@ -360,7 +413,7 @@
         messageDiv.style.background = '#d4edda';
         messageDiv.style.color = '#155724';
         messageDiv.textContent = '✅ 预购成功！我们会在商品到货时通知您。';
-        
+
         setTimeout(() => {
           modal.remove();
         }, 3000);
@@ -369,7 +422,7 @@
         messageDiv.style.background = '#f8d7da';
         messageDiv.style.color = '#721c24';
         messageDiv.textContent = '❌ 提交失败：' + (result.error || '请稍后重试');
-        
+
         submitBtn.disabled = false;
         submitBtn.textContent = '提交预购';
       }
@@ -382,7 +435,7 @@
       }
     });
   }
-  
+
   // 显示成功模态框
   function showSuccessModal() {
     const modal = document.createElement('div');
@@ -438,10 +491,10 @@
   // 主要的初始化函数
   function initPreorderWidget() {
     log('🚀 Initializing PreOrder Widget via App Embed...');
-    
+
     // 检测售罄状态
     const status = detectSoldOutStatus();
-    
+
     if (!status.isSoldOut) {
       log('❌ Product is available, no preorder needed');
       return;
@@ -451,7 +504,7 @@
 
     // 创建并插入预购按钮
     const preorderButton = createPreorderButton();
-    
+
     if (status.button) {
       // 隐藏原按钮并插入预购按钮
       status.button.style.display = 'none';
@@ -470,7 +523,7 @@
         '.product-info',
         '.product-details'
       ];
-      
+
       let inserted = false;
       for (const selector of insertTargets) {
         const target = document.querySelector(selector);
@@ -481,7 +534,7 @@
           break;
         }
       }
-      
+
       if (!inserted) {
         log('⚠️ Could not find suitable insertion point');
       }
@@ -506,13 +559,13 @@
   function multipleInitAttempts() {
     let attempts = 0;
     const maxAttempts = 3;
-    
+
     function tryInit() {
       attempts++;
       log(`🔄 Initialization attempt ${attempts}/${maxAttempts}`);
-      
+
       const hasContent = document.querySelectorAll('button, input, .product').length > 0;
-      
+
       if (hasContent) {
         initPreorderWidget();
       } else if (attempts < maxAttempts) {
@@ -522,7 +575,7 @@
         log('❌ Max attempts reached');
       }
     }
-    
+
     tryInit();
   }
 
@@ -534,7 +587,7 @@
   }
 
   // 监听自定义事件
-  window.addEventListener('preorder:loaded', function(event) {
+  window.addEventListener('preorder:loaded', function (event) {
     log('📡 PreOrder loaded event received:', event.detail);
   });
 
