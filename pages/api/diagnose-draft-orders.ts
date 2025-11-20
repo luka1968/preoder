@@ -50,6 +50,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // 2. 检查最近的预购订单
         console.log('📊 检查最近的预购订单...')
+        let ordersWithoutVariantId: any[] = []
+
         if (shopData?.id) {
             const { data: recentOrders, error: ordersError } = await supabaseAdmin
                 .from('preorder_orders')
@@ -79,7 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     report.recommendations.push('检查前端是否传递了 variantId 参数')
                 }
 
-                const ordersWithoutVariantId = recentOrders?.filter(o => !o.variant_id) || []
+                ordersWithoutVariantId = recentOrders?.filter(o => !o.variant_id) || []
                 if (ordersWithoutVariantId.length > 0) {
                     report.issues.push(`⚠️ 有 ${ordersWithoutVariantId.length} 条订单缺少 variant_id`)
                     report.recommendations.push('修改前端脚本，确保获取并传递 variantId')
