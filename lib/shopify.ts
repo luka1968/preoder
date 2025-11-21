@@ -166,7 +166,7 @@ export function generateShopifyAuthUrl(shop: string): string {
   const scopes = process.env.SHOPIFY_SCOPES
   const redirectUri = `${process.env.SHOPIFY_APP_URL}/api/auth/shopify`
   const state = crypto.randomBytes(16).toString('hex')
-  
+
   const params = new URLSearchParams({
     client_id: apiKey!,
     scope: scopes!,
@@ -199,13 +199,15 @@ export async function exchangeCodeForToken(shop: string, code: string): Promise<
 }
 
 // Webhook verification
+// Per Shopify docs: Webhooks are signed with the App's Client Secret (SHOPIFY_API_SECRET)
+// Reference: https://shopify.dev/docs/apps/webhooks/configuration/https#step-5-verify-the-webhook
 export function verifyWebhookSignature(body: string, signature: string): boolean {
-  const webhookSecret = process.env.SHOPIFY_WEBHOOK_SECRET
-  if (!webhookSecret) {
-    throw new Error('SHOPIFY_WEBHOOK_SECRET is not configured')
+  const apiSecret = process.env.SHOPIFY_API_SECRET
+  if (!apiSecret) {
+    throw new Error('SHOPIFY_API_SECRET is not configured')
   }
 
-  const hmac = crypto.createHmac('sha256', webhookSecret)
+  const hmac = crypto.createHmac('sha256', apiSecret)
   hmac.update(body, 'utf8')
   const hash = hmac.digest('base64')
 
@@ -215,7 +217,7 @@ export function verifyWebhookSignature(body: string, signature: string): boolean
 // Product API functions
 export async function getShopifyProducts(accessToken: string, shop: string, limit = 50, page_info?: string): Promise<{ products: ShopifyProduct[], page_info?: string }> {
   let url = `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/products.json?limit=${limit}`
-  
+
   if (page_info) {
     url += `&page_info=${page_info}`
   }
@@ -231,11 +233,11 @@ export async function getShopifyProducts(accessToken: string, shop: string, limi
   }
 
   const data = await response.json()
-  
+
   // Extract pagination info from Link header
   const linkHeader = response.headers.get('Link')
   let nextPageInfo: string | undefined
-  
+
   if (linkHeader) {
     const nextMatch = linkHeader.match(/<[^>]*page_info=([^&>]+)[^>]*>;\s*rel="next"/)
     if (nextMatch) {
@@ -311,7 +313,7 @@ export async function getProductInventoryLevels(accessToken: string, shop: strin
   }
 
   const inventoryLevels = []
-  
+
   for (const variant of product.variants) {
     if (variant.inventory_item_id) {
       try {
@@ -613,8 +615,8 @@ export interface DraftOrder {
 
 // Draft Order API functions
 export async function createDraftOrder(
-  shop: string, 
-  accessToken: string, 
+  shop: string,
+  accessToken: string,
   draftOrderData: CreateDraftOrderData
 ): Promise<DraftOrder> {
   const response = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/draft_orders.json`, {
@@ -638,8 +640,8 @@ export async function createDraftOrder(
 }
 
 export async function getDraftOrder(
-  shop: string, 
-  accessToken: string, 
+  shop: string,
+  accessToken: string,
   draftOrderId: number
 ): Promise<DraftOrder> {
   const response = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/draft_orders/${draftOrderId}.json`, {
@@ -658,9 +660,9 @@ export async function getDraftOrder(
 }
 
 export async function updateDraftOrder(
-  shop: string, 
-  accessToken: string, 
-  draftOrderId: number, 
+  shop: string,
+  accessToken: string,
+  draftOrderId: number,
   updateData: Partial<CreateDraftOrderData>
 ): Promise<DraftOrder> {
   const response = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/draft_orders/${draftOrderId}.json`, {
@@ -684,8 +686,8 @@ export async function updateDraftOrder(
 }
 
 export async function completeDraftOrder(
-  shop: string, 
-  accessToken: string, 
+  shop: string,
+  accessToken: string,
   draftOrderId: number,
   paymentPending?: boolean
 ): Promise<DraftOrder> {
@@ -710,8 +712,8 @@ export async function completeDraftOrder(
 }
 
 export async function sendDraftOrderInvoice(
-  shop: string, 
-  accessToken: string, 
+  shop: string,
+  accessToken: string,
   draftOrderId: number,
   customMessage?: string
 ): Promise<DraftOrder> {
@@ -744,8 +746,8 @@ export async function sendDraftOrderInvoice(
 }
 
 export async function deleteDraftOrder(
-  shop: string, 
-  accessToken: string, 
+  shop: string,
+  accessToken: string,
   draftOrderId: number
 ): Promise<void> {
   const response = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/draft_orders/${draftOrderId}.json`, {
@@ -788,9 +790,9 @@ export interface CreateRefundData {
 }
 
 export async function createRefund(
-  shop: string, 
-  accessToken: string, 
-  orderId: number, 
+  shop: string,
+  accessToken: string,
+  orderId: number,
   refundData: CreateRefundData
 ): Promise<any> {
   const response = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/orders/${orderId}/refunds.json`, {

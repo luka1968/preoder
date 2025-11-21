@@ -11,7 +11,7 @@ export function verifyHmac(data: string, hmac: string, secret: string): boolean 
     .createHmac('sha256', secret)
     .update(data)
     .digest('hex')
-  
+
   return crypto.timingSafeEqual(
     Buffer.from(calculatedHmac, 'hex'),
     Buffer.from(hmac, 'hex')
@@ -20,16 +20,18 @@ export function verifyHmac(data: string, hmac: string, secret: string): boolean 
 
 /**
  * 验证Webhook HMAC签名
+ * Per Shopify docs: Webhooks are signed with the App's Client Secret (SHOPIFY_API_SECRET)
+ * Reference: https://shopify.dev/docs/apps/webhooks/configuration/https#step-5-verify-the-webhook
  */
 export function verifyWebhookHmac(body: string, signature: string): boolean {
-  const webhookSecret = process.env.SHOPIFY_WEBHOOK_SECRET
-  if (!webhookSecret) {
-    console.error('SHOPIFY_WEBHOOK_SECRET not configured')
+  const apiSecret = process.env.SHOPIFY_API_SECRET
+  if (!apiSecret) {
+    console.error('SHOPIFY_API_SECRET not configured')
     return false
   }
 
   const calculatedHmac = crypto
-    .createHmac('sha256', webhookSecret)
+    .createHmac('sha256', apiSecret)
     .update(body, 'utf8')
     .digest('base64')
 
@@ -44,7 +46,7 @@ export function verifyWebhookHmac(body: string, signature: string): boolean {
  */
 export function verifyOAuthCallback(query: Record<string, any>): boolean {
   const { hmac, ...params } = query
-  
+
   if (!hmac) return false
 
   // 构建查询字符串用于HMAC验证
@@ -69,7 +71,7 @@ export async function getAccessToken(shop: string, code: string): Promise<string
   try {
     const apiKey = process.env.SHOPIFY_API_KEY
     const apiSecret = process.env.SHOPIFY_API_SECRET
-    
+
     if (!apiKey || !apiSecret) {
       throw new Error('Missing Shopify API credentials')
     }
@@ -105,7 +107,7 @@ export async function saveShopData(shop: string, accessToken: string): Promise<b
   try {
     // 获取店铺信息
     const shopInfo = await getShopInfo(shop, accessToken)
-    
+
     const { error } = await supabaseAdmin
       .from('shops')
       .upsert({
@@ -162,13 +164,13 @@ export async function getShopInfo(shop: string, accessToken: string) {
 export function createSessionToken(shop: string): string {
   const jwt = require('jsonwebtoken')
   const secret = process.env.JWT_SECRET
-  
+
   if (!secret) {
     throw new Error('JWT_SECRET not configured')
   }
 
   return jwt.sign(
-    { 
+    {
       shop,
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24小时过期
@@ -184,7 +186,7 @@ export function verifySessionToken(token: string): { shop: string } | null {
   try {
     const jwt = require('jsonwebtoken')
     const secret = process.env.JWT_SECRET
-    
+
     if (!secret) {
       throw new Error('JWT_SECRET not configured')
     }
