@@ -4,13 +4,16 @@
 {% endcomment %}
 
 <script>
-  // PreOrder Pro 配置
+  // PreOrder Pro 配置 - Globo Mode
   window.PREORDER_CONFIG = {
     shop: '{{ shop.permanent_domain }}',
-    apiUrl: 'https://preorder-pro-fix.vercel.app/api',
+    apiUrl: 'https://shopmall.dpdns.org/api',
     enabled: true,
+    estimatedShippingDate: '2025-12-31',
+    showEstimatedDate: true,
     debug: true,
-    version: '1.0.0'
+    version: '2.0.0-globo',
+    mode: 'globo' // 使用 Globo 模式（购物车 → Checkout）
   };
   
   console.log('🚀 PreOrder Pro App Embed Block Loaded');
@@ -30,12 +33,13 @@
   
   window.PreOrderProLoaded = true;
   
-  // 动态加载预购脚本
+  // 动态加载预购脚本 - Globo Mode
   const script = document.createElement('script');
-  script.src = 'https://preorder-pro-fix.vercel.app/universal-preorder.js';
+  script.src = 'https://shopmall.dpdns.org/universal-preorder-globo-mode.js';
   script.async = true;
   script.onload = function() {
-    console.log('✅ PreOrder Universal Widget loaded via App Embed');
+    console.log('✅ PreOrder Globo Mode Widget loaded via App Embed');
+    console.log('🎯 使用 Globo 模式：购物车 → Checkout → 订单标记');
     
     // 触发自定义事件，通知脚本已加载
     if (window.dispatchEvent) {
@@ -135,7 +139,7 @@
   "settings": [
     {
       "type": "paragraph",
-      "content": "自动为缺货商品显示预购按钮，无需修改主题代码。"
+      "content": "🚀 Globo 模式：商品自动加入购物车并跳转到 Shopify Checkout，无需商家修改任何代码！"
     },
     {
       "type": "checkbox",
@@ -148,7 +152,7 @@
       "type": "text",
       "id": "api_url",
       "label": "API URL",
-      "default": "https://preorder-pro-fix.vercel.app/api",
+      "default": "https://shopmall.dpdns.org/api",
       "info": "预购API服务器地址"
     },
     {
