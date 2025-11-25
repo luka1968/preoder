@@ -52,14 +52,14 @@ export const DEFAULT_TRANSLATIONS = {
     'preorder.payment.deposit': '定金',
     'preorder.payment.remaining': '余款',
     'preorder.payment.due_later': '稍后支付',
-    'preorder.success.title': '预订成功！',
-    'preorder.success.message': '您将收到包含付款说明的邮件。',
+    'preorder.success.title': '预订成功�?,
+    'preorder.success.message': '您将收到包含付款说明的邮件�?,
     'preorder.error.title': '错误',
-    'preorder.error.email_required': '请输入您的邮箱地址以完成预订',
-    'preorder.countdown.days': '天',
+    'preorder.error.email_required': '请输入您的邮箱地址以完成预�?,
+    'preorder.countdown.days': '�?,
     'preorder.countdown.hours': '小时',
     'preorder.countdown.minutes': '分钟',
-    'preorder.countdown.seconds': '秒'
+    'preorder.countdown.seconds': '�?
   },
   'es': {
     'preorder.button.text': 'Pre-ordenar Ahora',

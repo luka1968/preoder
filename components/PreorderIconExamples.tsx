@@ -12,7 +12,7 @@ import {
   NotificationBell,
   EmailNotification,
   MessageChat,
-  // 状态图标
+  // 状态图�?
   CheckSuccess,
   WarningAlert,
   ErrorCross,
@@ -63,14 +63,14 @@ export default function PreorderIconExamples() {
         </div>
       </section>
 
-      {/* 商品状态徽章 */}
+      {/* 商品状态徽�?*/}
       <section className="bg-white rounded-lg border p-6">
-        <h2 className="text-xl font-semibold mb-4">商品状态徽章</h2>
+        <h2 className="text-xl font-semibold mb-4">商品状态徽�?/h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="flex items-center p-3 bg-blue-50 rounded-lg">
             <BadgePreorder size={20} className="mr-3 text-blue-600" />
             <div>
-              <h3 className="font-medium text-blue-900">预售中</h3>
+              <h3 className="font-medium text-blue-900">预售�?/h3>
               <p className="text-sm text-blue-700">Pre-order Available</p>
             </div>
           </div>
@@ -152,32 +152,32 @@ export default function PreorderIconExamples() {
             <MessageChat size={18} className="mr-3 text-purple-600" />
             <div>
               <p className="font-medium text-purple-900">客服消息</p>
-              <p className="text-sm text-purple-700">关于您的预售订单，客服为您解答</p>
+              <p className="text-sm text-purple-700">关于您的预售订单，客服为您解�?/p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 状态反馈 */}
+      {/* 状态反�?*/}
       <section className="bg-white rounded-lg border p-6">
-        <h2 className="text-xl font-semibold mb-4">状态反馈</h2>
+        <h2 className="text-xl font-semibold mb-4">状态反�?/h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center p-4 bg-green-50 rounded-lg">
             <CheckSuccess size={32} className="mx-auto mb-2 text-green-600" />
             <h3 className="font-medium text-green-900">预售成功</h3>
-            <p className="text-sm text-green-700">订单已确认</p>
+            <p className="text-sm text-green-700">订单已确�?/p>
           </div>
           
           <div className="text-center p-4 bg-yellow-50 rounded-lg">
             <WarningAlert size={32} className="mx-auto mb-2 text-yellow-600" />
             <h3 className="font-medium text-yellow-900">库存不足</h3>
-            <p className="text-sm text-yellow-700">仅剩5件商品</p>
+            <p className="text-sm text-yellow-700">仅剩5件商�?/p>
           </div>
           
           <div className="text-center p-4 bg-red-50 rounded-lg">
             <ErrorCross size={32} className="mx-auto mb-2 text-red-600" />
             <h3 className="font-medium text-red-900">支付失败</h3>
-            <p className="text-sm text-red-700">请重试支付</p>
+            <p className="text-sm text-red-700">请重试支�?/p>
           </div>
         </div>
       </section>
@@ -190,7 +190,7 @@ export default function PreorderIconExamples() {
             <div className="flex items-center p-4 bg-blue-50 rounded-lg">
               <CountdownTimer size={24} className="mr-4 text-blue-600" />
               <div>
-                <h3 className="font-medium text-blue-900">预售倒计时</h3>
+                <h3 className="font-medium text-blue-900">预售倒计�?/h3>
                 <p className="text-2xl font-bold text-blue-800">23:59:45</p>
                 <p className="text-sm text-blue-700">距离预售结束</p>
               </div>
@@ -210,15 +210,15 @@ export default function PreorderIconExamples() {
               <CalendarDate size={20} className="mr-3 text-green-600" />
               <div>
                 <p className="font-medium text-green-900">预计发货</p>
-                <p className="text-sm text-green-700">2024年10月15日</p>
+                <p className="text-sm text-green-700">2024�?0�?5�?/p>
               </div>
             </div>
             
             <div className="flex items-center p-4 bg-indigo-50 rounded-lg">
               <Truck size={20} className="mr-3 text-indigo-600" />
               <div>
-                <p className="font-medium text-indigo-900">物流状态</p>
-                <p className="text-sm text-indigo-700">准备发货中</p>
+                <p className="font-medium text-indigo-900">物流状�?/p>
+                <p className="text-sm text-indigo-700">准备发货�?/p>
               </div>
             </div>
           </div>
@@ -260,7 +260,7 @@ export default function PreorderIconExamples() {
               </div>
               <button className="btn-secondary text-sm">
                 <NotificationBell size={14} className="mr-1" />
-                提醒我
+                提醒�?
               </button>
             </div>
           </div>

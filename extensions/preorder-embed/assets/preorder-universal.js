@@ -26,7 +26,7 @@
     return;
   }
 
-  // 通用的售罄按钮选择器 - 覆盖所有可能的主题
+  // 通用的售罄按钮选择�?- 覆盖所有可能的主题
   const SOLD_OUT_SELECTORS = [
     'button[disabled]',
     'input[disabled]',
@@ -41,8 +41,7 @@
     '.shopify-payment-button__button--unbranded[disabled]'
   ];
 
-  // 产品图片容器选择器
-  const IMAGE_SELECTORS = [
+  // 产品图片容器选择�?  const IMAGE_SELECTORS = [
     '.product__media',
     '.product-single__photos',
     '.product__photos',
@@ -59,12 +58,10 @@
     '.product__photo'
   ];
 
-  // 检测售罄状态
-  function detectSoldOutStatus() {
+  // 检测售罄状�?  function detectSoldOutStatus() {
     log('🔍 Detecting sold out status...');
 
-    // 方法1: 检查disabled按钮的文本
-    const buttons = document.querySelectorAll(SOLD_OUT_SELECTORS.join(', '));
+    // 方法1: 检查disabled按钮的文�?    const buttons = document.querySelectorAll(SOLD_OUT_SELECTORS.join(', '));
     for (let button of buttons) {
       const text = (button.textContent || button.value || '').toLowerCase();
       if (text.includes('sold out') ||
@@ -72,7 +69,7 @@
         text.includes('out of stock') ||
         text.includes('缺货') ||
         text.includes('售罄')) {
-        log('✅ Found sold out button:', button);
+        log('�?Found sold out button:', button);
         return { isSoldOut: true, button: button };
       }
     }
@@ -92,16 +89,14 @@
       if (targetVariant) {
         // 修复：更宽松的库存检测逻辑
         const isOutOfStock = (
-          // 检查available字段（最可靠）
-          targetVariant.available === false ||
-          // 检查库存数量为0或负数
-          (typeof targetVariant.inventory_quantity === 'number' && targetVariant.inventory_quantity <= 0) ||
-          // 检查库存管理且库存为0
+          // 检查available字段（最可靠�?          targetVariant.available === false ||
+          // 检查库存数量为0或负�?          (typeof targetVariant.inventory_quantity === 'number' && targetVariant.inventory_quantity <= 0) ||
+          // 检查库存管理且库存�?
           (targetVariant.inventory_management && targetVariant.inventory_quantity <= 0)
         );
 
         if (isOutOfStock) {
-          log('✅ Variant sold out via Shopify data:', targetVariant);
+          log('�?Variant sold out via Shopify data:', targetVariant);
           log('📊 Inventory details:', {
             available: targetVariant.available,
             inventory_quantity: targetVariant.inventory_quantity,
@@ -114,7 +109,7 @@
       }
     }
 
-    log('❌ Product appears to be available');
+    log('�?Product appears to be available');
     return { isSoldOut: false, button: null };
   }
 
@@ -152,8 +147,7 @@
       // 获取产品信息
       const { productId, variantId } = getProductInfo();
 
-      // 调用预购API或显示预购表单
-      try {
+      // 调用预购API或显示预购表�?      try {
         await handlePreorderClick(productId, variantId);
       } catch (error) {
         console.error('PreOrder error:', error);
@@ -218,12 +212,12 @@
 
     content.innerHTML = `
       <div style="font-size: 48px; margin-bottom: 20px;">🎉</div>
-      <h2 style="color: #333; margin-bottom: 16px; font-size: 24px;">预购成功！</h2>
+      <h2 style="color: #333; margin-bottom: 16px; font-size: 24px;">预购成功�?/h2>
       <p style="color: #666; margin-bottom: 24px; line-height: 1.5;">
-        恭喜！App Embed Block 预购功能完美运行！<br>
-        <strong>✅ 无需手动修改主题代码</strong><br>
-        <strong>✅ 自动适配所有主题</strong><br>
-        <strong>✅ 用户只需一键启用</strong>
+        恭喜！App Embed Block 预购功能完美运行�?br>
+        <strong>�?无需手动修改主题代码</strong><br>
+        <strong>�?自动适配所有主�?/strong><br>
+        <strong>�?用户只需一键启�?/strong>
       </p>
       <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" 
               style="background: #ff6b35; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">
@@ -246,24 +240,22 @@
   function initPreorderWidget() {
     log('🚀 Initializing PreOrder Widget via App Embed...');
 
-    // 检测售罄状态
-    const status = detectSoldOutStatus();
+    // 检测售罄状�?    const status = detectSoldOutStatus();
 
     if (!status.isSoldOut) {
-      log('❌ Product is available, no preorder needed');
+      log('�?Product is available, no preorder needed');
       return;
     }
 
-    log('✅ Product is sold out, showing preorder button');
+    log('�?Product is sold out, showing preorder button');
 
-    // 创建并插入预购按钮
-    const preorderButton = createPreorderButton();
+    // 创建并插入预购按�?    const preorderButton = createPreorderButton();
 
     if (status.button) {
       // 隐藏原按钮并插入预购按钮
       status.button.style.display = 'none';
       status.button.parentNode.insertBefore(preorderButton, status.button.nextSibling);
-      log('✅ Preorder button inserted after original button');
+      log('�?Preorder button inserted after original button');
     } else {
       // 寻找合适的位置插入按钮
       const insertTargets = [
@@ -284,7 +276,7 @@
         if (target) {
           target.appendChild(preorderButton);
           inserted = true;
-          log('✅ Preorder button inserted into:', selector);
+          log('�?Preorder button inserted into:', selector);
           break;
         }
       }
@@ -294,14 +286,13 @@
       }
     }
 
-    // 添加预购徽章到产品图片
-    for (const selector of IMAGE_SELECTORS) {
+    // 添加预购徽章到产品图�?    for (const selector of IMAGE_SELECTORS) {
       const imageContainer = document.querySelector(selector);
       if (imageContainer) {
         imageContainer.style.position = 'relative';
         const badge = createPreorderBadge();
         imageContainer.appendChild(badge);
-        log('✅ Preorder badge added to:', selector);
+        log('�?Preorder badge added to:', selector);
         break;
       }
     }
@@ -309,8 +300,7 @@
     log('🎉 PreOrder Widget initialized successfully via App Embed!');
   }
 
-  // 多重初始化策略
-  function multipleInitAttempts() {
+  // 多重初始化策�?  function multipleInitAttempts() {
     let attempts = 0;
     const maxAttempts = 3;
 
@@ -323,10 +313,10 @@
       if (hasContent) {
         initPreorderWidget();
       } else if (attempts < maxAttempts) {
-        log(`⏳ Page not ready, retrying in 2s...`);
+        log(`�?Page not ready, retrying in 2s...`);
         setTimeout(tryInit, 2000);
       } else {
-        log('❌ Max attempts reached');
+        log('�?Max attempts reached');
       }
     }
 
@@ -340,8 +330,7 @@
     multipleInitAttempts();
   }
 
-  // 监听自定义事件
-  window.addEventListener('preorder:loaded', function (event) {
+  // 监听自定义事�?  window.addEventListener('preorder:loaded', function (event) {
     log('📡 PreOrder loaded event received:', event.detail);
   });
 

@@ -13,7 +13,7 @@ export interface IconWrapperProps extends IconProps {
 }
 
 /**
- * 图标包装器组件
+ * 图标包装器组�?
  * 提供统一的图标属性和样式
  */
 export default function IconWrapper({

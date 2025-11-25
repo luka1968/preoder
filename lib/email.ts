@@ -154,7 +154,7 @@ Unsubscribe: {{unsubscribe_url}}
     `
   },
   preorder_confirmation: {
-    subject: 'âœ… Pre-order confirmed: {{product_title}}',
+    subject: 'âœ?Pre-order confirmed: {{product_title}}',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #333;">Thank you for your pre-order!</h2>

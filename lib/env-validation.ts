@@ -1,5 +1,5 @@
 /**
- * 环境变量验证和安全检查
+ * 环境变量验证和安全检�?
  */
 
 export interface EnvironmentConfig {
@@ -35,7 +35,7 @@ export interface EnvironmentConfig {
 }
 
 /**
- * 验证必需的环境变量
+ * 验证必需的环境变�?
  */
 export function validateEnvironmentVariables(): EnvironmentConfig {
   const requiredVars = [
@@ -52,28 +52,28 @@ export function validateEnvironmentVariables(): EnvironmentConfig {
   // 检查必需变量
   const missing = requiredVars.filter(key => !process.env[key])
   if (missing.length > 0) {
-    throw new Error(`❌ Missing required environment variables: ${missing.join(', ')}`)
+    throw new Error(`�?Missing required environment variables: ${missing.join(', ')}`)
   }
   
-  // 验证变量格式和安全性
+  // 验证变量格式和安全�?
   const config = process.env as any as EnvironmentConfig
   
   // 验证 JWT Secret 长度
   if (config.JWT_SECRET.length < 32) {
-    throw new Error('❌ JWT_SECRET must be at least 32 characters long for security')
+    throw new Error('�?JWT_SECRET must be at least 32 characters long for security')
   }
   
   // 验证 Supabase URL 格式
   if (!config.NEXT_PUBLIC_SUPABASE_URL.startsWith('https://')) {
-    throw new Error('❌ NEXT_PUBLIC_SUPABASE_URL must be a valid HTTPS URL')
+    throw new Error('�?NEXT_PUBLIC_SUPABASE_URL must be a valid HTTPS URL')
   }
   
   // 验证 Shopify App URL 格式
   if (!config.SHOPIFY_APP_URL.startsWith('https://')) {
-    throw new Error('❌ SHOPIFY_APP_URL must be a valid HTTPS URL')
+    throw new Error('�?SHOPIFY_APP_URL must be a valid HTTPS URL')
   }
   
-  // 检查是否使用了示例值
+  // 检查是否使用了示例�?
   const exampleValues = [
     'your_shopify_api_key_here',
     'your_shopify_api_secret_here',
@@ -87,35 +87,35 @@ export function validateEnvironmentVariables(): EnvironmentConfig {
   )
   
   if (usingExamples.length > 0) {
-    throw new Error(`❌ Please replace example values in environment variables: ${usingExamples.map(([key]) => key).join(', ')}`)
+    throw new Error(`�?Please replace example values in environment variables: ${usingExamples.map(([key]) => key).join(', ')}`)
   }
   
-  // 验证 Shopify API Key 格式 (通常是32字符的十六进制)
+  // 验证 Shopify API Key 格式 (通常�?2字符的十六进�?
   if (!/^[a-f0-9]{32}$/.test(config.SHOPIFY_API_KEY)) {
     console.warn('⚠️  SHOPIFY_API_KEY format may be incorrect (expected 32 hex characters)')
   }
   
   // 验证 Supabase JWT 格式
   if (!config.NEXT_PUBLIC_SUPABASE_ANON_KEY.startsWith('eyJ')) {
-    throw new Error('❌ NEXT_PUBLIC_SUPABASE_ANON_KEY appears to be invalid (should be a JWT token)')
+    throw new Error('�?NEXT_PUBLIC_SUPABASE_ANON_KEY appears to be invalid (should be a JWT token)')
   }
   
   if (!config.SUPABASE_SERVICE_ROLE_KEY.startsWith('eyJ')) {
-    throw new Error('❌ SUPABASE_SERVICE_ROLE_KEY appears to be invalid (should be a JWT token)')
+    throw new Error('�?SUPABASE_SERVICE_ROLE_KEY appears to be invalid (should be a JWT token)')
   }
   
   return config
 }
 
 /**
- * 检查环境变量安全性
+ * 检查环境变量安全�?
  */
 export function checkEnvironmentSecurity(): void {
   const config = process.env as any as EnvironmentConfig
   
   const warnings: string[] = []
   
-  // 检查是否在生产环境中使用了开发配置
+  // 检查是否在生产环境中使用了开发配�?
   if (config.NODE_ENV === 'production') {
     if (config.SHOPIFY_APP_URL?.includes('localhost') || 
         config.SHOPIFY_APP_URL?.includes('127.0.0.1')) {
@@ -152,7 +152,7 @@ export function checkEnvironmentSecurity(): void {
 }
 
 /**
- * 获取安全的环境变量配置 (隐藏敏感信息)
+ * 获取安全的环境变量配�?(隐藏敏感信息)
  */
 export function getSafeEnvironmentInfo(): Record<string, string> {
   const config = process.env as any as EnvironmentConfig
@@ -182,7 +182,7 @@ export function initializeEnvironment(): void {
     const config = validateEnvironmentVariables()
     checkEnvironmentSecurity()
     
-    console.log('✅ Environment validation passed')
+    console.log('�?Environment validation passed')
     
     if (process.env.NODE_ENV === 'development') {
       console.log('📋 Environment info:', getSafeEnvironmentInfo())
@@ -195,7 +195,7 @@ export function initializeEnvironment(): void {
 }
 
 /**
- * 用于健康检查的环境状态
+ * 用于健康检查的环境状�?
  */
 export function getEnvironmentHealth(): {
   status: 'healthy' | 'warning' | 'error'

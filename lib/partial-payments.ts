@@ -150,7 +150,7 @@ export async function createPartialPaymentOrder(
     depositDraftOrderData
   )
 
-  // 2. 创建尾款 Draft Order (但不立即发送)
+  // 2. 创建尾款 Draft Order (但不立即发�?
   const remainingLineItems: DraftOrderLineItem[] = [{
     variant_id: orderData.variant_id ? parseInt(orderData.variant_id) : undefined,
     product_id: parseInt(orderData.product_id),
@@ -222,15 +222,15 @@ export async function createPartialPaymentOrder(
     throw new Error(`Failed to save partial payment order: ${error.message}`)
   }
 
-  // 4. 发送定金订单邮件
+  // 4. 发送定金订单邮�?
   await sendDraftOrderInvoice(
     shopDomain,
     shop.access_token,
     depositDraftOrder.id,
-    `请支付您的预售定金 (${depositPercentage}%)`
+    `请支付您的预售定�?(${depositPercentage}%)`
   )
 
-  // 5. 发送确认邮件
+  // 5. 发送确认邮�?
   await sendPartialPaymentCreatedEmail(shop.id, savedOrder)
 
   return savedOrder
@@ -249,7 +249,7 @@ export async function handleDepositPayment(
     throw new Error('Shop not found')
   }
 
-  // 更新数据库记录
+  // 更新数据库记�?
   const { data: order, error } = await supabaseAdmin
     .from('partial_payment_orders')
     .update({
@@ -268,10 +268,10 @@ export async function handleDepositPayment(
     throw new Error(`Failed to update deposit payment: ${error.message}`)
   }
 
-  // 发送定金确认邮件
+  // 发送定金确认邮�?
   await sendDepositConfirmationEmail(shop.id, order)
 
-  // 检查是否需要自动发送尾款账单
+  // 检查是否需要自动发送尾款账�?
   const { data: config } = await supabaseAdmin
     .from('partial_payment_settings')
     .select('*')
@@ -279,13 +279,13 @@ export async function handleDepositPayment(
     .single()
 
   if (config?.auto_charge_remaining) {
-    // 立即发送尾款账单
+    // 立即发送尾款账�?
     await sendFinalPaymentInvoice(shopDomain, partialPaymentId)
   }
 }
 
 /**
- * 发送尾款账单
+ * 发送尾款账�?
  */
 export async function sendFinalPaymentInvoice(
   shopDomain: string,
@@ -315,15 +315,15 @@ export async function sendFinalPaymentInvoice(
     throw new Error('Final payment draft order not found')
   }
 
-  // 发送尾款账单
+  // 发送尾款账�?
   await sendDraftOrderInvoice(
     shopDomain,
     shop.access_token,
     order.remaining_draft_order_id,
-    `请支付您的预售尾款 - 到期日期: ${new Date(order.due_date).toLocaleDateString()}`
+    `请支付您的预售尾�?- 到期日期: ${new Date(order.due_date).toLocaleDateString()}`
   )
 
-  // 发送提醒邮件
+  // 发送提醒邮�?
   await sendFinalPaymentReminderEmail(shop.id, order)
 }
 
@@ -340,7 +340,7 @@ export async function handleFinalPayment(
     throw new Error('Shop not found')
   }
 
-  // 更新数据库记录
+  // 更新数据库记�?
   const { data: order, error } = await supabaseAdmin
     .from('partial_payment_orders')
     .update({
@@ -359,7 +359,7 @@ export async function handleFinalPayment(
     throw new Error(`Failed to update final payment: ${error.message}`)
   }
 
-  // 发送完成确认邮件
+  // 发送完成确认邮�?
   await sendPaymentCompletedEmail(shop.id, order)
 }
 
@@ -387,7 +387,7 @@ export async function cancelPartialPaymentOrder(
     throw new Error('Partial payment order not found')
   }
 
-  // 如果定金已支付，需要退款
+  // 如果定金已支付，需要退�?
   if (order.deposit_paid && order.deposit_order_id) {
     await createRefund(
       shopDomain,
@@ -396,14 +396,14 @@ export async function cancelPartialPaymentOrder(
       {
         refund: {
           notify: true,
-          note: `预售订单取消退款: ${reason || 'Order cancelled'}`,
-          refund_line_items: [] // 全额退款
+          note: `预售订单取消退�? ${reason || 'Order cancelled'}`,
+          refund_line_items: [] // 全额退�?
         }
       }
     )
   }
 
-  // 更新状态
+  // 更新状�?
   await supabaseAdmin
     .from('partial_payment_orders')
     .update({
@@ -413,11 +413,11 @@ export async function cancelPartialPaymentOrder(
     })
     .eq('id', partialPaymentId)
 
-  // 发送取消确认邮件
+  // 发送取消确认邮�?
   await sendOrderCancelledEmail(shop.id, order, reason)
 }
 
-// 邮件发送函数
+// 邮件发送函�?
 async function sendPartialPaymentCreatedEmail(shopId: string, order: PartialPaymentOrder) {
   try {
     await sendTemplatedEmail(

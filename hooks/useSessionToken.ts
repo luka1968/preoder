@@ -28,8 +28,7 @@ export function useSessionToken() {
 
     fetchToken()
 
-    // 定期刷新token（每30分钟）
-    const interval = setInterval(fetchToken, 30 * 60 * 1000)
+    // 定期刷新token（每30分钟�?    const interval = setInterval(fetchToken, 30 * 60 * 1000)
     
     return () => clearInterval(interval)
   }, [app])

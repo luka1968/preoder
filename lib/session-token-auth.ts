@@ -41,8 +41,7 @@ export function verifySessionToken(token: string): ShopifySessionPayload | null 
 }
 
 /**
- * Session Token认证中间件
- */
+ * Session Token认证中间�? */
 export function requireSessionToken(
   handler: (req: NextApiRequest, res: NextApiResponse, session: ShopifySessionPayload) => Promise<void>
 ) {

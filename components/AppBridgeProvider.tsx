@@ -16,8 +16,7 @@ export default function AppBridgeProvider({ children }: AppBridgeProviderProps) 
     // 从URL参数获取shop和host信息
     const { shop, host } = router.query
     
-    // 检查是否有必需的环境变量
-    if (!process.env.NEXT_PUBLIC_SHOPIFY_API_KEY) {
+    // 检查是否有必需的环境变�?    if (!process.env.NEXT_PUBLIC_SHOPIFY_API_KEY) {
       console.warn('NEXT_PUBLIC_SHOPIFY_API_KEY is not set')
       // 对于开发环境，创建一个模拟的app实例
       setApp({ mock: true })
@@ -39,8 +38,7 @@ export default function AppBridgeProvider({ children }: AppBridgeProviderProps) 
         setApp({ mock: true })
       }
     } else {
-      // 如果没有shop参数，创建一个模拟实例用于开发
-      setApp({ mock: true })
+      // 如果没有shop参数，创建一个模拟实例用于开�?      setApp({ mock: true })
     }
   }, [router.query])
 

@@ -312,7 +312,7 @@ export async function sendTestEmail(to: string, shopName?: string): Promise<bool
           <p>This is a test email from <strong>PreOrder Pro</strong> for ${shopName || 'your shop'}.</p>
           <p>If you received this email, your email configuration is working correctly!</p>
           <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #28a745; margin-top: 0;">âœ… Email Configuration Status</h3>
+            <h3 style="color: #28a745; margin-top: 0;">âœ?Email Configuration Status</h3>
             <ul style="margin: 0; padding-left: 20px;">
               <li>Brevo API connection: <strong style="color: #28a745;">Active</strong></li>
               <li>Email delivery: <strong style="color: #28a745;">Working</strong></li>
@@ -343,9 +343,9 @@ This is a test email from PreOrder Pro for ${shopName || 'your shop'}.
 If you received this email, your email configuration is working correctly!
 
 Email Configuration Status:
-âœ… Brevo API connection: Active
-âœ… Email delivery: Working  
-âœ… Template processing: Ready
+âœ?Brevo API connection: Active
+âœ?Email delivery: Working  
+âœ?Template processing: Ready
 
 You can now start using PreOrder Pro's email notification features:
 - Back-in-stock notifications
@@ -402,7 +402,7 @@ Thanks for shopping with {{shop_name}}!
       `
     },
     preorder_confirmation: {
-      subject: 'âœ… Pre-order confirmed for {{product_title}}',
+      subject: 'âœ?Pre-order confirmed for {{product_title}}',
       html_content: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #333;">Pre-order Confirmed!</h2>

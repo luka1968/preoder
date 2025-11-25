@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Card, Button, Toast, Banner, TextField, Stack } from '@shopify/polaris'
 
 /**
- * 一键启用预购功能组件
- * 商家可以输入产品 ID，自动设置 "Continue selling when out of stock"
+ * 一键启用预购功能组�?
+ * 商家可以输入产品 ID，自动设�?"Continue selling when out of stock"
  */
 export default function EnablePreorderButton({
     shop,
@@ -20,7 +20,7 @@ export default function EnablePreorderButton({
 
     const handleEnablePreorder = async () => {
         if (!productId) {
-            showToast('请输入产品 ID', true)
+            showToast('请输入产�?ID', true)
             return
         }
 
@@ -41,12 +41,12 @@ export default function EnablePreorderButton({
             const result = await response.json()
 
             if (response.ok && result.success) {
-                showToast(`✅ 成功！已为 ${result.results?.length || 1} 个变体启用预购`, false)
+                showToast(`�?成功！已�?${result.results?.length || 1} 个变体启用预购`, false)
             } else {
-                showToast(`❌ 失败：${result.error || '未知错误'}`, true)
+                showToast(`�?失败�?{result.error || '未知错误'}`, true)
             }
         } catch (error: any) {
-            showToast(`❌ 错误：${error.message}`, true)
+            showToast(`�?错误�?{error.message}`, true)
         } finally {
             setLoading(false)
         }
@@ -72,11 +72,11 @@ export default function EnablePreorderButton({
                 <Stack vertical spacing="loose">
                     <Banner status="info">
                         <p>
-                            <strong>一键启用预购 🚀</strong>
+                            <strong>一键启用预�?🚀</strong>
                         </p>
                         <p>
-                            自动设置产品为 "Continue selling when out of stock"，
-                            无需手动在 Shopify 后台修改！
+                            自动设置产品�?"Continue selling when out of stock"�?
+                            无需手动�?Shopify 后台修改�?
                         </p>
                     </Banner>
 
@@ -85,7 +85,7 @@ export default function EnablePreorderButton({
                         value={productId}
                         onChange={setProductId}
                         placeholder="输入产品 ID，例如：123456789"
-                        helpText="可以在产品页面 URL 中找到产品 ID"
+                        helpText="可以在产品页�?URL 中找到产�?ID"
                         autoComplete="off"
                     />
 
@@ -95,14 +95,14 @@ export default function EnablePreorderButton({
                         onClick={handleEnablePreorder}
                         disabled={!productId}
                     >
-                        🎯 一键启用预购
+                        🎯 一键启用预�?
                     </Button>
 
                     <Banner status="warning">
                         <p>
-                            <strong>注意：</strong>
-                            这将为产品的所有变体设置允许超卖。
-                            如果只想设置特定变体，请在 Shopify Admin 中手动操作。
+                            <strong>注意�?/strong>
+                            这将为产品的所有变体设置允许超卖�?
+                            如果只想设置特定变体，请�?Shopify Admin 中手动操作�?
                         </p>
                     </Banner>
                 </Stack>

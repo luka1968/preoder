@@ -1,7 +1,7 @@
 import { supabaseAdmin } from './supabase'
 
 /**
- * Webhook日志记录中间件
+ * Webhook日志记录中间�?
  * 在所有webhook处理器中使用
  */
 export async function logWebhookEvent(
@@ -12,7 +12,7 @@ export async function logWebhookEvent(
     error?: string
 ) {
     try {
-        // 1. 记录到logs表
+        // 1. 记录到logs�?
         await supabaseAdmin.from('logs').insert({
             shop_id: shopId,
             type: 'inventory_webhook',
@@ -23,7 +23,7 @@ export async function logWebhookEvent(
             created_at: new Date().toISOString(),
         })
 
-        // 2. 更新webhook_status表
+        // 2. 更新webhook_status�?
         const { data: status } = await supabaseAdmin
             .from('webhook_status')
             .select('*')
@@ -49,7 +49,7 @@ export async function logWebhookEvent(
                 .eq('shop_id', shopId)
                 .eq('topic', topic)
         } else {
-            // 创建新记录
+            // 创建新记�?
             await supabaseAdmin.from('webhook_status').insert({
                 shop_id: shopId,
                 topic,

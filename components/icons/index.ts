@@ -1,5 +1,5 @@
 // 图标组件索引文件
-// 自动生成，请勿手动修改
+// 自动生成，请勿手动修�?
 
 import BadgeComingSoon from './BadgeComingSoon';
 import BadgeOutOfStock from './BadgeOutOfStock';

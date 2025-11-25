@@ -26,7 +26,7 @@ export class HybridPreorderSystem {
     this.config = config
   }
 
-  // 主部署方法 - 混合模式
+  // 主部署方�?- 混合模式
   async deploy(): Promise<DeploymentResult> {
     const result: DeploymentResult = {
       success: false,
@@ -45,37 +45,37 @@ export class HybridPreorderSystem {
         if (embedResult.success) {
           result.success = true
           result.method = 'app_embed'
-          result.message = '✅ App Embed Block 部署成功 (推荐方案)'
+          result.message = '�?App Embed Block 部署成功 (推荐方案)'
           
           // 即使 App Embed 成功，也部署 Script Tag 作为备用
           const scriptResult = await this.deployScriptTag()
           result.scriptTagStatus = scriptResult.success ? 'deployed' : 'failed'
           
           if (scriptResult.success) {
-            result.message += ' + Script Tag 备用方案已就绪'
+            result.message += ' + Script Tag 备用方案已就�?
           }
           
           return result
         }
       }
 
-      // 步骤2: App Embed 失败或被跳过，使用 Script Tag
+      // 步骤2: App Embed 失败或被跳过，使�?Script Tag
       const scriptResult = await this.deployScriptTag()
       result.scriptTagStatus = scriptResult.success ? 'deployed' : 'failed'
       
       if (scriptResult.success) {
         result.success = true
         result.method = 'script_tag'
-        result.message = '✅ Script Tag 部署成功 (备用方案)'
+        result.message = '�?Script Tag 部署成功 (备用方案)'
         return result
       }
 
       // 步骤3: 都失败了
-      result.message = '❌ 所有部署方案都失败了'
+      result.message = '�?所有部署方案都失败�?
       return result
 
     } catch (error) {
-      result.message = `❌ 部署过程中发生错误: ${error}`
+      result.message = `�?部署过程中发生错�? ${error}`
       return result
     }
   }
@@ -83,19 +83,18 @@ export class HybridPreorderSystem {
   // 部署 App Embed Block
   private async deployAppEmbed(): Promise<{ success: boolean, details?: any }> {
     try {
-      // 检查是否已有 App Embed Block
+      // 检查是否已�?App Embed Block
       const existingEmbeds = await this.checkExistingAppEmbeds()
       
       if (existingEmbeds.hasPreorderEmbed) {
         return { 
           success: true, 
-          details: { message: 'App Embed Block 已存在', existing: true }
+          details: { message: 'App Embed Block 已存�?, existing: true }
         }
       }
 
-      // 这里应该调用 Shopify CLI 或 Admin API 来部署 App Embed
-      // 由于 App Embed 需要通过 CLI 部署，我们标记为需要手动部署
-      return { 
+      // 这里应该调用 Shopify CLI �?Admin API 来部�?App Embed
+      // 由于 App Embed 需要通过 CLI 部署，我们标记为需要手动部�?      return { 
         success: false, 
         details: { 
           message: 'App Embed Block 需要通过 Shopify CLI 部署',
@@ -159,15 +158,15 @@ export class HybridPreorderSystem {
   // 检查现有的 App Embed Blocks
   private async checkExistingAppEmbeds(): Promise<{ hasPreorderEmbed: boolean, details?: any }> {
     try {
-      // 这里应该检查主题中是否已有我们的 App Embed Block
-      // 由于无法直接通过 API 检查，我们返回 false 让 Script Tag 处理
+      // 这里应该检查主题中是否已有我们�?App Embed Block
+      // 由于无法直接通过 API 检查，我们返回 false �?Script Tag 处理
       return { hasPreorderEmbed: false }
     } catch (error) {
       return { hasPreorderEmbed: false, details: { error } }
     }
   }
 
-  // 获取现有的 Script Tags
+  // 获取现有�?Script Tags
   private async getExistingScriptTags(): Promise<any[]> {
     try {
       const response = await fetch(`https://${this.config.shop}/admin/api/2023-10/script_tags.json`, {
@@ -208,7 +207,7 @@ export class HybridPreorderSystem {
         })
         
         if (this.config.debug) {
-          console.log('删除旧脚本:', script.id)
+          console.log('删除旧脚�?', script.id)
         }
       } catch (error) {
         console.error('删除脚本失败:', script.id, error)
@@ -216,8 +215,7 @@ export class HybridPreorderSystem {
     }
   }
 
-  // 检查部署状态
-  async checkStatus(): Promise<{
+  // 检查部署状�?  async checkStatus(): Promise<{
     appEmbedActive: boolean
     scriptTagActive: boolean
     overallStatus: 'active' | 'partial' | 'inactive'
@@ -228,23 +226,22 @@ export class HybridPreorderSystem {
       tag.src.includes('hybrid-preorder') || tag.src.includes(this.config.appUrl)
     )
 
-    // 简化检查 - 主要依赖 Script Tag
-    const appEmbedActive = false // 需要手动检查
-    const scriptTagActive = hasScriptTag
+    // 简化检�?- 主要依赖 Script Tag
+    const appEmbedActive = false // 需要手动检�?    const scriptTagActive = hasScriptTag
 
     let overallStatus: 'active' | 'partial' | 'inactive'
     const recommendations: string[] = []
 
     if (appEmbedActive && scriptTagActive) {
       overallStatus = 'active'
-      recommendations.push('✅ 混合模式运行正常，覆盖率最大')
+      recommendations.push('�?混合模式运行正常，覆盖率最�?)
     } else if (scriptTagActive) {
       overallStatus = 'partial'
-      recommendations.push('⚠️ Script Tag 模式运行中，建议部署 App Embed Block 以获得最佳体验')
+      recommendations.push('⚠️ Script Tag 模式运行中，建议部署 App Embed Block 以获得最佳体�?)
       recommendations.push('运行: shopify app deploy')
     } else {
       overallStatus = 'inactive'
-      recommendations.push('❌ 预购功能未激活，需要部署')
+      recommendations.push('�?预购功能未激活，需要部�?)
     }
 
     return {
