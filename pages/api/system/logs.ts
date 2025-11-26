@@ -1,18 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { supabaseAdmin } from '../../../lib/supabase'
 
-/**
- * GET /api/system/logs?shop=xxx&type=all&limit=100
- * 
- * 系统日志查询
- */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' })
     }
 
-    const { shop, type = 'all', level, limit = 100 } = req.query
-
+    const { shop, type = 'all', limit = 100 } = req.query
     if (!shop) {
         return res.status(400).json({ error: 'Missing shop parameter' })
     }
@@ -39,19 +33,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             query = query.eq('type', type)
         }
 
-        if (level) {
-            query = query.eq('level', level)
-        }
-
         const { data: logs } = await query
 
-        res.status(200).json({
-            logs: logs || [],
-            total: logs?.length || 0,
-        })
-
-    } catch (error: any) {
-        console.error('System logs error:', error)
+        res.status(200).json({ logs: logs || [], total: logs?.length || 0 })
+    } catch (error) {
+        console.error('Logs error:', error)
         res.status(500).json({ error: 'Internal server error' })
     }
 }

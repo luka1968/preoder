@@ -73,7 +73,7 @@ async function syncShopInventory(shop: any) {
         try {
             // 获取实际库存
             const response = await fetch(
-                `https://${shop.shop_domain}/admin/api/2024-01/variants/${rule.variant_id}.json`,
+                `https://${shop.shop_domain}/admin/api/2025-10/variants/${rule.variant_id}.json`,
                 {
                     headers: {
                         'X-Shopify-Access-Token': shop.access_token,

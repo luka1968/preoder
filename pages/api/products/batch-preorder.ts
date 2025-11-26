@@ -180,7 +180,7 @@ async function updateVariantInventoryPolicy(
     policy: 'continue' | 'deny'
 ) {
     const response = await fetch(
-        `https://${shop}/admin/api/2024-01/variants/${variantId}.json`,
+        `https://${shop}/admin/api/2025-10/variants/${variantId}.json`,
         {
             method: 'PUT',
             headers: {
@@ -209,7 +209,7 @@ async function setVariantMetafield(
     value: string
 ) {
     await fetch(
-        `https://${shop}/admin/api/2024-01/variants/${variantId}/metafields.json`,
+        `https://${shop}/admin/api/2025-10/variants/${variantId}/metafields.json`,
         {
             method: 'POST',
             headers: {
@@ -235,7 +235,7 @@ async function deleteVariantMetafield(
     key: string
 ) {
     const listResponse = await fetch(
-        `https://${shop}/admin/api/2024-01/variants/${variantId}/metafields.json`,
+        `https://${shop}/admin/api/2025-10/variants/${variantId}/metafields.json`,
         {
             headers: {
                 'X-Shopify-Access-Token': accessToken,
@@ -251,7 +251,7 @@ async function deleteVariantMetafield(
 
         if (metafield) {
             await fetch(
-                `https://${shop}/admin/api/2024-01/metafields/${metafield.id}.json`,
+                `https://${shop}/admin/api/2025-10/metafields/${metafield.id}.json`,
                 {
                     method: 'DELETE',
                     headers: {

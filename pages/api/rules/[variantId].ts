@@ -160,7 +160,7 @@ async function enablePreorderOnShopify(shopData: any, variantId: string, buttonT
     const accessToken = shopData.access_token
 
     // 1. 更新 inventory_policy
-    await fetch(`https://${shop}/admin/api/2024-01/variants/${variantId}.json`, {
+    await fetch(`https://${shop}/admin/api/2025-10/variants/${variantId}.json`, {
         method: 'PUT',
         headers: {
             'X-Shopify-Access-Token': accessToken,
@@ -182,7 +182,7 @@ async function enablePreorderOnShopify(shopData: any, variantId: string, buttonT
     ]
 
     for (const metafield of metafields) {
-        await fetch(`https://${shop}/admin/api/2024-01/variants/${variantId}/metafields.json`, {
+        await fetch(`https://${shop}/admin/api/2025-10/variants/${variantId}/metafields.json`, {
             method: 'POST',
             headers: {
                 'X-Shopify-Access-Token': accessToken,
@@ -205,7 +205,7 @@ async function disablePreorderOnShopify(shopData: any, variantId: string) {
     const accessToken = shopData.access_token
 
     // 恢复 inventory_policy
-    await fetch(`https://${shop}/admin/api/2024-01/variants/${variantId}.json`, {
+    await fetch(`https://${shop}/admin/api/2025-10/variants/${variantId}.json`, {
         method: 'PUT',
         headers: {
             'X-Shopify-Access-Token': accessToken,
