@@ -9,12 +9,6 @@ import {
   updateShop,
   supabaseAdmin
 } from './supabase'
-import {
-  sendPreorderConfirmation
-} from './brevo-email'
-import {
-  sendBulkBackInStockNotifications
-} from './email'
 import { verifyWebhookSignature, createWebhook, getWebhooks, deleteWebhook } from './shopify'
 import {
   ProductUpdateWebhook,
