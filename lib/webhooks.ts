@@ -109,28 +109,17 @@ async function processVariantBackInStock(
     const shopDomain = await getShopDomain(shopId)
     const productUrl = `https://${shopDomain}/products/${product.handle}${variant.id ? `?variant=${variant.id}` : ''}`
 
-    // Send bulk notifications
-    const result = await sendBulkBackInStockNotifications(
-      shopId,
-      product.id,
-      variant.id,
-      product.title,
-      productUrl,
-      variant.title !== 'Default Title' ? variant.title : undefined
-    )
+    // TODO: Re-enable email notifications
+    // const result = await sendBulkBackInStockNotifications(...)
+    console.log(`Would send notifications for variant ${variant.id}`)
 
-    console.log(`Sent ${result.sent} notifications, ${result.failed} failed for variant ${variant.id}`)
-
-    // Log activity
     await logActivity(
       shopId,
       'back_in_stock_notifications_sent',
-      `Sent back-in-stock notifications for "${product.title}"`,
+      `Would send back-in-stock notifications for "${product.title}"`,
       {
         product_id: product.id,
         variant_id: variant.id,
-        notifications_sent: result.sent,
-        notifications_failed: result.failed
       }
     )
 
@@ -243,22 +232,9 @@ async function processPreorderLineItem(
       order_tags: order.tags ? order.tags.split(', ') : []
     })
 
-    // Send pre-order confirmation email
-    const customerName = order.customer ?
-      `${order.customer.first_name} ${order.customer.last_name}`.trim() :
-      'Customer'
-
-    await sendPreorderConfirmation(
-      shopId,
-      order.email,
-      customerName,
-      lineItem.title,
-      order.order_number?.toString(),
-      order.order_status_url,
-      lineItem.variant_title !== 'Default Title' ? lineItem.variant_title : undefined,
-      estimatedDeliveryDate,
-      deliveryNote
-    )
+    // TODO: Re-enable email confirmation
+    // await sendPreorderConfirmation(...)
+    console.log(`Would send pre-order confirmation to ${order.email}`)
 
     console.log(`Created pre-order record ${preorderOrder.id} for line item ${lineItem.id}`)
 
