@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const apiKey = process.env.SHOPIFY_API_KEY
-    const redirectUri = `${process.env.SHOPIFY_APP_URL}/auth/callback`
+    const redirectUri = `${process.env.SHOPIFY_APP_URL}/api/auth/callback`
     const scopes = process.env.SHOPIFY_SCOPES || 'read_products,write_products,read_orders,write_orders,read_inventory,write_inventory'
 
     const state = Math.random().toString(36).substring(7)
