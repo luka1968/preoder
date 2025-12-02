@@ -131,7 +131,7 @@ export default function DashboardPage() {
             <h3>Today's Orders</h3>
             <p className="card-value">{stats.orders.today_count}</p>
             <span className="card-subtitle">
-              ${stats.orders.today_revenue.toFixed(2)} revenue
+              ${(stats.orders.today_revenue || 0).toFixed(2)} revenue
             </span>
           </div>
         </div>
