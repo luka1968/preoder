@@ -1,10 +1,17 @@
--- 创建 preorder_orders 表 - 用于存储预购订单
--- 在 Supabase SQL Editor 中运行此脚本
+-- ⚠️ 数据库迁移脚本 - 修复 preorder_orders 外键类型
+-- 修复时间: 2025-12-02
+-- 问题: shop_id 类型为 UUID，但 shops.id 是 BIGSERIAL
 
--- 创建 preorder_orders 表（如果不存在）
-CREATE TABLE IF NOT EXISTS preorder_orders (
+-- 步骤 1: 备份现有数据（如果有）
+-- 在 Supabase SQL Editor 中运行前，先导出 preorder_orders 表的数据
+
+-- 步骤 2: 删除旧表
+DROP TABLE IF EXISTS preorder_orders CASCADE;
+
+-- 步骤 3: 重新创建表（使用正确的类型）
+CREATE TABLE preorder_orders (
   id BIGSERIAL PRIMARY KEY,
-  shop_id BIGINT NOT NULL REFERENCES shops(id) ON DELETE CASCADE,  -- ✅ 修复：改为 BIGINT 匹配 shops.id
+  shop_id BIGINT NOT NULL REFERENCES shops(id) ON DELETE CASCADE,  -- ✅ 正确的类型
   shopify_order_id TEXT,
   product_id TEXT NOT NULL,
   variant_id TEXT,
@@ -19,7 +26,7 @@ CREATE TABLE IF NOT EXISTS preorder_orders (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 创建索引以提高查询性能
+-- 步骤 4: 创建索引
 CREATE INDEX IF NOT EXISTS idx_preorder_orders_shop_id ON preorder_orders(shop_id);
 CREATE INDEX IF NOT EXISTS idx_preorder_orders_customer_email ON preorder_orders(customer_email);
 CREATE INDEX IF NOT EXISTS idx_preorder_orders_status ON preorder_orders(payment_status);
@@ -27,7 +34,7 @@ CREATE INDEX IF NOT EXISTS idx_preorder_orders_product_id ON preorder_orders(pro
 CREATE INDEX IF NOT EXISTS idx_preorder_orders_created_at ON preorder_orders(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_preorder_orders_shopify_order_id ON preorder_orders(shopify_order_id);
 
--- 创建更新时间触发器
+-- 步骤 5: 创建更新触发器
 CREATE OR REPLACE FUNCTION update_preorder_orders_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -42,9 +49,9 @@ CREATE TRIGGER update_preorder_orders_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_preorder_orders_updated_at();
 
--- 添加注释
+-- 步骤 6: 添加注释
 COMMENT ON TABLE preorder_orders IS '预购订单主表 - 存储所有预购订单信息';
-COMMENT ON COLUMN preorder_orders.shop_id IS '关联的店铺ID (UUID)';
+COMMENT ON COLUMN preorder_orders.shop_id IS '关联的店铺ID (BIGINT)';
 COMMENT ON COLUMN preorder_orders.shopify_order_id IS 'Shopify 订单/Draft Order ID';
 COMMENT ON COLUMN preorder_orders.product_id IS '产品ID';
 COMMENT ON COLUMN preorder_orders.variant_id IS '变体ID';
@@ -54,3 +61,6 @@ COMMENT ON COLUMN preorder_orders.paid_amount IS '已支付金额';
 COMMENT ON COLUMN preorder_orders.payment_status IS '支付状态: pending, partial, paid, refunded';
 COMMENT ON COLUMN preorder_orders.fulfillment_status IS '履行状态: pending, fulfilled, cancelled';
 COMMENT ON COLUMN preorder_orders.order_tags IS '订单标签数组';
+
+-- 完成！✅
+-- 如果之前有数据，需要手动导入（调整 shop_id 为正确的 BIGINT 值）

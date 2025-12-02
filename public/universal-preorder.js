@@ -10,7 +10,8 @@
   // 获取配置
   const CONFIG = window.PREORDER_CONFIG || {
     shop: window.Shopify?.shop || window.location.hostname,
-    apiUrl: 'https://shopmall.dpdns.org/api',
+    // ✅ 动态获取 API URL - 支持多环境部署
+    apiUrl: window.PREORDER_CONFIG?.apiUrl || (window.location.origin + '/api'),
     enabled: true,
     debug: false
   };

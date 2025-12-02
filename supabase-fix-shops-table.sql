@@ -1,54 +1,52 @@
--- 修复 shops 表结构，匹配代码期望
+-- ✅ 修复 shops 表 - 添加缺失的列
+-- 如果 shops 表已存在但缺少某些列，运行这个脚本
 
--- 1. 添加缺失的字段
-ALTER TABLE shops ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT 'free';
-ALTER TABLE shops ADD COLUMN IF NOT EXISTS email TEXT;
-ALTER TABLE shops ADD COLUMN IF NOT EXISTS name TEXT;
-ALTER TABLE shops ADD COLUMN IF NOT EXISTS currency TEXT;
-ALTER TABLE shops ADD COLUMN IF NOT EXISTS timezone TEXT;
-ALTER TABLE shops ADD COLUMN IF NOT EXISTS country_code TEXT;
-
--- 2. 重命名字段（如果需要）
--- 注意：如果 is_active 已存在，这会失败，但没关系
+-- 添加 is_active 列（如果不存在）
 DO $$ 
 BEGIN
-    IF EXISTS (SELECT 1 FROM information_schema.columns 
-               WHERE table_name='shops' AND column_name='is_active') THEN
-        ALTER TABLE shops RENAME COLUMN is_active TO active;
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'shops' AND column_name = 'is_active'
+    ) THEN
+        ALTER TABLE shops ADD COLUMN is_active BOOLEAN DEFAULT true;
+        COMMENT ON COLUMN shops.is_active IS '是否激活';
     END IF;
-EXCEPTION
-    WHEN duplicate_column THEN NULL;
 END $$;
 
--- 3. 如果 active 不存在，添加它
-ALTER TABLE shops ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT true;
+-- 添加 uninstalled_at 列（如果不存在）
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'shops' AND column_name = 'uninstalled_at'
+    ) THEN
+        ALTER TABLE shops ADD COLUMN uninstalled_at TIMESTAMP WITH TIME ZONE;
+    END IF;
+END $$;
 
--- 4. 确保 id 是文本类型（UUID）
--- 注意：这会删除现有数据！如果表里有数据，请先备份
--- 如果表是空的，可以直接重建
-DROP TABLE IF EXISTS shops CASCADE;
+-- 添加 updated_at 列（如果不存在）
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'shops' AND column_name = 'updated_at'
+    ) THEN
+        ALTER TABLE shops ADD COLUMN updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
+    END IF;
+END $$;
 
-CREATE TABLE shops (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  shop_domain TEXT UNIQUE NOT NULL,
-  access_token TEXT NOT NULL,
-  scope TEXT,
-  installed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  plan TEXT DEFAULT 'free',
-  email TEXT,
-  name TEXT,
-  currency TEXT,
-  timezone TEXT,
-  country_code TEXT,
-  active BOOLEAN DEFAULT true
-);
+-- 添加 scope 列（如果不存在）
+DO $$ 
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'shops' AND column_name = 'scope'
+    ) THEN
+        ALTER TABLE shops ADD COLUMN scope TEXT;
+    END IF;
+END $$;
 
--- 创建索引
-CREATE INDEX IF NOT EXISTS idx_shops_domain ON shops(shop_domain);
-CREATE INDEX IF NOT EXISTS idx_shops_active ON shops(active);
-
--- 创建更新时间触发器
+-- 创建或替换更新触发器
 CREATE OR REPLACE FUNCTION update_shops_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -63,12 +61,21 @@ CREATE TRIGGER update_shops_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_shops_updated_at();
 
--- 禁用 RLS
-ALTER TABLE shops DISABLE ROW LEVEL SECURITY;
+-- 创建索引（如果不存在）
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_indexes WHERE tablename = 'shops' AND indexname = 'idx_shops_domain'
+    ) THEN
+        CREATE INDEX idx_shops_domain ON shops(shop_domain);
+    END IF;
 
--- 添加注释
-COMMENT ON TABLE shops IS '店铺信息表';
-COMMENT ON COLUMN shops.shop_domain IS '店铺域名';
-COMMENT ON COLUMN shops.access_token IS 'Shopify Admin API Access Token';
-COMMENT ON COLUMN shops.plan IS '订阅计划: free, basic, pro';
-COMMENT ON COLUMN shops.active IS '是否激活';
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_indexes WHERE tablename = 'shops' AND indexname = 'idx_shops_active'
+    ) THEN
+        CREATE INDEX idx_shops_active ON shops(is_active);
+    END IF;
+END $$;
+
+-- 完成！✅
+SELECT '✅ shops 表更新成功！' as result;
