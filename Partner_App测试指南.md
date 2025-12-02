@@ -9,11 +9,11 @@
 你的 Vercel 环境变量已经正确设置：
 
 ```env
-SHOPIFY_API_KEY=a1b6bddb5563c4490cb400f93e29b727
-SHOPIFY_API_SECRET=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
-SHOPIFY_APP_URL=https://shopmall.dpdns.org
-SUPABASE_URL=https://uumtumvqkmvcursfqkgs.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=你的值
+SHOPIFY_API_KEY=your_api_key_here
+SHOPIFY_API_SECRET=shpss_your_api_secret_here
+SHOPIFY_APP_URL=https://your-app-domain.vercel.app
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 ```
 
 ✅ **这就够了！不需要手动 Access Token！**

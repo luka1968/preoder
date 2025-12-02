@@ -13,7 +13,7 @@
 3. 点击 **Reveal token once** （⚠️ 只显示一次，务必复制保存！）
 4. 复制 token，格式类似：
    ```
-   shpat_1234567890abcdef1234567890abcdef
+   shpat_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
    ```
 
 ### 1.2 添加到 Supabase 数据库
