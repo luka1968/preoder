@@ -52,7 +52,7 @@
     "stripe": "^14.7.0"
   },
   "devDependencies": {
-    "@shopify/cli": "^3.59.0",
+    "@shopify/cli": "^3.84.1",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.14",

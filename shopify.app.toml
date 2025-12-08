@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 name = "PreOrder Pro"
-client_id = "your_shopify_client_id_here"
+client_id = "5bbd7fcb2ef91735bdcdd66359da7bf3"
 application_url = "https://shopmall.dpdns.org"
 embedded = true
 

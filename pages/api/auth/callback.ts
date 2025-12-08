@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next'
 import { supabaseAdmin } from '../../../lib/supabase'
+import { registerWebhooksForShop } from '../../../lib/webhooks-register'
 import crypto from 'crypto'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -84,7 +85,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         console.log(`✅ Shop data saved to database: ${shop}`)
 
-        // 8. 重定向到管理界面
+        // ✅ 8. 自动注册 Webhooks
+        try {
+            await registerWebhooksForShop(shop as string, accessToken)
+            console.log(`✅ Webhooks registered for ${shop}`)
+        } catch (webhookError) {
+            console.error('⚠️ Failed to register webhooks:', webhookError)
+            // 不阻止安装流程
+        }
+
+        // 9. 重定向到管理界面
         res.redirect(`/admin?shop=${shop}`)
     } catch (error: any) {
         console.error('❌ OAuth callback error:', error)
