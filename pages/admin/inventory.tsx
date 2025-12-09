@@ -17,9 +17,15 @@ export default function InventoryMonitorPage() {
     async function loadData(shopDomain: string) {
         setLoading(true)
         try {
-            const res = await fetch(`/api/inventory/monitor?shop=${shopDomain}`)
+            const res = await fetch(`/api/inventory/all-products?shop=${shopDomain}`)
             const result = await res.json()
-            setData(result)
+
+            // 转换格式以匹配现有 UI
+            setData({
+                out_of_stock: result.out_of_stock || [],
+                total: result.total_out_of_stock || 0,
+                synced: true,
+            })
         } catch (error) {
             console.error('Failed to load:', error)
         } finally {
