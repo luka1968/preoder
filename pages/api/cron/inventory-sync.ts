@@ -8,9 +8,12 @@ import { supabaseAdmin } from '../../../lib/supabase'
  * 修复 webhook 遗漏的库存变化
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    // 验证 cron secret
+    // 验证 cron secret 或允许手动触发
     const cronSecret = req.headers['x-cron-secret']
-    if (cronSecret !== process.env.CRON_SECRET) {
+    const isManualTrigger = cronSecret === 'manual'
+    const isValidCronSecret = cronSecret === process.env.CRON_SECRET
+
+    if (!isManualTrigger && !isValidCronSecret) {
         return res.status(401).json({ error: 'Unauthorized' })
     }
 
