@@ -88,7 +88,7 @@ export default function DashboardPage() {
       <header className="header">
         <h1>PreOrder Pro Dashboard</h1>
         <div className="quick-actions">
-          <button onClick={() => window.location.href = `/admin/products?shop=${shop}`}>
+          <button onClick={() => window.location.href = `/admin/inventory?shop=${shop}`}>
             Manage Products
           </button>
           <button onClick={() => window.location.href = `/admin/settings?shop=${shop}`}>
