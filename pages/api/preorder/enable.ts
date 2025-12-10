@@ -28,12 +28,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(404).json({ error: 'Shop not found' })
         }
 
-        // 检查是否已有规则
+        // 检查是否已有规则（确保类型匹配）
+        const variantIdStr = variant_id.toString()
         const { data: existingRule } = await supabaseAdmin
             .from('products_rules')
             .select('*')
             .eq('shop_id', shopData.id)
-            .eq('variant_id', variant_id)
+            .eq('variant_id', variantIdStr)
             .single()
 
         if (existingRule) {
@@ -52,7 +53,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 .from('products_rules')
                 .insert({
                     shop_id: shopData.id,
-                    variant_id: variant_id,
+                    variant_id: variantIdStr,
                     active: true,
                     manual_preorder: true,
                     auto_preorder: false,
@@ -67,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             type: 'manual_preorder',
             action: 'enable',
             level: 'info',
-            variant_id: variant_id,
+            variant_id: variantIdStr,
             message: `Manually enabled pre-order from inventory monitor`,
         })
 
