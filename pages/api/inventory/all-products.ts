@@ -56,6 +56,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const data = await response.json()
         const products = data.products || []
 
+        // 获取所有已启用预购的 variant_id
+        let preorderVariants = new Set<string>()
+        try {
+            const { data: shopData } = await supabaseAdmin
+                .from('shops')
+                .select('id')
+                .eq('shop_domain', shopDomain)
+                .single()
+
+            if (shopData) {
+                const { data: rules } = await supabaseAdmin
+                    .from('products_rules')
+                    .select('variant_id')
+                    .eq('shop_id', shopData.id)
+                    .eq('active', true)
+
+                if (rules) {
+                    preorderVariants = new Set(rules.map(r => r.variant_id.toString()))
+                }
+            }
+        } catch (e) {
+            console.error('Error fetching preorder rules:', e)
+        }
+
         // 统计缺货产品
         const outOfStock = []
         for (const product of products) {
@@ -69,6 +93,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         variant_title: variant.title,
                         quantity: qty,
                         sku: variant.sku,
+                        preorder_enabled: preorderVariants.has(variant.id.toString()),
                     })
                 }
             }
