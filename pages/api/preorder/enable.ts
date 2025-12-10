@@ -39,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         if (existingRule) {
             // 更新现有规则
-            await supabaseAdmin
+            const { error: updateError } = await supabaseAdmin
                 .from('products_rules')
                 .update({
                     active: true,
@@ -47,9 +47,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     updated_at: new Date().toISOString()
                 })
                 .eq('id', existingRule.id)
+
+            if (updateError) {
+                console.error('Update error:', updateError)
+                return res.status(500).json({ error: 'Failed to update rule', details: updateError.message })
+            }
         } else {
             // 创建新规则
-            await supabaseAdmin
+            const { error: insertError } = await supabaseAdmin
                 .from('products_rules')
                 .insert({
                     shop_id: shopData.id,
@@ -60,6 +65,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
                 })
+
+            if (insertError) {
+                console.error('Insert error:', insertError)
+                return res.status(500).json({ error: 'Failed to create rule', details: insertError.message })
+            }
         }
 
         // 记录日志
