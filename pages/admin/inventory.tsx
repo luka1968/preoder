@@ -37,130 +37,84 @@ export default function InventoryMonitorPage() {
         setSyncing(true)
         // Trigger manual sync
         await fetch(`/api/cron/inventory-sync`, {
-            headers: { 'x-cron-secret': 'manual' }
-        })
-        await loadData(shop)
-        setSyncing(false)
-    }
 
-    async function handleEnablePreorder(variantId: string, productTitle: string) {
-        if (!confirm(`Enable pre-order for "${productTitle}"?`)) return
+            if(loading || !data) return <div className="loading">Loading...</div>
 
-        try {
-            const res = await fetch(`/api/preorder/enable`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ shop, variant_id: variantId })
-            })
+        return (
+            <div className="container">
+                <header>
+                    <h1>Inventory Monitor</h1>
+                    <button onClick={handleSync} disabled={syncing}>
+                        {syncing ? 'Syncing...' : '🔄 Manual Sync'}
+                    </button>
+                </header>
 
-            if (res.ok) {
-                alert('Pre-order enabled successfully!')
-                await loadData(shop)
-            } else {
-                alert('Failed to enable pre-order')
-            }
-        } catch (error) {
-            console.error('Error enabling preorder:', error)
-            alert('Error enabling pre-order')
-        }
-    }
-
-    if (loading || !data) return <div className="loading">Loading...</div>
-
-    return (
-        <div className="container">
-            <header>
-                <h1>Inventory Monitor</h1>
-                <button onClick={handleSync} disabled={syncing}>
-                    {syncing ? 'Syncing...' : '🔄 Manual Sync'}
-                </button>
-            </header>
-
-            <div className="stats">
-                <div className="stat">
-                    <strong>{data.total}</strong>
-                    <span>Out of Stock</span>
+                <div className="stats">
+                    <div className="stat">
+                        <strong>{data.total}</strong>
+                        <span>Out of Stock</span>
+                    </div>
+                    <div className="stat">
+                        <strong>{data.discrepancies?.length || 0}</strong>
+                        <span>Sync Issues</span>
+                    </div>
+                    <div className={`stat ${data.synced ? 'success' : 'warning'}`}>
+                        <strong>{data.synced ? '✅' : '⚠️'}</strong>
+                        <span>{data.synced ? 'Synced' : 'Issues Found'}</span>
+                    </div>
                 </div>
-                <div className="stat">
-                    <strong>{data.discrepancies?.length || 0}</strong>
-                    <span>Sync Issues</span>
-                </div>
-                <div className={`stat ${data.synced ? 'success' : 'warning'}`}>
-                    <strong>{data.synced ? '✅' : '⚠️'}</strong>
-                    <span>{data.synced ? 'Synced' : 'Issues Found'}</span>
-                </div>
-            </div>
 
-            {data.discrepancies && data.discrepancies.length > 0 && (
-                <div className="section">
-                    <h2>⚠️ Sync Issues ({data.discrepancies.length})</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Variant ID</th>
-                                <th>Issue</th>
-                                <th>Current</th>
-                                <th>Expected</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {data.discrepancies.map((d: any) => (
-                                <tr key={d.variant_id}>
-                                    <td>{d.variant_id}</td>
-                                    <td>{d.issue}</td>
-                                    <td>{d.current_status}</td>
-                                    <td>{d.expected_status}</td>
+                {data.discrepancies && data.discrepancies.length > 0 && (
+                    <div className="section">
+                        <h2>⚠️ Sync Issues ({data.discrepancies.length})</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Variant ID</th>
+                                    <th>Issue</th>
+                                    <th>Current</th>
+                                    <th>Expected</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
+                            </thead>
+                            <tbody>
+                                {data.discrepancies.map((d: any) => (
+                                    <tr key={d.variant_id}>
+                                        <td>{d.variant_id}</td>
+                                        <td>{d.issue}</td>
+                                        <td>{d.current_status}</td>
+                                        <td>{d.expected_status}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
 
-            <div className="section">
-                <h2>Out of Stock Products ({data.out_of_stock.length})</h2>
-                <div className="products-list">
-                    {data.out_of_stock.map((p: any) => (
-                        <div key={p.variant_id} className="product-card">
-                            <div className="product-main">
-                                <div className="product-info">
-                                    <h3>{p.product_title}</h3>
-                                    {p.variant_title && p.variant_title !== 'Default Title' && (
-                                        <p className="variant-title">{p.variant_title}</p>
-                                    )}
-                                    <div className="product-meta">
-                                        <span className="sku">SKU: {p.sku || 'N/A'}</span>
-                                        <span className="quantity">Stock: {p.quantity}</span>
-                                        <span className="variant-id">ID: {p.variant_id}</span>
+                <div className="section">
+                    <h2>Out of Stock Products ({data.out_of_stock.length})</h2>
+                    <div className="products-list">
+                        {data.out_of_stock.map((p: any) => (
+                            <div key={p.variant_id} className="product-card">
+                                <div className="product-main">
+                                    <div className="product-info">
+                                        <h3>{p.product_title}</h3>
+                                        {p.variant_title && p.variant_title !== 'Default Title' && (
+                                            <p className="variant-title">{p.variant_title}</p>
+                                        )}
+                                        <div className="product-meta">
+                                            <span className="sku">SKU: {p.sku || 'N/A'}</span>
+                                            <span className="quantity">Stock: {p.quantity}</span>
+                                            <span className="variant-id">ID: {p.variant_id}</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="product-actions">
-                                    {p.preorder_enabled ? (
-                                        <button className="btn btn-success" disabled>
-                                            ✓ Pre-Order Enabled
-                                        </button>
-                                    ) : (
-                                        <button
-                                            className="btn btn-primary"
-                                            onClick={() => handleEnablePreorder(p.variant_id, p.product_title)}
-                                        >
-                                            Enable Pre-Order
-                                        </button>
-                                    )}
-                                    <a
-                                        href={`https://${shop}/admin/products/${p.product_id}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="btn btn-secondary"
-                                    >
-                                        View in Shopify
-                                    </a>
-                                </div>
+                                    View in Shopify
+                                </a>
                             </div>
-                        </div>
-                    ))}
+                                </div>
                 </div>
+                        ))}
             </div>
+                </div >
 
             <style jsx>{`
         .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
@@ -201,6 +155,6 @@ export default function InventoryMonitorPage() {
         .btn-secondary:hover { background: #f7fafc; }
         .btn-success { background: #48bb78; color: white; cursor: default; }
       `}</style>
-        </div>
-    )
-}
+            </div >
+        )
+    }

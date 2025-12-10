@@ -10,9 +10,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(405).json({ error: 'Method not allowed' })
     }
 
-    const { shop, variant_id } = req.body
+    const { shop, variant_id, product_id } = req.body
 
-    if (!shop || !variant_id) {
+    if (!shop || !variant_id || !product_id) {
         return res.status(400).json({ error: 'Missing required parameters' })
     }
 
@@ -58,6 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 .from('products_rules')
                 .insert({
                     shop_id: shopData.id,
+                    product_id: product_id.toString(),
                     variant_id: variantIdStr,
                     active: true,
                     manual_preorder: true,
