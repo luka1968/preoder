@@ -84,12 +84,45 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse, shopData: a
         return res.status(400).json({ error: 'Missing variant_id' })
     }
 
+    // 🔧 如果没有提供 product_id，从 Shopify API 获取
+    let resolvedProductId = product_id
+    if (!resolvedProductId) {
+        try {
+            const variantResponse = await fetch(
+                `https://${shopData.shop_domain}/admin/api/2025-10/variants/${variant_id}.json`,
+                {
+                    headers: {
+                        'X-Shopify-Access-Token': shopData.access_token,
+                    },
+                }
+            )
+
+            if (variantResponse.ok) {
+                const variantData = await variantResponse.json()
+                resolvedProductId = variantData.variant?.product_id?.toString()
+                console.log(`✅ Fetched product_id from Shopify: ${resolvedProductId}`)
+            } else {
+                console.error('❌ Failed to fetch variant from Shopify:', await variantResponse.text())
+            }
+        } catch (error) {
+            console.error('❌ Error fetching product_id:', error)
+        }
+    }
+
+    // 如果还是没有 product_id，返回错误
+    if (!resolvedProductId) {
+        return res.status(400).json({
+            error: 'Failed to resolve product_id',
+            details: 'product_id must be provided or variant must exist in Shopify'
+        })
+    }
+
     // 更新或创建规则
     const { data, error } = await supabaseAdmin
         .from('products_rules')
         .upsert({
             shop_id: shopData.id,
-            product_id,
+            product_id: resolvedProductId,
             variant_id,
             manual_preorder: manual_preorder || false,
             auto_preorder: auto_preorder || false,
@@ -110,7 +143,8 @@ async function handlePost(req: NextApiRequest, res: NextApiResponse, shopData: a
         .single()
 
     if (error) {
-        return res.status(500).json({ error: 'Failed to save rule' })
+        console.error('❌ Database error:', error)
+        return res.status(500).json({ error: 'Failed to save rule', details: error.message })
     }
 
     // 同步到 Shopify (更新 metafields 和 inventory_policy)

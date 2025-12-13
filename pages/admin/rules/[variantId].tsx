@@ -6,6 +6,7 @@ export default function RuleEditorPage() {
     const { variantId, shop } = router.query
 
     const [rule, setRule] = useState<any>({
+        product_id: null,
         manual_preorder: false,
         auto_preorder: false,
         auto_threshold: 0,
@@ -49,6 +50,7 @@ export default function RuleEditorPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     variant_id: variantId,
+                    product_id: rule.product_id,
                     ...rule,
                 }),
             })
