@@ -5,6 +5,7 @@ export default function InventoryMonitorPage() {
     const [data, setData] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [syncing, setSyncing] = useState(false)
+    const [processing, setProcessing] = useState<Set<string>>(new Set())
 
     useEffect(() => {
         const shopParam = new URLSearchParams(window.location.search).get('shop')
@@ -119,36 +120,90 @@ export default function InventoryMonitorPage() {
                                     </div>
                                 </div>
                                 <div className="product-actions">
-                                    <button
-                                        onClick={async () => {
-                                            try {
-                                                const response = await fetch('/api/products/enable-preorder', {
-                                                    method: 'POST',
-                                                    headers: { 'Content-Type': 'application/json' },
-                                                    body: JSON.stringify({
-                                                        shop: shop,
-                                                        productId: p.product_id,
-                                                        variantId: p.variant_id,
-                                                        enabled: true
-                                                    })
-                                                })
+                                    {p.preorder_enabled ? (
+                                        <>
+                                            <span className="status-badge status-enabled">✓ 预购已启用</span>
+                                            <button
+                                                onClick={async () => {
+                                                    const variantId = p.variant_id.toString()
+                                                    setProcessing(prev => new Set(prev).add(variantId))
+                                                    try {
+                                                        const response = await fetch('/api/products/enable-preorder', {
+                                                            method: 'POST',
+                                                            headers: { 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({
+                                                                shop: shop,
+                                                                productId: p.product_id,
+                                                                variantId: p.variant_id,
+                                                                enabled: false
+                                                            })
+                                                        })
 
-                                                if (response.ok) {
-                                                    alert('Pre-order enabled successfully!')
-                                                    await loadData(shop)
-                                                } else {
-                                                    const error = await response.json()
-                                                    alert(`Failed to enable pre-order: ${error.error || 'Unknown error'}`)
+                                                        if (response.ok) {
+                                                            alert('预购已成功禁用！')
+                                                            await loadData(shop)
+                                                        } else {
+                                                            const error = await response.json()
+                                                            alert(`禁用预购失败: ${error.error || '未知错误'}`)
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Error:', error)
+                                                        alert('禁用预购失败')
+                                                    } finally {
+                                                        setProcessing(prev => {
+                                                            const newSet = new Set(prev)
+                                                            newSet.delete(variantId)
+                                                            return newSet
+                                                        })
+                                                    }
+                                                }}
+                                                className="btn btn-warning"
+                                                disabled={processing.has(p.variant_id.toString())}
+                                            >
+                                                {processing.has(p.variant_id.toString()) ? '处理中...' : '禁用预购'}
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <button
+                                            onClick={async () => {
+                                                const variantId = p.variant_id.toString()
+                                                setProcessing(prev => new Set(prev).add(variantId))
+                                                try {
+                                                    const response = await fetch('/api/products/enable-preorder', {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({
+                                                            shop: shop,
+                                                            productId: p.product_id,
+                                                            variantId: p.variant_id,
+                                                            enabled: true
+                                                        })
+                                                    })
+
+                                                    if (response.ok) {
+                                                        alert('预购已成功启用！')
+                                                        await loadData(shop)
+                                                    } else {
+                                                        const error = await response.json()
+                                                        alert(`启用预购失败: ${error.error || '未知错误'}`)
+                                                    }
+                                                } catch (error) {
+                                                    console.error('Error:', error)
+                                                    alert('启用预购失败')
+                                                } finally {
+                                                    setProcessing(prev => {
+                                                        const newSet = new Set(prev)
+                                                        newSet.delete(variantId)
+                                                        return newSet
+                                                    })
                                                 }
-                                            } catch (error) {
-                                                console.error('Error:', error)
-                                                alert('Failed to enable pre-order')
-                                            }
-                                        }}
-                                        className="btn btn-primary"
-                                    >
-                                        Enable Pre-Order
-                                    </button>
+                                            }}
+                                            className="btn btn-primary"
+                                            disabled={processing.has(p.variant_id.toString())}
+                                        >
+                                            {processing.has(p.variant_id.toString()) ? '处理中...' : '启用预购'}
+                                        </button>
+                                    )}
                                     <a
                                         href={`https://${shop}/admin/products/${p.product_id}/variants/${p.variant_id}`}
                                         target="_blank"
@@ -198,10 +253,15 @@ export default function InventoryMonitorPage() {
                 .product-actions { display: flex; gap: 12px; align-items: center; }
                 .btn { padding: 8px 16px; border-radius: 6px; font-size: 14px; font-weight: 500; text-decoration: none; display: inline-block; border: none; cursor: pointer; transition: all 0.2s; }
                 .btn-primary { background: #4299e1; color: white; }
-                .btn-primary:hover { background: #3182ce; transform: translateY(-1px); }
+                .btn-primary:hover:not(:disabled) { background: #3182ce; transform: translateY(-1px); }
                 .btn-secondary { background: white; color: #4a5568; border: 1px solid #cbd5e0; }
                 .btn-secondary:hover { background: #f7fafc; }
-                .btn-success { background: #48bb78; color: white; cursor: default; }
+                .btn-warning { background: #ed8936; color: white; }
+                .btn-warning:hover:not(:disabled) { background: #dd6b20; transform: translateY(-1px); }
+                .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+                
+                .status-badge { padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; }
+                .status-enabled { background: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
                 
                 .loading { display: flex; align-items: center; justify-content: center; min-height: 400px; font-size: 18px; color: #718096; }
             `}</style>

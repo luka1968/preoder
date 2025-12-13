@@ -67,10 +67,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             if (shopData) {
                 const { data: rules } = await supabaseAdmin
-                    .from('products_rules')
+                    .from('preorder_products')
                     .select('variant_id')
                     .eq('shop_id', shopData.id)
-                    .eq('active', true)
+                    .eq('enabled', true)
 
                 if (rules) {
                     preorderVariants = new Set(rules.map(r => r.variant_id.toString()))
