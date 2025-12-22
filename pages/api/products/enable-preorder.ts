@@ -46,12 +46,58 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             .eq('shop_domain', shop)
             .single()
 
+        let accessToken: string | null = null
+        let shopId: string | null = null
+
         if (shopError || !shopData) {
-            return res.status(404).json({ error: 'Shop not found' })
+            // 🔄 降级方案：尝试使用环境变量（单店铺部署场景）
+            console.warn(`⚠️ Shop not found in database: ${shop}`)
+            console.log('🔄 Attempting to use environment variables as fallback...')
+
+            const envShop = process.env.SHOPIFY_SHOP_DOMAIN
+            const envToken = process.env.SHOPIFY_ADMIN_ACCESS_TOKEN
+
+            if (envShop === shop && envToken) {
+                console.log('✅ Using environment variables for shop credentials')
+                accessToken = envToken
+
+                // 尝试创建或获取临时 shop_id
+                const { data: tempShop, error: createError } = await supabaseAdmin
+                    .from('shops')
+                    .upsert({
+                        shop_domain: shop,
+                        access_token: envToken,
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'shop_domain' })
+                    .select('id')
+                    .single()
+
+                if (tempShop) {
+                    shopId = tempShop.id
+                }
+            } else {
+                return res.status(404).json({
+                    error: 'Shop not found',
+                    message: '店铺未安装或未授权。请通过以下链接安装应用：',
+                    install_url: `${process.env.NEXT_PUBLIC_APP_URL || process.env.SHOPIFY_APP_URL}/api/auth/shopify?shop=${shop}`,
+                    details: process.env.NODE_ENV === 'development' ? {
+                        shop_domain: shop,
+                        database_error: shopError?.message
+                    } : undefined
+                })
+            }
+        } else {
+            accessToken = shopData.access_token
+            shopId = shopData.id
         }
 
-        const accessToken = shopData.access_token
-        const shopId = shopData.id
+        if (!accessToken) {
+            return res.status(500).json({ error: 'No access token available' })
+        }
+
+        if (!shopId) {
+            return res.status(500).json({ error: 'No shop ID available' })
+        }
 
         // 获取产品变体
         const variants = variantId

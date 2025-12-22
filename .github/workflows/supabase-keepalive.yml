@@ -1,0 +1,38 @@
+name: Supabase Keepalive - Daily
+
+on:
+  schedule:
+    # 每天北京时间 16:00 执行一次 (UTC 08:00)
+    # 可以改成你想要的时间，比如改成 '0 0 * * *' 就是每天 UTC 00:00 (北京 08:00)
+    - cron: '0 8 * * *'
+  
+  workflow_dispatch:  # 允许手动触发测试
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Ping Supabase Database
+        run: |
+          echo "🔄 Pinging Supabase to keep it alive..."
+          echo "Time: $(date)"
+          
+          # 访问 Supabase REST API
+          response=$(curl -s -w "\n%{http_code}" -X GET \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            https://uumtumvqkmvcursfqkgs.supabase.co/rest/v1/shops?limit=1)
+          
+          http_code=$(echo "$response" | tail -n1)
+          
+          if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 206 ]; then
+            echo "✅ Keepalive successful! HTTP $http_code"
+          else
+            echo "⚠️ Unexpected response: HTTP $http_code"
+          fi
+          
+      - name: Log completion
+        run: |
+          echo "✅ Daily keepalive completed at $(date)"
+          echo "Next run: Tomorrow at the same time"
