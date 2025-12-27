@@ -19,7 +19,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-        const { shop, variantIds, enabled = true, estimatedShippingDate } = req.body
+        const {
+            shop,
+            variantIds,
+            enabled = true,
+            estimatedShippingDate,
+            maxPreorderQuantity, // 新增
+            autoDisableOnRestock = true // 新增
+        } = req.body
 
         if (!shop || !variantIds || !Array.isArray(variantIds)) {
             return res.status(400).json({
@@ -66,7 +73,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         accessToken,
                         shopId,
                         variantId,
-                        estimatedShippingDate
+                        estimatedShippingDate,
+                        maxPreorderQuantity,
+                        autoDisableOnRestock
                     )
                 } else {
                     await disablePreorderForVariant(
@@ -122,7 +131,9 @@ async function enablePreorderForVariant(
     accessToken: string,
     shopId: string,
     variantId: string,
-    estimatedShippingDate?: string
+    estimatedShippingDate?: string,
+    maxPreorderQuantity?: number,
+    autoDisableOnRestock?: boolean
 ) {
     // 1. 修改 inventory_policy
     await updateVariantInventoryPolicy(shop, accessToken, variantId, 'continue')
@@ -131,7 +142,7 @@ async function enablePreorderForVariant(
     await setVariantMetafield(shop, accessToken, variantId, 'preorder_enabled', 'true')
     await setVariantMetafield(shop, accessToken, variantId, 'manual_enabled', 'true')
 
-    // 3. 保存到数据库（手动模式，最高优先级）
+    // 3. 保存到数据库（手动模式，最高优先级）+ 数量限制
     await supabaseAdmin
         .from('preorder_products')
         .upsert({
@@ -142,6 +153,9 @@ async function enablePreorderForVariant(
             auto_enabled: false,
             priority: 1, // 最高优先级
             estimated_shipping_date: estimatedShippingDate,
+            max_preorder_quantity: maxPreorderQuantity || null, // 新增
+            current_preorder_count: 0, // 新增
+            auto_disable_on_restock: autoDisableOnRestock !== false, // 新增
             updated_at: new Date().toISOString()
         }, {
             onConflict: 'shop_id,variant_id'

@@ -5,15 +5,197 @@
 
     console.log('🚀 PreOrder Globo Mode Widget Loading...');
 
-    // 获取配置
-    const CONFIG = window.PREORDER_CONFIG || {
+    // 🌐 多语言翻译
+    const TRANSLATIONS = {
+        'en': {
+            buttonText: 'Pre-Order Now',
+            buttonAdding: 'Adding to cart...',
+            badge: 'Pre-Order',
+            shippingNoteTitle: 'Pre-Order Information',
+            shippingNoteEstimatedDate: 'Estimated shipping date',
+            shippingNoteDescription: 'This item is currently out of stock. Pre-order now to ensure priority shipping.',
+            successMessage: 'Added to cart! Redirecting to checkout...',
+            errorMessage: 'Operation failed, please try again'
+        },
+        'zh-CN': {
+            buttonText: '立即预订',
+            buttonAdding: '加入购物车中...',
+            badge: '预售',
+            shippingNoteTitle: '预购说明',
+            shippingNoteEstimatedDate: '预计发货日期',
+            shippingNoteDescription: '此商品目前缺货，立即预订可确保优先发货。',
+            successMessage: '已加入购物车！即将前往结账...',
+            errorMessage: '操作失败，请重试'
+        },
+        'zh': { // 简体中文降级
+            buttonText: '立即预订',
+            buttonAdding: '加入购物车中...',
+            badge: '预售',
+            shippingNoteTitle: '预购说明',
+            shippingNoteEstimatedDate: '预计发货日期',
+            shippingNoteDescription: '此商品目前缺货，立即预订可确保优先发货。',
+            successMessage: '已加入购物车！即将前往结账...',
+            errorMessage: '操作失败，请重试'
+        },
+        'zh-TW': {
+            buttonText: '立即預訂',
+            buttonAdding: '加入購物車中...',
+            badge: '預售',
+            shippingNoteTitle: '預購說明',
+            shippingNoteEstimatedDate: '預計發貨日期',
+            shippingNoteDescription: '此商品目前缺貨，立即預訂可確保優先發貨。',
+            successMessage: '已加入購物車！即將前往結帳...',
+            errorMessage: '操作失敗，請重試'
+        },
+        'es': { // 西班牙语
+            buttonText: 'Pre-ordenar ahora',
+            buttonAdding: 'Añadiendo al carrito...',
+            badge: 'Pre-orden',
+            shippingNoteTitle: 'Información de pre-orden',
+            shippingNoteEstimatedDate: 'Fecha estimada de envío',
+            shippingNoteDescription: 'Este artículo está actualmente agotado. Pre-ordene ahora para asegurar el envío prioritario.',
+            successMessage: '¡Añadido al carrito! Redirigiendo al pago...',
+            errorMessage: 'Operación fallida, por favor intenta de nuevo'
+        },
+        'fr': { // 法语
+            buttonText: 'Pré-commander maintenant',
+            buttonAdding: 'Ajout au panier...',
+            badge: 'Pré-commande',
+            shippingNoteTitle: 'Information de pré-commande',
+            shippingNoteEstimatedDate: 'Date d\'expédition estimée',
+            shippingNoteDescription: 'Cet article est actuellement en rupture de stock. Pré-commandez maintenant pour assurer une expédition prioritaire.',
+            successMessage: 'Ajouté au panier! Redirection vers la caisse...',
+            errorMessage: 'Opération échouée, veuillez réessayer'
+        },
+        'de': { // 德语
+            buttonText: 'Jetzt vorbestellen',
+            buttonAdding: 'Wird zum Warenkorb hinzugefügt...',
+            badge: 'Vorbestellung',
+            shippingNoteTitle: 'Vorbestellungsinformation',
+            shippingNoteEstimatedDate: 'Geschätztes Versanddatum',
+            shippingNoteDescription: 'Dieser Artikel ist derzeit nicht auf Lager. Bestellen Sie jetzt vor, um vorrangigen Versand zu sichern.',
+            successMessage: 'Zum Warenkorb hinzugefügt! Weiterleitung zur Kasse...',
+            errorMessage: 'Vorgang fehlgeschlagen, bitte erneut versuchen'
+        },
+        'ja': { // 日语
+            buttonText: '今すぐ予約注文',
+            buttonAdding: 'カートに追加中...',
+            badge: '予約注文',
+            shippingNoteTitle: '予約注文情報',
+            shippingNoteEstimatedDate: '出荷予定日',
+            shippingNoteDescription: 'この商品は現在在庫切れです。今すぐ予約注文して優先出荷を確保してください。',
+            successMessage: 'カートに追加されました！チェックアウトにリダイレクトしています...',
+            errorMessage: '操作が失敗しました。もう一度お試しください'
+        },
+        'ko': { // 韩语
+            buttonText: '지금 예약 주문',
+            buttonAdding: '장바구니에 추가 중...',
+            badge: '예약 주문',
+            shippingNoteTitle: '예약 주문 정보',
+            shippingNoteEstimatedDate: '예상 배송일',
+            shippingNoteDescription: '이 상품은 현재 품절입니다. 지금 예약 주문하여 우선 배송을 확보하세요.',
+            successMessage: '장바구니에 추가되었습니다! 결제 페이지로 이동 중...',
+            errorMessage: '작업이 실패했습니다. 다시 시도해 주세요'
+        },
+        'it': { // 意大利语
+            buttonText: 'Pre-ordina ora',
+            buttonAdding: 'Aggiunta al carrello...',
+            badge: 'Pre-ordine',
+            shippingNoteTitle: 'Informazioni pre-ordine',
+            shippingNoteEstimatedDate: 'Data di spedizione stimata',
+            shippingNoteDescription: 'Questo articolo è attualmente esaurito. Pre-ordina ora per garantire la spedizione prioritaria.',
+            successMessage: 'Aggiunto al carrello! Reindirizzamento al checkout...',
+            errorMessage: 'Operazione fallita, riprova'
+        },
+        'pt': { // 葡萄牙语
+            buttonText: 'Pré-encomendar agora',
+            buttonAdding: 'Adicionando ao carrinho...',
+            badge: 'Pré-encomenda',
+            shippingNoteTitle: 'Informação de pré-encomenda',
+            shippingNoteEstimatedDate: 'Data estimada de envio',
+            shippingNoteDescription: 'Este item está atualmente esgotado. Pré-encomende agora para garantir o envio prioritário.',
+            successMessage: 'Adicionado ao carrinho! Redirecionando para o checkout...',
+            errorMessage: 'Operação falhou, tente novamente'
+        },
+        'ru': { // 俄语
+            buttonText: 'Предзаказать сейчас',
+            buttonAdding: 'Добавление в корзину...',
+            badge: 'Предзаказ',
+            shippingNoteTitle: 'Информация о предзаказе',
+            shippingNoteEstimatedDate: 'Ожидаемая дата отправки',
+            shippingNoteDescription: 'Этот товар в настоящее время нет в наличии. Сделайте предзаказ сейчас, чтобы обеспечить приоритетную доставку.',
+            successMessage: 'Добавлено в корзину! Перенаправление на оформление заказа...',
+            errorMessage: 'Операция не удалась, попробуйте еще раз'
+        }
+    };
+
+    // 🔍 检测当前语言
+    function detectLocale() {
+        // 优先级1: Shopify locale
+        if (typeof Shopify !== 'undefined' && Shopify.locale) {
+            return Shopify.locale;
+        }
+
+        // 优先级2: URL 路径 (例如 /zh-cn/products/...)
+        const pathMatch = window.location.pathname.match(/^\/([a-z]{2}(-[A-Z]{2})?)\//);
+        if (pathMatch) {
+            return pathMatch[1];
+        }
+
+        // 优先级3: HTML lang 属性
+        const htmlLang = document.documentElement.lang;
+        if (htmlLang) {
+            return htmlLang;
+        }
+
+        // 优先级4: 浏览器语言
+        const browserLang = navigator.language || navigator.userLanguage;
+        if (browserLang) {
+            return browserLang;
+        }
+
+        // 默认: 英语
+        return 'en';
+    }
+
+    // 🌍 获取翻译文本
+    function getTranslations(locale) {
+        // 精确匹配
+        if (TRANSLATIONS[locale]) {
+            return TRANSLATIONS[locale];
+        }
+
+        // 语言代码匹配 (zh-CN → zh)
+        const languageCode = locale.split('-')[0].toLowerCase();
+        for (const key in TRANSLATIONS) {
+            if (key.toLowerCase().startsWith(languageCode)) {
+                return TRANSLATIONS[key];
+            }
+        }
+
+        // 降级到英语
+        return TRANSLATIONS['en'];
+    }
+
+    // 检测并设置语言
+    const currentLocale = detectLocale();
+    const t = getTranslations(currentLocale);
+
+    console.log('🌍 Detected locale:', currentLocale);
+    console.log('📝 Using translations:', t);
+
+    // 获取配置（合并用户配置和翻译）
+    const CONFIG = Object.assign({
         shop: window.Shopify?.shop || window.location.hostname,
         apiUrl: 'https://shopmall.dpdns.org/api',
         enabled: true,
-        debug: true, // Globo 模式默认开启调试
-        estimatedShippingDate: '2025-12-15', // 默认预计发货日期
-        showEstimatedDate: true // 是否显示预计发货日期
-    };
+        debug: true,
+        estimatedShippingDate: '2025-12-15',
+        showEstimatedDate: true,
+        locale: currentLocale
+    }, window.PREORDER_CONFIG || {}, {
+        translations: t // 确保翻译总是最新的
+    });
 
     const log = (...args) => {
         if (CONFIG.debug) {
@@ -236,7 +418,7 @@
 
         button.innerHTML = `
       <span style="font-size: 20px;">🛒</span>
-      <span>立即预订 Pre-Order Now</span>
+      <span>${CONFIG.translations.buttonText}</span>
     `;
 
         // 悬停效果
@@ -259,7 +441,7 @@
             button.disabled = true;
             button.innerHTML = `
         <span style="font-size: 20px;">⏳</span>
-        <span>加入购物车中...</span>
+        <span>${CONFIG.translations.buttonAdding}</span>
       `;
 
             // 获取产品信息
@@ -274,7 +456,7 @@
                 button.style.transform = 'translateY(0)';
                 button.innerHTML = `
           <span style="font-size: 20px;">🛒</span>
-          <span>立即预订 Pre-Order Now</span>
+          <span>${CONFIG.translations.buttonText}</span>
         `;
             }
         });
@@ -300,7 +482,7 @@
       box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
       animation: pulse 2s ease-in-out infinite;
     `;
-        badge.innerHTML = '🔥 預售 Pre-Order';
+        badge.innerHTML = `🔥 ${CONFIG.translations.badge}`;
         return badge;
     }
 
@@ -323,12 +505,12 @@
         note.innerHTML = `
       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
         <span style="font-size: 16px;">📦</span>
-        <strong>預購說明 Pre-Order Information</strong>
+        <strong>${CONFIG.translations.shippingNoteTitle}</strong>
       </div>
       <div style="margin-left: 24px;">
-        預計發貨日期：<strong>${CONFIG.estimatedShippingDate || '即将补货'}</strong>
+        ${CONFIG.translations.shippingNoteEstimatedDate}：<strong>${CONFIG.estimatedShippingDate || '即将补货'}</strong>
         <br>
-        此商品目前缺貨，立即預訂可確保優先發貨。
+        ${CONFIG.translations.shippingNoteDescription}
       </div>
     `;
         return note;
@@ -355,7 +537,7 @@
     `;
         toast.innerHTML = `
       <span style="font-size: 24px;">✅</span>
-      <span>已加入購物車！即將前往結帳...</span>
+      <span>${CONFIG.translations.successMessage}</span>
     `;
         document.body.appendChild(toast);
 
@@ -385,7 +567,7 @@
     `;
         toast.innerHTML = `
       <span style="font-size: 24px;">❌</span>
-      <span>${message || '操作失敗，請重試'}</span>
+      <span>${message || CONFIG.translations.errorMessage}</span>
     `;
         document.body.appendChild(toast);
 

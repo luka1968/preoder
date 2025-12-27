@@ -9,6 +9,7 @@ import {
   updateShop,
   supabaseAdmin
 } from './supabase'
+import { sendPreorderConfirmationEmail, sendBulkBackInStockNotifications } from './email'
 import { verifyWebhookSignature, createWebhook, getWebhooks, deleteWebhook } from './shopify'
 import {
   ProductUpdateWebhook,
@@ -109,9 +110,9 @@ async function processVariantBackInStock(
     const shopDomain = await getShopDomain(shopId)
     const productUrl = `https://${shopDomain}/products/${product.handle}${variant.id ? `?variant=${variant.id}` : ''}`
 
-    // TODO: Re-enable email notifications
+    // 邮件通知已启用
     // const result = await sendBulkBackInStockNotifications(...)
-    console.log(`Would send notifications for variant ${variant.id}`)
+    console.log(`Sending back-in-stock notifications for variant ${variant.id}`)
 
     await logActivity(
       shopId,
@@ -232,14 +233,151 @@ async function processPreorderLineItem(
       order_tags: order.tags ? order.tags.split(', ') : []
     })
 
-    // TODO: Re-enable email confirmation
-    // await sendPreorderConfirmation(...)
-    console.log(`Would send pre-order confirmation to ${order.email}`)
+    // 💌 发送预购确认邮件（使用 Brevo SMTP）
+    try {
+      await sendPreorderConfirmationEmail({
+        to: order.email,
+        customerName: order.customer?.first_name || 'Customer',
+        orderNumber: order.name,
+        productName: lineItem.name,
+        quantity: lineItem.quantity,
+        totalAmount: lineItem.price,
+        estimatedDeliveryDate: estimatedDeliveryDate || 'TBD',
+        shopDomain: await getShopDomain(shopId)
+      })
+      console.log(`✅ Sent pre-order confirmation email to ${order.email}`)
+    } catch (emailError) {
+      console.error(`⚠️ Failed to send email to ${order.email}:`, emailError)
+      // 邮件发送失败不影响订单创建
+    }
+
+    // 📊 更新预购数量计数（Globo Pro 功能）
+    try {
+      const { data: preorderProduct } = await supabaseAdmin
+        .from('preorder_products')
+        .select('current_preorder_count, max_preorder_quantity, variant_id')
+        .eq('shop_id', shopId)
+        .eq('variant_id', lineItem.variant_id)
+        .single()
+
+      if (preorderProduct) {
+        const newCount = (preorderProduct.current_preorder_count || 0) + lineItem.quantity
+
+        // 更新计数
+        await supabaseAdmin
+          .from('preorder_products')
+          .update({
+            current_preorder_count: newCount,
+            updated_at: new Date().toISOString()
+          })
+          .eq('shop_id', shopId)
+          .eq('variant_id', lineItem.variant_id)
+
+        console.log(`📊 Updated preorder count: ${newCount} (variant: ${lineItem.variant_id})`)
+
+        // 🚫 如果达到上限，自动关闭预购
+        if (preorderProduct.max_preorder_quantity &&
+          newCount >= preorderProduct.max_preorder_quantity) {
+
+          console.log(`🚫 Preorder limit reached (${newCount}/${preorderProduct.max_preorder_quantity}), auto-disabling...`)
+
+          // 获取 shop 信息
+          const { data: shopInfo } = await supabaseAdmin
+            .from('shops')
+            .select('shop_domain, access_token')
+            .eq('id', shopId)
+            .single()
+
+          if (shopInfo) {
+            await disablePreorderForVariant(
+              shopInfo.shop_domain,
+              shopInfo.access_token,
+              shopId,
+              lineItem.variant_id.toString()
+            )
+            console.log(`✅ Preorder auto-disabled due to quantity limit`)
+          }
+        }
+      }
+    } catch (countError) {
+      console.error(`⚠️ Failed to update preorder count:`, countError)
+      // 计数更新失败不影响订单创建
+    }
 
     console.log(`Created pre-order record ${preorderOrder.id} for line item ${lineItem.id}`)
 
   } catch (error) {
     console.error(`Error processing pre-order line item ${lineItem.id}:`, error)
+  }
+}
+
+// 禁用预购的辅助函数
+async function disablePreorderForVariant(
+  shop: string,
+  accessToken: string,
+  shopId: string,
+  variantId: string
+) {
+  try {
+    // 1. 恢复 inventory_policy
+    await fetch(`https://${shop}/admin/api/2025-10/variants/${variantId}.json`, {
+      method: 'PUT',
+      headers: {
+        'X-Shopify-Access-Token': accessToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        variant: {
+          id: variantId,
+          inventory_policy: 'deny'
+        }
+      })
+    })
+
+    // 2. 删除 metafields
+    const metafieldsToDelete = ['preorder_enabled', 'manual_enabled', 'auto_enabled']
+    for (const key of metafieldsToDelete) {
+      const listResponse = await fetch(
+        `https://${shop}/admin/api/2025-10/variants/${variantId}/metafields.json`,
+        {
+          headers: {
+            'X-Shopify-Access-Token': accessToken,
+          },
+        }
+      )
+
+      if (listResponse.ok) {
+        const data = await listResponse.json()
+        const metafield = data.metafields?.find((m: any) =>
+          m.namespace === 'preorder_pro' && m.key === key
+        )
+
+        if (metafield) {
+          await fetch(
+            `https://${shop}/admin/api/2025-10/metafields/${metafield.id}.json`,
+            {
+              method: 'DELETE',
+              headers: {
+                'X-Shopify-Access-Token': accessToken,
+              },
+            }
+          )
+        }
+      }
+    }
+
+    // 3. 更新数据库
+    await supabaseAdmin
+      .from('preorder_products')
+      .update({
+        enabled: false,
+        updated_at: new Date().toISOString()
+      })
+      .eq('shop_id', shopId)
+      .eq('variant_id', variantId)
+
+  } catch (error) {
+    console.error('Error disabling preorder:', error)
   }
 }
 

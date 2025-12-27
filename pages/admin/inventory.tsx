@@ -6,6 +6,10 @@ export default function InventoryMonitorPage() {
     const [loading, setLoading] = useState(true)
     const [syncing, setSyncing] = useState(false)
     const [processing, setProcessing] = useState<Set<string>>(new Set())
+    const [selectedVariants, setSelectedVariants] = useState<Set<string>>(new Set())
+    const [batchProcessing, setBatchProcessing] = useState(false)
+    const [showBatchConfig, setShowBatchConfig] = useState(false)
+    const [batchShippingDate, setBatchShippingDate] = useState('')
 
     useEffect(() => {
         const shopParam = new URLSearchParams(window.location.search).get('shop')
@@ -50,16 +54,108 @@ export default function InventoryMonitorPage() {
         }
     }
 
+    async function handleBatchOperation(enabled: boolean) {
+        if (selectedVariants.size === 0) {
+            alert('请先选择产品')
+            return
+        }
+
+        if (!confirm(`确定要批量${enabled ? '启用' : '禁用'}预购吗？共 ${selectedVariants.size} 个产品`)) {
+            return
+        }
+
+        setBatchProcessing(true)
+        try {
+            const response = await fetch('/api/products/batch-preorder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    shop,
+                    variantIds: Array.from(selectedVariants),
+                    enabled,
+                    estimatedShippingDate: batchShippingDate || undefined
+                })
+            })
+
+            const result = await response.json()
+
+            if (response.ok) {
+                alert(`批量操作完成！\n成功：${result.summary.success}\n失败：${result.summary.failed}`)
+                setSelectedVariants(new Set())
+                setShowBatchConfig(false)
+                await loadData(shop)
+            } else {
+                alert(`批量操作失败: ${result.error || '未知错误'}`)
+            }
+        } catch (error) {
+            console.error('Batch operation failed:', error)
+            alert('批量操作失败')
+        } finally {
+            setBatchProcessing(false)
+        }
+    }
+
     if (loading || !data) return <div className="loading">Loading...</div>
 
     return (
         <div className="container">
             <header>
                 <h1>Inventory Monitor</h1>
-                <button onClick={handleSync} disabled={syncing}>
-                    {syncing ? 'Syncing...' : '🔄 Manual Sync'}
-                </button>
+                <div className="header-actions">
+                    {selectedVariants.size > 0 && (
+                        <div className="batch-actions">
+                            <button
+                                onClick={() => setShowBatchConfig(!showBatchConfig)}
+                                className="btn btn-primary"
+                            >
+                                📦 批量操作 ({selectedVariants.size})
+                            </button>
+                            <button
+                                onClick={() => setSelectedVariants(new Set())}
+                                className="btn btn-secondary"
+                            >
+                                清除选择
+                            </button>
+                        </div>
+                    )}
+                    <button onClick={handleSync} disabled={syncing}>
+                        {syncing ? 'Syncing...' : '🔄 Manual Sync'}
+                    </button>
+                </div>
             </header>
+
+            {showBatchConfig && selectedVariants.size > 0 && (
+                <div className="batch-config-panel">
+                    <h3>📦 批量启用预购 ({selectedVariants.size} 个产品)</h3>
+                    <div className="batch-form">
+                        <div className="form-group">
+                            <label>预计发货日期（可选）</label>
+                            <input
+                                type="date"
+                                value={batchShippingDate}
+                                onChange={(e) => setBatchShippingDate(e.target.value)}
+                                className="form-control"
+                            />
+                        </div>
+                        <div className="batch-buttons">
+                            <button
+                                onClick={() => handleBatchOperation(true)}
+                                disabled={batchProcessing}
+                                className="btn btn-success"
+                            >
+                                {batchProcessing ? '处理中...' : '✅ 批量启用'}
+                            </button>
+                            <button
+                                onClick={() => handleBatchOperation(false)}
+                                disabled={batchProcessing}
+                                className="btn btn-warning"
+                            >
+                                {batchProcessing ? '处理中...' : '❌ 批量禁用'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="stats">
                 <div className="stat">
@@ -103,10 +199,42 @@ export default function InventoryMonitorPage() {
             )}
 
             <div className="section">
-                <h2>Out of Stock Products ({data.out_of_stock.length})</h2>
+                <h2>
+                    Out of Stock Products ({data.out_of_stock.length})
+                    {data.out_of_stock.length > 0 && (
+                        <button
+                            onClick={() => {
+                                if (selectedVariants.size === data.out_of_stock.length) {
+                                    setSelectedVariants(new Set())
+                                } else {
+                                    setSelectedVariants(new Set(data.out_of_stock.map((p: any) => p.variant_id.toString())))
+                                }
+                            }}
+                            className="btn-link"
+                            style={{ marginLeft: '10px', fontSize: '14px' }}
+                        >
+                            {selectedVariants.size === data.out_of_stock.length ? '取消全选' : '全选'}
+                        </button>
+                    )}
+                </h2>
                 <div className="products-list">
                     {data.out_of_stock.map((p: any) => (
                         <div key={p.variant_id} className="product-card">
+                            <input
+                                type="checkbox"
+                                checked={selectedVariants.has(p.variant_id.toString())}
+                                onChange={(e) => {
+                                    const variantId = p.variant_id.toString()
+                                    const newSet = new Set(selectedVariants)
+                                    if (e.target.checked) {
+                                        newSet.add(variantId)
+                                    } else {
+                                        newSet.delete(variantId)
+                                    }
+                                    setSelectedVariants(newSet)
+                                }}
+                                className="product-checkbox"
+                            />
                             <div className="product-main">
                                 <div className="product-info">
                                     <h3>{p.product_title}</h3>

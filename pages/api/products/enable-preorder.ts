@@ -30,12 +30,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-        const { shop, productId, variantId, estimatedShippingDate, enabled = true } = req.body
+        const {
+            shop,
+            productId,
+            variantId,
+            enabled = true,
+            estimatedShippingDate,
+            maxPreorderQuantity, // 新增：最大预购数量
+            autoDisableOnRestock = true // 新增：补货后自动关闭
+        } = req.body
 
-        if (!shop || !productId) {
+        if (!shop || !variantId) {
             return res.status(400).json({
                 error: 'Missing required parameters',
-                required: ['shop', 'productId']
+                required: ['shop', 'variantId']
             })
         }
 
