@@ -1,205 +1,205 @@
 import { useState, useEffect } from 'react'
 
 interface Settings {
-    auto_preorder_enabled: boolean
-    auto_threshold: number
-    auto_restore_on_restock: boolean
-    allow_batch_operations: boolean
-    default_estimated_shipping_days: number
-    default_preorder_message: string
+  auto_preorder_enabled: boolean
+  auto_threshold: number
+  auto_restore_on_restock: boolean
+  allow_batch_operations: boolean
+  default_estimated_shipping_days: number
+  default_preorder_message: string
 }
 
 export default function SettingsPage() {
-    const [shop, setShop] = useState('')
-    const [settings, setSettings] = useState<Settings | null>(null)
-    const [loading, setLoading] = useState(true)
-    const [saving, setSaving] = useState(false)
+  const [shop, setShop] = useState('')
+  const [settings, setSettings] = useState<Settings | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-    useEffect(() => {
-        const shopParam = new URLSearchParams(window.location.search).get('shop')
-        if (shopParam) {
-            setShop(shopParam)
-            loadSettings(shopParam)
-        }
-    }, [])
-
-    async function loadSettings(shopDomain: string) {
-        try {
-            setLoading(true)
-            const response = await fetch(`/api/settings/preorder?shop=${shopDomain}`)
-            const data = await response.json()
-            setSettings(data.settings)
-        } catch (error) {
-            console.error('Failed to load settings:', error)
-        } finally {
-            setLoading(false)
-        }
+  useEffect(() => {
+    const shopParam = new URLSearchParams(window.location.search).get('shop')
+    if (shopParam) {
+      setShop(shopParam)
+      loadSettings(shopParam)
     }
+  }, [])
 
-    async function saveSettings() {
-        if (!settings) return
-
-        try {
-            setSaving(true)
-            const response = await fetch(`/api/settings/preorder?shop=${shop}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(settings)
-            })
-
-            if (response.ok) {
-                alert('设置已保存！')
-            }
-        } catch (error) {
-            console.error('Failed to save settings:', error)
-            alert('保存失败，请重试')
-        } finally {
-            setSaving(false)
-        }
+  async function loadSettings(shopDomain: string) {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/settings/preorder?shop=${shopDomain}`)
+      const data = await response.json()
+      setSettings(data.settings)
+    } catch (error) {
+      console.error('Failed to load settings:', error)
+    } finally {
+      setLoading(false)
     }
+  }
 
-    if (loading || !settings) {
-        return <div className="loading">加载中...</div>
+  async function saveSettings() {
+    if (!settings) return
+
+    try {
+      setSaving(true)
+      const response = await fetch(`/api/settings/preorder?shop=${shop}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+      })
+
+      if (response.ok) {
+        alert('Settings saved!')
+      }
+    } catch (error) {
+      console.error('Failed to save settings:', error)
+      alert('Failed to save settings, please try again')
+    } finally {
+      setSaving(false)
     }
+  }
 
-    return (
-        <div className="container">
-            <header>
-                <h1>PreOrder Pro - 全局设置</h1>
-                <p className="subtitle">配置预购规则</p>
-            </header>
+  if (loading || !settings) {
+    return <div className="loading">Loading...</div>
+  }
 
-            <div className="settings-grid">
-                {/* 自动预购设置 */}
-                <div className="settings-card">
-                    <h2>🤖 自动预购模式</h2>
-                    <p className="description">
-                        当商品库存低于阈值时，自动启用预购功能
-                    </p>
+  return (
+    <div className="container">
+      <header>
+        <h1>PreOrder Pro - Global Settings</h1>
+        <p className="subtitle">Configure pre-order rules</p>
+      </header>
 
-                    <div className="setting-row">
-                        <label className="switch-label">
-                            <input
-                                type="checkbox"
-                                checked={settings.auto_preorder_enabled}
-                                onChange={(e) => setSettings({
-                                    ...settings,
-                                    auto_preorder_enabled: e.target.checked
-                                })}
-                            />
-                            <span className="switch"></span>
-                            启用自动预购
-                        </label>
-                    </div>
+      <div className="settings-grid">
+        {/* 自动预购设置 */}
+        <div className="settings-card">
+          <h2>🤖 Auto Pre-order Mode</h2>
+          <p className="description">
+            Automatically enable pre-order when product inventory falls below threshold
+          </p>
 
-                    {settings.auto_preorder_enabled && (
-                        <>
-                            <div className="setting-row">
-                                <label>库存阈值</label>
-                                <input
-                                    type="number"
-                                    value={settings.auto_threshold}
-                                    onChange={(e) => setSettings({
-                                        ...settings,
-                                        auto_threshold: parseInt(e.target.value) || 0
-                                    })}
-                                    min="0"
-                                    className="input-number"
-                                />
-                                <span className="hint">库存 ≤ 此值时启用预购（通常设为 0）</span>
-                            </div>
+          <div className="setting-row">
+            <label className="switch-label">
+              <input
+                type="checkbox"
+                checked={settings.auto_preorder_enabled}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  auto_preorder_enabled: e.target.checked
+                })}
+              />
+              <span className="switch"></span>
+              Enable Auto Pre-order
+            </label>
+          </div>
 
-                            <div className="setting-row">
-                                <label className="switch-label">
-                                    <input
-                                        type="checkbox"
-                                        checked={settings.auto_restore_on_restock}
-                                        onChange={(e) => setSettings({
-                                            ...settings,
-                                            auto_restore_on_restock: e.target.checked
-                                        })}
-                                    />
-                                    <span className="switch"></span>
-                                    补货时自动关闭预购
-                                </label>
-                            </div>
-                        </>
-                    )}
-                </div>
+          {settings.auto_preorder_enabled && (
+            <>
+              <div className="setting-row">
+                <label>Inventory Threshold</label>
+                <input
+                  type="number"
+                  value={settings.auto_threshold}
+                  onChange={(e) => setSettings({
+                    ...settings,
+                    auto_threshold: parseInt(e.target.value) || 0
+                  })}
+                  min="0"
+                  className="input-number"
+                />
+                <span className="hint">Enable pre-order when inventory ≤ this value (usually set to 0)</span>
+              </div>
 
-                {/* 批量操作设置 */}
-                <div className="settings-card">
-                    <h2>📦 批量操作</h2>
-                    <p className="description">
-                        允许一次性为多个商品启用/禁用预购
-                    </p>
+              <div className="setting-row">
+                <label className="switch-label">
+                  <input
+                    type="checkbox"
+                    checked={settings.auto_restore_on_restock}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      auto_restore_on_restock: e.target.checked
+                    })}
+                  />
+                  <span className="switch"></span>
+                  Auto-disable pre-order when restocked
+                </label>
+              </div>
+            </>
+          )}
+        </div>
 
-                    <div className="setting-row">
-                        <label className="switch-label">
-                            <input
-                                type="checkbox"
-                                checked={settings.allow_batch_operations}
-                                onChange={(e) => setSettings({
-                                    ...settings,
-                                    allow_batch_operations: e.target.checked
-                                })}
-                            />
-                            <span className="switch"></span>
-                            允许批量操作
-                        </label>
-                    </div>
-                </div>
+        {/* 批量操作设置 */}
+        <div className="settings-card">
+          <h2>📦 Batch Operations</h2>
+          <p className="description">
+            Allow enabling/disabling pre-order for multiple products at once
+          </p>
 
-                {/* 默认配置 */}
-                <div className="settings-card">
-                    <h2>⚙️ 默认配置</h2>
-                    <p className="description">
-                        新启用预购时的默认设置
-                    </p>
+          <div className="setting-row">
+            <label className="switch-label">
+              <input
+                type="checkbox"
+                checked={settings.allow_batch_operations}
+                onChange={(e) => setSettings({
+                  ...settings,
+                  allow_batch_operations: e.target.checked
+                })}
+              />
+              <span className="switch"></span>
+              Allow Batch Operations
+            </label>
+          </div>
+        </div>
 
-                    <div className="setting-row">
-                        <label>预计发货天数</label>
-                        <input
-                            type="number"
-                            value={settings.default_estimated_shipping_days}
-                            onChange={(e) => setSettings({
-                                ...settings,
-                                default_estimated_shipping_days: parseInt(e.target.value) || 30
-                            })}
-                            min="1"
-                            className="input-number"
-                        />
-                        <span className="hint">默认预计 X 天后发货</span>
-                    </div>
+        {/* 默认配置 */}
+        <div className="settings-card">
+          <h2>⚙️ Default Configuration</h2>
+          <p className="description">
+            Default settings when enabling pre-order
+          </p>
 
-                    <div className="setting-row">
-                        <label>预购提示文本</label>
-                        <textarea
-                            value={settings.default_preorder_message}
-                            onChange={(e) => setSettings({
-                                ...settings,
-                                default_preorder_message: e.target.value
-                            })}
-                            rows={3}
-                            className="textarea"
-                            placeholder="This item is available for pre-order..."
-                        />
-                        <span className="hint">使用 {'{days}'} 作为天数占位符</span>
-                    </div>
-                </div>
-            </div>
+          <div className="setting-row">
+            <label>Estimated Shipping Days</label>
+            <input
+              type="number"
+              value={settings.default_estimated_shipping_days}
+              onChange={(e) => setSettings({
+                ...settings,
+                default_estimated_shipping_days: parseInt(e.target.value) || 30
+              })}
+              min="1"
+              className="input-number"
+            />
+            <span className="hint">Default estimated shipping in X days</span>
+          </div>
 
-            <div className="actions">
-                <button
-                    onClick={saveSettings}
-                    disabled={saving}
-                    className="btn-primary"
-                >
-                    {saving ? '保存中...' : '保存设置'}
-                </button>
-            </div>
+          <div className="setting-row">
+            <label>Pre-order Message</label>
+            <textarea
+              value={settings.default_preorder_message}
+              onChange={(e) => setSettings({
+                ...settings,
+                default_preorder_message: e.target.value
+              })}
+              rows={3}
+              className="textarea"
+              placeholder="This item is available for pre-order..."
+            />
+            <span className="hint">Use {'{days}'} as a placeholder for days</span>
+          </div>
+        </div>
+      </div>
 
-            <style jsx>{`
+      <div className="actions">
+        <button
+          onClick={saveSettings}
+          disabled={saving}
+          className="btn-primary"
+        >
+          {saving ? 'Saving...' : 'Save Settings'}
+        </button>
+      </div>
+
+      <style jsx>{`
         .container {
           max-width: 1000px;
           margin: 0 auto;
@@ -361,6 +361,6 @@ export default function SettingsPage() {
           color: #718096;
         }
       `}</style>
-        </div>
-    )
+    </div>
+  )
 }

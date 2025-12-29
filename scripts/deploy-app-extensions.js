@@ -15,7 +15,7 @@ console.log('👨‍💻 专业 Shopify 开发者工具');
 // 检查环境
 function checkEnvironment() {
   console.log('\n📋 检查开发环境...');
-  
+
   try {
     // 检查 Shopify CLI
     execSync('shopify version', { stdio: 'pipe' });
@@ -45,7 +45,7 @@ function checkEnvironment() {
 // 修复 Extension 配置
 function fixExtensionConfig() {
   console.log('\n🔧 修复 App Extension 配置...');
-  
+
   const extensionConfigPath = 'extensions/preorder-embed/shopify.extension.toml';
   const correctConfig = `# PreOrder Pro App Extension
 name = "preorder-embed"
@@ -67,7 +67,7 @@ name = "PreOrder Pro Embed"
 // 创建正确的 App Embed Block
 function createAppEmbedBlock() {
   console.log('\n📝 创建专业 App Embed Block...');
-  
+
   const blockPath = 'extensions/preorder-embed/blocks/app-embed.liquid';
   const blockContent = `{% comment %}
 PreOrder Pro - Professional App Embed Block
@@ -159,37 +159,37 @@ Auto-injected into theme.liquid <head> section
     {
       "type": "checkbox",
       "id": "enabled",
-      "label": "启用预购功能",
+      "label": "Enable Pre-order",
       "default": true,
-      "info": "开启或关闭预购功能"
+      "info": "Turn pre-order functionality on or off"
     },
     {
       "type": "text",
       "id": "api_url",
       "label": "API URL",
       "default": "https://shopmall.dpdns.org/api",
-      "info": "PreOrder Pro API 地址"
+      "info": "PreOrder Pro API endpoint"
     },
     {
       "type": "checkbox",
       "id": "debug",
-      "label": "调试模式",
+      "label": "Debug Mode",
       "default": false,
-      "info": "开启调试模式显示详细日志"
+      "info": "Enable debug mode to show detailed logs"
     },
     {
       "type": "text",
       "id": "button_text",
-      "label": "预购按钮文本",
-      "default": "立即预订 Pre-Order Now",
-      "info": "自定义预购按钮显示文本"
+      "label": "Pre-order Button Text",
+      "default": "Pre-Order Now",
+      "info": "Customize pre-order button text"
     },
     {
       "type": "color",
       "id": "button_color",
-      "label": "按钮颜色",
+      "label": "Button Color",
       "default": "#ff6b35",
-      "info": "预购按钮主色调"
+      "info": "Pre-order button primary color"
     }
   ]
 }
@@ -202,7 +202,7 @@ Auto-injected into theme.liquid <head> section
 // 部署 Extensions
 function deployExtensions() {
   console.log('\n🚀 部署 App Extensions...');
-  
+
   try {
     // 检查登录状态
     console.log('🔐 检查 Shopify CLI 登录状态...');
@@ -231,7 +231,7 @@ function deployExtensions() {
 // 验证部署
 function verifyDeployment() {
   console.log('\n✅ 验证部署结果...');
-  
+
   console.log('📋 部署完成后的操作步骤:');
   console.log('   1. 进入 Shopify Admin');
   console.log('   2. Online Store → Themes → Customize');
@@ -239,7 +239,7 @@ function verifyDeployment() {
   console.log('   4. 启用 "PreOrder Pro"');
   console.log('   5. 配置预购设置');
   console.log('   6. 保存并发布');
-  
+
   console.log('\n🧪 测试步骤:');
   console.log('   1. 访问售罄产品页面');
   console.log('   2. 确认预购按钮显示');
@@ -255,11 +255,11 @@ async function main() {
     createAppEmbedBlock();
     deployExtensions();
     verifyDeployment();
-    
+
     console.log('\n🎉 专业部署完成!');
     console.log('📱 App Embed Block 已成功部署到你的应用');
     console.log('⚙️  请在 Shopify 主题编辑器中启用 "PreOrder Pro"');
-    
+
   } catch (error) {
     console.error('\n❌ 部署失败:', error.message);
     console.log('\n🔧 故障排除:');

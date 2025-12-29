@@ -56,11 +56,11 @@ export default function InventoryMonitorPage() {
 
     async function handleBatchOperation(enabled: boolean) {
         if (selectedVariants.size === 0) {
-            alert('请先选择产品')
+            alert('Please select products first')
             return
         }
 
-        if (!confirm(`确定要批量${enabled ? '启用' : '禁用'}预购吗？共 ${selectedVariants.size} 个产品`)) {
+        if (!confirm(`Confirm batch ${enabled ? 'enable' : 'disable'} pre-order for ${selectedVariants.size} products?`)) {
             return
         }
 
@@ -80,16 +80,16 @@ export default function InventoryMonitorPage() {
             const result = await response.json()
 
             if (response.ok) {
-                alert(`批量操作完成！\n成功：${result.summary.success}\n失败：${result.summary.failed}`)
+                alert(`Batch operation completed!\nSuccess: ${result.summary.success}\nFailed: ${result.summary.failed}`)
                 setSelectedVariants(new Set())
                 setShowBatchConfig(false)
                 await loadData(shop)
             } else {
-                alert(`批量操作失败: ${result.error || '未知错误'}`)
+                alert(`Batch operation failed: ${result.error || 'Unknown error'}`)
             }
         } catch (error) {
             console.error('Batch operation failed:', error)
-            alert('批量操作失败')
+            alert('Batch operation failed')
         } finally {
             setBatchProcessing(false)
         }
@@ -108,13 +108,13 @@ export default function InventoryMonitorPage() {
                                 onClick={() => setShowBatchConfig(!showBatchConfig)}
                                 className="btn btn-primary"
                             >
-                                📦 批量操作 ({selectedVariants.size})
+                                📦 Batch Actions ({selectedVariants.size})
                             </button>
                             <button
                                 onClick={() => setSelectedVariants(new Set())}
                                 className="btn btn-secondary"
                             >
-                                清除选择
+                                Clear Selection
                             </button>
                         </div>
                     )}
@@ -126,10 +126,10 @@ export default function InventoryMonitorPage() {
 
             {showBatchConfig && selectedVariants.size > 0 && (
                 <div className="batch-config-panel">
-                    <h3>📦 批量启用预购 ({selectedVariants.size} 个产品)</h3>
+                    <h3>📦 Batch Enable Pre-order ({selectedVariants.size} products)</h3>
                     <div className="batch-form">
                         <div className="form-group">
-                            <label>预计发货日期（可选）</label>
+                            <label>Estimated Shipping Date (optional)</label>
                             <input
                                 type="date"
                                 value={batchShippingDate}
@@ -143,14 +143,14 @@ export default function InventoryMonitorPage() {
                                 disabled={batchProcessing}
                                 className="btn btn-success"
                             >
-                                {batchProcessing ? '处理中...' : '✅ 批量启用'}
+                                {batchProcessing ? 'Processing...' : '✅ Batch Enable'}
                             </button>
                             <button
                                 onClick={() => handleBatchOperation(false)}
                                 disabled={batchProcessing}
                                 className="btn btn-warning"
                             >
-                                {batchProcessing ? '处理中...' : '❌ 批量禁用'}
+                                {batchProcessing ? 'Processing...' : '❌ Batch Disable'}
                             </button>
                         </div>
                     </div>
@@ -213,7 +213,7 @@ export default function InventoryMonitorPage() {
                             className="btn-link"
                             style={{ marginLeft: '10px', fontSize: '14px' }}
                         >
-                            {selectedVariants.size === data.out_of_stock.length ? '取消全选' : '全选'}
+                            {selectedVariants.size === data.out_of_stock.length ? 'Deselect All' : 'Select All'}
                         </button>
                     )}
                 </h2>
@@ -250,7 +250,7 @@ export default function InventoryMonitorPage() {
                                 <div className="product-actions">
                                     {p.preorder_enabled ? (
                                         <>
-                                            <span className="status-badge status-enabled">✓ 预购已启用</span>
+                                            <span className="status-badge status-enabled">✓ Pre-order Enabled</span>
                                             <button
                                                 onClick={async () => {
                                                     const variantId = p.variant_id.toString()
@@ -268,15 +268,15 @@ export default function InventoryMonitorPage() {
                                                         })
 
                                                         if (response.ok) {
-                                                            alert('预购已成功禁用！')
+                                                            alert('Pre-order successfully disabled!')
                                                             await loadData(shop)
                                                         } else {
                                                             const error = await response.json()
-                                                            alert(`禁用预购失败: ${error.error || '未知错误'}`)
+                                                            alert(`Failed to disable pre-order: ${error.error || 'Unknown error'}`)
                                                         }
                                                     } catch (error) {
                                                         console.error('Error:', error)
-                                                        alert('禁用预购失败')
+                                                        alert('Failed to disable pre-order')
                                                     } finally {
                                                         setProcessing(prev => {
                                                             const newSet = new Set(prev)
@@ -288,7 +288,7 @@ export default function InventoryMonitorPage() {
                                                 className="btn btn-warning"
                                                 disabled={processing.has(p.variant_id.toString())}
                                             >
-                                                {processing.has(p.variant_id.toString()) ? '处理中...' : '禁用预购'}
+                                                {processing.has(p.variant_id.toString()) ? 'Processing...' : 'Disable Pre-order'}
                                             </button>
                                         </>
                                     ) : (
@@ -309,15 +309,15 @@ export default function InventoryMonitorPage() {
                                                     })
 
                                                     if (response.ok) {
-                                                        alert('预购已成功启用！')
+                                                        alert('Pre-order successfully enabled!')
                                                         await loadData(shop)
                                                     } else {
                                                         const error = await response.json()
-                                                        alert(`启用预购失败: ${error.error || '未知错误'}`)
+                                                        alert(`Failed to enable pre-order: ${error.error || 'Unknown error'}`)
                                                     }
                                                 } catch (error) {
                                                     console.error('Error:', error)
-                                                    alert('启用预购失败')
+                                                    alert('Failed to enable pre-order')
                                                 } finally {
                                                     setProcessing(prev => {
                                                         const newSet = new Set(prev)
@@ -329,7 +329,7 @@ export default function InventoryMonitorPage() {
                                             className="btn btn-primary"
                                             disabled={processing.has(p.variant_id.toString())}
                                         >
-                                            {processing.has(p.variant_id.toString()) ? '处理中...' : '启用预购'}
+                                            {processing.has(p.variant_id.toString()) ? 'Processing...' : 'Enable Pre-order'}
                                         </button>
                                     )}
                                     <a
