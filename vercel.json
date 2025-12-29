@@ -4,16 +4,6 @@
       "maxDuration": 30
     }
   },
-  "crons": [
-    {
-      "path": "/api/cron/update-schedules",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/inventory-sync",
-      "schedule": "0 3 * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
