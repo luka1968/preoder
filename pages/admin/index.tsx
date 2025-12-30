@@ -215,6 +215,18 @@ export default function DashboardPage() {
             <strong>Webhook Status</strong>
             <p>{stats.health.total_webhooks} registered</p>
           </a>
+
+          <a href={`/admin/campaigns?shop=${shop}`} className="link-card">
+            <span className="link-icon">🎯</span>
+            <strong>Campaigns</strong>
+            <p>Manage Pay Later campaigns</p>
+          </a>
+
+          <a href={`/admin/pending-payments?shop=${shop}`} className="link-card">
+            <span className="link-icon">💳</span>
+            <strong>Pending Payments</strong>
+            <p>Pay Later orders</p>
+          </a>
         </div>
       </div>
 

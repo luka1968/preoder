@@ -184,16 +184,17 @@
     }
 
     /**
-     * 检查商品是否启用了预购（通过 metafield）
-     * 这是 Globo Pre-Order 的核心逻辑
+     * 检查商品是否启用了预购 + 获取Campaign信息
+     * 🆕 支持 Campaign 模式（按商品配置不同支付模式）
      */
-    async function checkPreorderEnabled(variantId) {
+    async function checkPreorderAndCampaign(variantId) {
         try {
-            log('🔍 检查 preorder_enabled metafield...', variantId);
+            log('🔍 检查预购状态和Campaign信息...', variantId);
 
-            // 调用后端 API 检查 metafield
+            // 调用后端 API 检查预购状态和campaign
             const apiUrl = CONFIG.apiUrl || '/api';
-            const response = await fetch(`${apiUrl}/preorder/variant/${variantId}`, {
+            const url = `${apiUrl}/preorder/variant/${variantId}?shop=${CONFIG.shop}`;
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -201,30 +202,51 @@
             });
 
             if (!response.ok) {
-                log('⚠️ 无法获取 metafield，假设未启用预购');
-                return false;
+                log('⚠️ 无法获取变体信息，假设未启用预购');
+                return { enabled: false, campaign: null };
             }
 
             const data = await response.json();
             const isEnabled = data.preorder_enabled === true || data.preorder_enabled === 'true';
 
             log(isEnabled ? '✅ 预购已启用' : 'ℹ️ 预购未启用', data);
+            if (data.campaign) {
+                log('🎯 检测到Campaign:', data.campaign);
+            }
 
-            return isEnabled;
+            return {
+                enabled: isEnabled,
+                campaign: data.campaign, // { payment_mode: 'immediate' | 'pay_later', ... }
+                variantData: data
+            };
         } catch (error) {
-            log('❌ 检查 metafield 失败:', error);
-            return false;
+            log('❌ 检查预购失败:', error);
+            return { enabled: false, campaign: null };
         }
     }
 
     /**
-     * 创建预购按钮（替换售罄按钮）
+     * 创建预购按钮（支持不同支付模式）
+     * 🆕 根据 campaign.payment_mode 显示不同文案
      */
-    function createPreorderButton(originalButton) {
+    function createPreorderButton(originalButton, campaign) {
         const button = document.createElement('button');
         button.className = originalButton.className;
         button.type = 'button';
-        button.textContent = 'Pre-Order Now';
+
+        // 根据payment_mode显示不同文案
+        if (campaign && campaign.payment_mode === 'pay_later') {
+            button.textContent = 'Pre-Order (Pay Later)';
+            button.dataset.paymentMode = 'pay_later';
+            button.dataset.campaignId = campaign.id;
+        } else {
+            button.textContent = 'Pre-Order Now';
+            button.dataset.paymentMode = 'immediate';
+            if (campaign) {
+                button.dataset.campaignId = campaign.id;
+            }
+        }
+
         button.style.cssText = `
       background: #2563eb !important;
       color: white !important;
@@ -235,12 +257,13 @@
 
         button.addEventListener('click', handlePreorderClick);
 
-        log('✅ 创建预购按钮');
+        log('✅ 创建预购按钮 -', button.textContent);
         return button;
     }
 
     /**
-     * 处理预购按钮点击 - Globo 模式核心逻辑
+     * 处理预购按钮点击 - 支持双模式
+     * 🆕 根据 payment_mode 决定流程
      */
     async function handlePreorderClick(e) {
         e.preventDefault();
@@ -248,6 +271,9 @@
 
         log('🛒 预购按钮被点击');
 
+        const button = e.target;
+        const paymentMode = button.dataset.paymentMode || 'immediate';
+        const campaignId = button.dataset.campaignId;
         const { productId, variantId } = getProductInfo();
 
         if (!variantId) {
@@ -256,20 +282,21 @@
         }
 
         // 显示加载状态
-        const button = e.target;
         const originalText = button.textContent;
-        button.textContent = 'Adding to cart...';
+        button.textContent = paymentMode === 'pay_later' ? 'Creating order...' : 'Adding to cart...';
         button.disabled = true;
 
         try {
-            // 核心：使用 Shopify Cart API 加入购物车（带预购标记）
-            await addToCartWithPreorderTag(variantId);
-
-            // 成功后跳转到 Checkout
-            log('✅ 商品已加入购物车，跳转到 Checkout');
-            window.location.href = '/checkout';
+            if (paymentMode === 'pay_later') {
+                // 🆕 Pay Later 模式：创建 Draft Order
+                await createDraftOrderForPreorder(variantId, campaignId);
+            } else {
+                // 原有模式：加入购物车 + 结账
+                await addToCartWithPreorderTag(variantId, campaignId);
+                window.location.href = '/checkout';
+            }
         } catch (error) {
-            console.error('❌ 加入购物车失败:', error);
+            console.error('❌ 预购失败:', error);
             alert('预购失败，请稍后重试');
             button.textContent = originalText;
             button.disabled = false;
@@ -277,57 +304,91 @@
     }
 
     /**
-     * 使用 Shopify Cart API 加入购物车（带预购标记）
-     * 这是 Globo 模式的核心：直接加入购物车，不创建 Draft Order
+     * 🆕 创建 Draft Order (Pay Later 模式)
      */
-    async function addToCartWithPreorderTag(variantId) {
-        log('🛒 调用 Shopify Cart API...');
+    async function createDraftOrderForPreorder(variantId, campaignId) {
+        log('📝 创建 Draft Order (Pay Later)...');
 
-        // 确保 variantId 是数字
-        const numericVariantId = parseInt(variantId.toString().replace(/\D/g, ''), 10);
-
-        if (isNaN(numericVariantId)) {
-            throw new Error(`Invalid variant ID: ${variantId}`);
+        // 获取或让用户输入邮箱
+        let email = prompt('请输入您的邮箱地址（用于接收支付链接）:');
+        if (!email) {
+            throw new Error('需要邮箱地址');
         }
 
-        // 构建购物车请求
-        const cartData = {
-            items: [
-                {
-                    id: numericVariantId,
-                    quantity: 1,
-                    properties: {
-                        _preorder: 'true', // 标记为预购
-                        _estimated_shipping: CONFIG.estimatedShippingDate,
-                        _preorder_message: CONFIG.preorderMessage.replace(
-                            '{date}',
-                            CONFIG.estimatedShippingDate
-                        ),
-                    },
-                },
-            ],
-        };
-
-        log('📤 Cart API 请求:', cartData);
-
-        // 调用 Shopify Cart API
-        const response = await fetch('/cart/add.js', {
+        const apiUrl = CONFIG.apiUrl || '/api';
+        const response = await fetch(`${apiUrl}/draft-order/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
+            body: JSON.stringify({
+                shop: CONFIG.shop,
+                variant_id: variantId,
+                customer_email: email,
+                campaign_id: campaignId,
+                quantity: 1
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to create draft order');
+        }
+
+        const result = await response.json();
+        log('✅ Draft Order 创建成功:', result);
+
+        // 显示成功消息
+        alert(`预购订单创建成功！\n\n支付链接已发送到您的邮箱：${email}\n请在 ${result.preorder.auto_cancel_days} 天内完成支付。`);
+
+        // 不跳转，停留在当前页面
+        return result;
+    }
+
+    /**
+     * 使用 Shopify Cart API 加入购物车（即时支付模式）
+     */
+    async function addToCartWithPreorderTag(variantId, campaignId) {
+        log('🛒 调用 Shopify Cart API (Immediate Pay)...');
+
+        const numericVariantId = parseInt(variantId.toString().replace(/\D/g, ''), 10);
+        if (isNaN(numericVariantId)) {
+            throw new Error(`Invalid variant ID: ${variantId}`);
+        }
+
+        const properties = {
+            _preorder: 'true',
+            _estimated_shipping: CONFIG.estimatedShippingDate,
+            _preorder_message: CONFIG.preorderMessage.replace('{date}', CONFIG.estimatedShippingDate),
+        };
+
+        if (campaignId) {
+            properties._campaign_id = campaignId.toString();
+        }
+
+        const cartData = {
+            items: [{
+                id: numericVariantId,
+                quantity: 1,
+                properties
+            }]
+        };
+
+        log('📤 Cart API 请求:', cartData);
+
+        const response = await fetch('/cart/add.js', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(cartData),
         });
 
         if (!response.ok) {
             const errorText = await response.text();
-            log('❌ Cart API 失败:', errorText);
             throw new Error(`Cart API failed: ${errorText}`);
         }
 
         const result = await response.json();
-        log('✅ Cart API 成功:', result);
-
+        log('✅ 商品已加入购物车，准备跳转 Checkout');
         return result;
     }
 
@@ -370,15 +431,18 @@
             return false;
         }
 
-        // 1. 检查是否启用了预购（通过 metafield）
-        const isPreorderEnabled = await checkPreorderEnabled(variantId);
+        // 1. 检查预购状态和Campaign信息
+        const { enabled, campaign, variantData } = await checkPreorderAndCampaign(variantId);
 
-        if (!isPreorderEnabled) {
+        if (!enabled) {
             log('ℹ️ 预购未启用，无需显示预购按钮');
             return false;
         }
 
         log('✅ 预购已启用，准备显示预购按钮');
+        if (campaign) {
+            log(`🎯 使用 Campaign: ${campaign.name}, 支付模式: ${campaign.payment_mode}`);
+        }
 
         // 2. 检测售罄状态
         const { isSoldOut, button: soldOutButton } = detectSoldOutStatus();
@@ -390,9 +454,9 @@
 
         log('✅ 准备替换为预购按钮');
 
-        // 3. 替换售罄按钮为预购按钮
+        // 3. 替换售罄按钮为预购按钮（传递campaign信息）
         if (soldOutButton) {
-            const preorderButton = createPreorderButton(soldOutButton);
+            const preorderButton = createPreorderButton(soldOutButton, campaign);
             soldOutButton.parentNode.replaceChild(preorderButton, soldOutButton);
             log('✅ 已替换售罄按钮为预购按钮');
         } else {
@@ -400,7 +464,7 @@
             for (const selector of ADD_TO_CART_SELECTORS) {
                 const button = document.querySelector(selector);
                 if (button) {
-                    const preorderButton = createPreorderButton(button);
+                    const preorderButton = createPreorderButton(button, campaign);
                     button.parentNode.replaceChild(preorderButton, button);
                     log('✅ 已替换添加到购物车按钮为预购按钮');
                     break;

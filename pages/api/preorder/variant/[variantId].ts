@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'GET') {
       // Get variant preorder status
       const shopifyVariant = await getShopifyVariant(shopData.access_token, shop, variantId)
-      
+
       if (!shopifyVariant) {
         return res.status(404).json({ error: 'Variant not found' })
       }
@@ -40,9 +40,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Determine variant status
       const variantStatus = determineVariantStatus(shopifyVariant, productConfig)
 
+      // 🆕 Check if variant is in any campaign
+      const { data: campaignProduct } = await supabaseAdmin
+        .from('campaign_products')
+        .select(`
+          *,
+          campaign:preorder_campaigns(*)
+        `)
+        .eq('variant_id', variantId)
+        .single()
+
+      // Return campaign info if exists
+      const campaignInfo = campaignProduct?.campaign && campaignProduct.campaign.enabled
+        ? {
+          id: campaignProduct.campaign.id,
+          name: campaignProduct.campaign.name,
+          payment_mode: campaignProduct.campaign.payment_mode,
+          auto_cancel_days: campaignProduct.campaign.auto_cancel_days,
+          lock_inventory: campaignProduct.campaign.lock_inventory
+        }
+        : null
+
       res.json({
         variant: shopifyVariant,
         productConfig,
+        campaign: campaignInfo, // 🆕 Campaign info for frontend
+        preorder_enabled: variantStatus === 'preorder',
         status: variantStatus,
         inventoryStatus: getVariantInventoryStatus(shopifyVariant)
       })
@@ -164,7 +187,7 @@ function determineVariantStatus(variant: any, productConfig: any) {
   }
 
   if (preorderType === 'coming_soon') {
-    const relevantStartDate = variantConfig?.preorder_start_date ? 
+    const relevantStartDate = variantConfig?.preorder_start_date ?
       new Date(variantConfig.preorder_start_date) : startDate
     return relevantStartDate && now >= relevantStartDate ? 'preorder' : 'coming_soon'
   }

@@ -132,6 +132,7 @@ export default function InventoryMonitorPage() {
                             <label>Estimated Shipping Date (optional)</label>
                             <input
                                 type="date"
+                                lang="en"
                                 value={batchShippingDate}
                                 onChange={(e) => setBatchShippingDate(e.target.value)}
                                 className="form-control"
