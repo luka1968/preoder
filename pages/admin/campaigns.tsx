@@ -43,14 +43,14 @@ export default function CampaignsPage() {
             }
         } catch (error) {
             console.error('Failed to create campaign:', error)
-            alert('创建活动失败')
+            alert('Failed to create campaign')
         }
     }
 
     if (loading) {
         return (
             <div style={{ padding: '40px', textAlign: 'center' }}>
-                <div style={{ fontSize: '16px', color: '#666' }}>加载中...</div>
+                <div style={{ fontSize: '16px', color: '#666' }}>Loading...</div>
             </div>
         )
     }
@@ -66,10 +66,10 @@ export default function CampaignsPage() {
             }}>
                 <div>
                     <h1 style={{ margin: 0, fontSize: '28px', fontWeight: '600' }}>
-                        预购活动管理
+                        Pre-Order Campaigns
                     </h1>
                     <p style={{ margin: '8px 0 0 0', color: '#666' }}>
-                        管理不同支付模式的预购活动
+                        Manage pre-order campaigns with different payment modes
                     </p>
                 </div>
                 <button
@@ -85,7 +85,7 @@ export default function CampaignsPage() {
                         cursor: 'pointer'
                     }}
                 >
-                    + 创建新活动
+                    + Create Campaign
                 </button>
             </div>
 
@@ -100,10 +100,10 @@ export default function CampaignsPage() {
                 }}>
                     <div style={{ fontSize: '48px', marginBottom: '16px' }}>📋</div>
                     <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600' }}>
-                        暂无活动
+                        No Campaigns Yet
                     </h3>
                     <p style={{ margin: 0, color: '#666' }}>
-                        创建第一个预购活动来开始使用 Pay Later 功能
+                        Create your first pre-order campaign to start using Pay Later features
                     </p>
                 </div>
             ) : (
@@ -131,9 +131,9 @@ export default function CampaignsPage() {
 
 function CampaignCard({ campaign, onEdit }) {
     const modeLabels = {
-        immediate: { text: '即时支付', color: '#10b981', bg: '#d1fae5' },
-        pay_later: { text: '先单后付', color: '#3b82f6', bg: '#dbeafe' },
-        deposit: { text: '定金模式', color: '#f59e0b', bg: '#fef3c7' }
+        immediate: { text: 'Immediate Pay', color: '#10b981', bg: '#d1fae5' },
+        pay_later: { text: 'Pay Later', color: '#3b82f6', bg: '#dbeafe' },
+        deposit: { text: 'Deposit Mode', color: '#f59e0b', bg: '#fef3c7' }
     }
 
     const mode = modeLabels[campaign.payment_mode] || modeLabels.immediate
@@ -187,15 +187,15 @@ function CampaignCard({ campaign, onEdit }) {
                 padding: '16px 0',
                 borderTop: '1px solid #f3f4f6'
             }}>
-                <Stat label="商品数" value={campaign.stats?.product_count || 0} />
-                <Stat label="总订单" value={campaign.stats?.total_orders || 0} />
-                <Stat label="待付款" value={campaign.stats?.pending_payments || 0} color="#ef4444" />
+                <Stat label="Products" value={campaign.stats?.product_count || 0} />
+                <Stat label="Orders" value={campaign.stats?.total_orders || 0} />
+                <Stat label="Pending" value={campaign.stats?.pending_payments || 0} color="#ef4444" />
             </div>
 
             {campaign.payment_mode === 'pay_later' && (
                 <div style={{ marginTop: '12px', fontSize: '13px', color: '#666' }}>
-                    🕐 {campaign.auto_cancel_days} 天自动取消
-                    {campaign.send_payment_reminder && ` · 📧 自动催款`}
+                    🕐 Auto-cancel in {campaign.auto_cancel_days} days
+                    {campaign.send_payment_reminder && ` · 📧 Auto-reminder`}
                 </div>
             )}
         </div>
@@ -225,7 +225,7 @@ function CreateCampaignModal({ onClose, onCreate }) {
     function handleSubmit(e) {
         e.preventDefault()
         if (!formData.name) {
-            alert('请输入活动名称')
+            alert('Please enter campaign name')
             return
         }
         onCreate(formData)
@@ -257,19 +257,19 @@ function CreateCampaignModal({ onClose, onCreate }) {
                 }}
                 onClick={e => e.stopPropagation()}>
                 <h2 style={{ margin: '0 0 24px 0', fontSize: '24px', fontWeight: '600' }}>
-                    创建新活动
+                    Create New Campaign
                 </h2>
 
                 <form onSubmit={handleSubmit}>
                     <div style={{ marginBottom: '20px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                            活动名称 *
+                            Campaign Name *
                         </label>
                         <input
                             type="text"
                             value={formData.name}
                             onChange={e => setFormData({ ...formData, name: e.target.value })}
-                            placeholder="例如：高价电子产品预购"
+                            placeholder="e.g., High-value Electronics Pre-order"
                             style={{
                                 width: '100%',
                                 padding: '10px 14px',
@@ -282,7 +282,7 @@ function CreateCampaignModal({ onClose, onCreate }) {
 
                     <div style={{ marginBottom: '20px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                            支付模式
+                            Payment Mode
                         </label>
                         <select
                             value={formData.payment_mode}
@@ -294,8 +294,8 @@ function CreateCampaignModal({ onClose, onCreate }) {
                                 borderRadius: '8px',
                                 fontSize: '15px'
                             }}>
-                            <option value="immediate">即时支付 (Immediate Pay)</option>
-                            <option value="pay_later">先单后付 (Pay Later)</option>
+                            <option value="immediate">Immediate Pay</option>
+                            <option value="pay_later">Pay Later</option>
                         </select>
                     </div>
 
@@ -303,7 +303,7 @@ function CreateCampaignModal({ onClose, onCreate }) {
                         <>
                             <div style={{ marginBottom: '20px' }}>
                                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                                    自动取消天数: {formData.auto_cancel_days} 天
+                                    Auto-cancel after: {formData.auto_cancel_days} days
                                 </label>
                                 <input
                                     type="range"
@@ -323,7 +323,7 @@ function CreateCampaignModal({ onClose, onCreate }) {
                                         onChange={e => setFormData({ ...formData, lock_inventory: e.target.checked })}
                                         style={{ marginRight: '8px' }}
                                     />
-                                    <span>锁定库存</span>
+                                    <span>Lock inventory</span>
                                 </label>
                             </div>
 
@@ -335,7 +335,7 @@ function CreateCampaignModal({ onClose, onCreate }) {
                                         onChange={e => setFormData({ ...formData, send_payment_reminder: e.target.checked })}
                                         style={{ marginRight: '8px' }}
                                     />
-                                    <span>发送催款提醒</span>
+                                    <span>Send payment reminders</span>
                                 </label>
                             </div>
                         </>
@@ -355,7 +355,7 @@ function CreateCampaignModal({ onClose, onCreate }) {
                                 fontSize: '15px',
                                 fontWeight: '500'
                             }}>
-                            取消
+                            Cancel
                         </button>
                         <button
                             type="submit"
@@ -370,7 +370,7 @@ function CreateCampaignModal({ onClose, onCreate }) {
                                 fontSize: '15px',
                                 fontWeight: '500'
                             }}>
-                            创建活动
+                            Create Campaign
                         </button>
                     </div>
                 </form>

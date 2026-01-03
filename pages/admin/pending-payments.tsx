@@ -18,12 +18,12 @@ export default function PendingPaymentsPage() {
     async function loadPendingOrders() {
         try {
             setLoading(true)
-            // 查询所有待付款订单
+            // Query all pending payment orders
             const response = await fetch(`/api/campaigns?shop=${shop}`)
             const data = await response.json()
 
             if (data.success) {
-                // 从所有活动中提取待付款订单
+                // Extract pending payment orders from all campaigns
                 const allOrders = []
                 for (const campaign of data.campaigns) {
                     const campaignResponse = await fetch(`/api/campaigns/${campaign.id}?shop=${shop}`)
@@ -47,7 +47,7 @@ export default function PendingPaymentsPage() {
     }
 
     async function sendReminder(orderId) {
-        if (!confirm('确定要发送催款提醒吗？')) return
+        if (!confirm('Are you sure you want to send a payment reminder?')) return
 
         try {
             const response = await fetch('/api/draft-order/send-reminder', {
@@ -57,36 +57,36 @@ export default function PendingPaymentsPage() {
             })
             const data = await response.json()
             if (data.success) {
-                alert('催款提醒已发送！')
+                alert('Payment reminder sent successfully!')
                 loadPendingOrders()
             } else {
-                alert(data.error || '发送失败')
+                alert(data.error || 'Failed to send reminder')
             }
         } catch (error) {
             console.error('Failed to send reminder:', error)
-            alert('发送失败')
+            alert('Failed to send reminder')
         }
     }
 
     async function cancelOrder(orderId) {
-        if (!confirm('确定要取消这个订单吗？库存将被释放。')) return
+        if (!confirm('Are you sure you want to cancel this order? Inventory will be released.')) return
 
         try {
             const response = await fetch('/api/draft-order/cancel', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ preorder_id: orderId, shop, reason: '手动取消' })
+                body: JSON.stringify({ preorder_id: orderId, shop, reason: 'Manually cancelled' })
             })
             const data = await response.json()
             if (data.success) {
-                alert('订单已取消')
+                alert('Order cancelled successfully')
                 loadPendingOrders()
             } else {
-                alert(data.error || '取消失败')
+                alert(data.error || 'Failed to cancel order')
             }
         } catch (error) {
             console.error('Failed to cancel order:', error)
-            alert('取消失败')
+            alert('Failed to cancel order')
         }
     }
 
@@ -103,7 +103,7 @@ export default function PendingPaymentsPage() {
     if (loading) {
         return (
             <div style={{ padding: '40px', textAlign: 'center' }}>
-                <div style={{ fontSize: '16px', color: '#666' }}>加载中...</div>
+                <div style={{ fontSize: '16px', color: '#666' }}>Loading...</div>
             </div>
         )
     }
@@ -113,10 +113,10 @@ export default function PendingPaymentsPage() {
             {/* Header */}
             <div style={{ marginBottom: '30px' }}>
                 <h1 style={{ margin: '0 0 8px 0', fontSize: '28px', fontWeight: '600' }}>
-                    待付款订单
+                    Pending Payments
                 </h1>
                 <p style={{ margin: 0, color: '#666' }}>
-                    管理所有 Pay Later 模式的待付款订单
+                    Manage all Pay Later pending payment orders
                 </p>
             </div>
 
@@ -129,35 +129,35 @@ export default function PendingPaymentsPage() {
             }}>
                 <SummaryCard
                     icon="📋"
-                    title="总待付款"
+                    title="Total Pending"
                     value={orders.length}
-                    subtitle="所有待付款订单"
+                    subtitle="All pending orders"
                     active={filter === 'all'}
                     onClick={() => setFilter('all')}
                 />
                 <SummaryCard
                     icon="⏰"
-                    title="即将过期"
+                    title="Expiring Soon"
                     value={orders.filter(o => getDaysLeft(o.auto_cancel_at) <= 3 && getDaysLeft(o.auto_cancel_at) > 0).length}
-                    subtitle="3天内到期"
+                    subtitle="Due within 3 days"
                     color="#f59e0b"
                     active={filter === 'expiring_soon'}
                     onClick={() => setFilter('expiring_soon')}
                 />
                 <SummaryCard
                     icon="🚨"
-                    title="已逾期"
+                    title="Overdue"
                     value={orders.filter(o => getDaysLeft(o.auto_cancel_at) <= 0).length}
-                    subtitle="待自动取消"
+                    subtitle="Pending auto-cancel"
                     color="#ef4444"
                     active={filter === 'overdue'}
                     onClick={() => setFilter('overdue')}
                 />
                 <SummaryCard
                     icon="💰"
-                    title="总金额"
-                    value={`¥${orders.reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0).toFixed(2)}`}
-                    subtitle="待收金额"
+                    title="Total Amount"
+                    value={`$${orders.reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0).toFixed(2)}`}
+                    subtitle="Pending revenue"
                 />
             </div>
 
@@ -172,10 +172,10 @@ export default function PendingPaymentsPage() {
                 }}>
                     <div style={{ fontSize: '48px', marginBottom: '16px' }}>✅</div>
                     <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600' }}>
-                        {filter === 'all' ? '暂无待付款订单' : '没有符合条件的订单'}
+                        {filter === 'all' ? 'No Pending Payments' : 'No Matching Orders'}
                     </h3>
                     <p style={{ margin: 0, color: '#666' }}>
-                        所有订单都已付款或取消
+                        All orders have been paid or cancelled
                     </p>
                 </div>
             ) : (
@@ -188,12 +188,12 @@ export default function PendingPaymentsPage() {
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr style={{ background: '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
-                                <Th>客户</Th>
-                                <Th>活动</Th>
-                                <Th>金额</Th>
-                                <Th>剩余时间</Th>
-                                <Th>催款</Th>
-                                <Th>操作</Th>
+                                <Th>Customer</Th>
+                                <Th>Campaign</Th>
+                                <Th>Amount</Th>
+                                <Th>Time Left</Th>
+                                <Th>Reminder</Th>
+                                <Th>Actions</Th>
                             </tr>
                         </thead>
                         <tbody>
@@ -273,7 +273,7 @@ function OrderRow({ order, onSendReminder, onCancel }) {
             </td>
             <td style={{ padding: '16px' }}>
                 <div style={{ fontWeight: '600', fontSize: '15px' }}>
-                    ¥{order.total_amount}
+                    ${order.total_amount}
                 </div>
             </td>
             <td style={{ padding: '16px' }}>
@@ -286,22 +286,22 @@ function OrderRow({ order, onSendReminder, onCancel }) {
                     background: isOverdue ? '#fee2e2' : isExpiringSoon ? '#fef3c7' : '#e0f2fe',
                     color: isOverdue ? '#991b1b' : isExpiringSoon ? '#92400e' : '#075985'
                 }}>
-                    {isOverdue ? '已逾期' : `${daysLeft} 天`}
+                    {isOverdue ? 'Overdue' : `${daysLeft} days`}
                 </div>
                 <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>
-                    {new Date(order.auto_cancel_at).toLocaleDateString('zh-CN')}
+                    {new Date(order.auto_cancel_at).toLocaleDateString('en-US')}
                 </div>
             </td>
             <td style={{ padding: '16px' }}>
                 {order.reminder_sent_at ? (
                     <div style={{ fontSize: '12px', color: '#059669' }}>
-                        ✓ 已发送<br />
+                        ✓ Sent<br />
                         <span style={{ color: '#9ca3af' }}>
-                            {new Date(order.reminder_sent_at).toLocaleDateString('zh-CN')}
+                            {new Date(order.reminder_sent_at).toLocaleDateString('en-US')}
                         </span>
                     </div>
                 ) : (
-                    <div style={{ fontSize: '12px', color: '#9ca3af' }}>未发送</div>
+                    <div style={{ fontSize: '12px', color: '#9ca3af' }}>Not sent</div>
                 )}
             </td>
             <td style={{ padding: '16px' }}>
@@ -318,7 +318,7 @@ function OrderRow({ order, onSendReminder, onCancel }) {
                             cursor: 'pointer',
                             fontWeight: '500'
                         }}>
-                        催款
+                        Remind
                     </button>
                     <button
                         onClick={onCancel}
@@ -332,7 +332,7 @@ function OrderRow({ order, onSendReminder, onCancel }) {
                             cursor: 'pointer',
                             fontWeight: '500'
                         }}>
-                        取消
+                        Cancel
                     </button>
                 </div>
             </td>

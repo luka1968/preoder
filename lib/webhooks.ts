@@ -251,7 +251,7 @@ async function processPreorderLineItem(
       // 邮件发送失败不影响订单创建
     }
 
-    // 📊 更新预购数量计数（Globo Pro 功能）
+    // 📊 更新预购数量计数（Kean Pro 功能）
     try {
       const { data: preorderProduct } = await supabaseAdmin
         .from('preorder_products')

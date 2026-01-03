@@ -70,7 +70,7 @@ export default function SettingsPage() {
       </header>
 
       <div className="settings-grid">
-        {/* 自动预购设置 */}
+        {/* Auto Pre-order Settings */}
         <div className="settings-card">
           <h2>🤖 Auto Pre-order Mode</h2>
           <p className="description">
@@ -127,7 +127,7 @@ export default function SettingsPage() {
           )}
         </div>
 
-        {/* 批量操作设置 */}
+        {/* Batch Operations Settings */}
         <div className="settings-card">
           <h2>📦 Batch Operations</h2>
           <p className="description">
@@ -150,7 +150,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* 默认配置 */}
+        {/* Default Configuration */}
         <div className="settings-card">
           <h2>⚙️ Default Configuration</h2>
           <p className="description">

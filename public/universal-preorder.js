@@ -1,10 +1,10 @@
-// PreOrder Pro - Globo 模式
+// PreOrder Pro - Kean 模式
 // ✅ 直接加购物车 + Shopify Checkout
 
 (function () {
     'use strict';
 
-    console.log('🚀 PreOrder Widget (Globo Mode) Loading...');
+    console.log('🚀 PreOrder Widget (Kean Mode) Loading...');
 
     // ✅ 配置
     const defaultConfig = {
@@ -111,7 +111,7 @@
         return variantId;
     }
 
-    // ✅ 加入购物车（Globo 方式）
+    // ✅ 加入购物车（Kean 方式）
     async function addToCartAndCheckout(variantId) {
         try {
             log('🛒 Adding to cart:', variantId);
@@ -185,7 +185,7 @@
 
     // 初始化
     function initPreorderWidget() {
-        log('🚀 Initializing PreOrder Widget (Globo Mode)...');
+        log('🚀 Initializing PreOrder Widget (Kean Mode)...');
 
         const status = detectSoldOutStatus();
 
@@ -226,7 +226,7 @@
             }
         }
 
-        log('🎉 PreOrder Widget initialized (Globo Mode)');
+        log('🎉 PreOrder Widget initialized (Kean Mode)');
     }
 
     // 启动
@@ -284,6 +284,6 @@
   `;
     document.head.appendChild(style);
 
-    log('🎯 PreOrder Widget loaded (Globo Mode)');
+    log('🎯 PreOrder Widget loaded (Kean Mode)');
 
 })();

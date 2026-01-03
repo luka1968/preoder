@@ -25,7 +25,7 @@ export default function InventoryMonitorPage() {
             const res = await fetch(`/api/inventory/all-products?shop=${shopDomain}`)
             const result = await res.json()
 
-            // 转换格式以匹配现有 UI
+            // Convert format to match existing UI
             setData({
                 out_of_stock: result.out_of_stock || [],
                 total: result.total_out_of_stock || 0,

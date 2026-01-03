@@ -42,18 +42,18 @@ export default function CampaignDetailPage() {
             const data = await response.json()
             if (data.success) {
                 setCampaign(data.campaign)
-                alert('保存成功！')
+                alert('Saved successfully!')
             }
         } catch (error) {
             console.error('Failed to save:', error)
-            alert('保存失败')
+            alert('Failed to save')
         } finally {
             setSaving(false)
         }
     }
 
     async function deleteCampaign() {
-        if (!confirm('确定要删除这个活动吗？此操作不可撤销。')) {
+        if (!confirm('Are you sure you want to delete this campaign? This action cannot be undone.')) {
             return
         }
 
@@ -63,21 +63,21 @@ export default function CampaignDetailPage() {
             })
             const data = await response.json()
             if (data.success) {
-                alert('活动已删除')
+                alert('Campaign deleted successfully')
                 router.push(`/admin/campaigns?shop=${shop}`)
             } else {
-                alert(data.error || '删除失败')
+                alert(data.error || 'Failed to delete')
             }
         } catch (error) {
             console.error('Failed to delete:', error)
-            alert('删除失败')
+            alert('Failed to delete')
         }
     }
 
     if (loading) {
         return (
             <div style={{ padding: '40px', textAlign: 'center' }}>
-                <div style={{ fontSize: '16px', color: '#666' }}>加载中...</div>
+                <div style={{ fontSize: '16px', color: '#666' }}>Loading...</div>
             </div>
         )
     }
@@ -85,7 +85,7 @@ export default function CampaignDetailPage() {
     if (!campaign) {
         return (
             <div style={{ padding: '40px', textAlign: 'center' }}>
-                <div style={{ fontSize: '16px', color: '#666' }}>活动不存在</div>
+                <div style={{ fontSize: '16px', color: '#666' }}>Campaign not found</div>
             </div>
         )
     }
@@ -105,7 +105,7 @@ export default function CampaignDetailPage() {
                         marginBottom: '12px',
                         padding: 0
                     }}>
-                    ← 返回活动列表
+                    ← Back to Campaigns
                 </button>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
@@ -114,7 +114,7 @@ export default function CampaignDetailPage() {
                             {campaign.name}
                         </h1>
                         <div style={{ marginTop: '8px', fontSize: '14px', color: '#666' }}>
-                            ID: {campaign.id} · 创建于 {new Date(campaign.created_at).toLocaleDateString('zh-CN')}
+                            ID: {campaign.id} · Created {new Date(campaign.created_at).toLocaleDateString('en-US')}
                         </div>
                     </div>
                     <button
@@ -129,7 +129,7 @@ export default function CampaignDetailPage() {
                             fontWeight: '500',
                             cursor: 'pointer'
                         }}>
-                        删除活动
+                        Delete Campaign
                     </button>
                 </div>
             </div>
@@ -140,9 +140,9 @@ export default function CampaignDetailPage() {
                 marginBottom: '30px'
             }}>
                 <div style={{ display: 'flex', gap: '0' }}>
-                    <Tab label="设置" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
-                    <Tab label="商品" active={activeTab === 'products'} onClick={() => setActiveTab('products')} />
-                    <Tab label="订单" active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} />
+                    <Tab label="Settings" active={activeTab === 'settings'} onClick={() => setActiveTab('settings')} />
+                    <Tab label="Products" active={activeTab === 'products'} onClick={() => setActiveTab('products')} />
+                    <Tab label="Orders" active={activeTab === 'orders'} onClick={() => setActiveTab('orders')} />
                 </div>
             </div>
 
@@ -199,7 +199,7 @@ function SettingsTab({ campaign, onSave, saving }) {
         <form onSubmit={handleSubmit} style={{ maxWidth: '600px' }}>
             <div style={{ marginBottom: '24px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                    活动名称
+                    Campaign Name
                 </label>
                 <input
                     type="text"
@@ -217,7 +217,7 @@ function SettingsTab({ campaign, onSave, saving }) {
 
             <div style={{ marginBottom: '24px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                    支付模式
+                    Payment Mode
                 </label>
                 <div style={{
                     padding: '12px 16px',
@@ -225,10 +225,10 @@ function SettingsTab({ campaign, onSave, saving }) {
                     borderRadius: '8px',
                     fontSize: '15px'
                 }}>
-                    {formData.payment_mode === 'pay_later' ? '先单后付 (Pay Later)' : '即时支付 (Immediate Pay)'}
+                    {formData.payment_mode === 'pay_later' ? 'Pay Later' : 'Immediate Pay'}
                 </div>
                 <div style={{ fontSize: '13px', color: '#666', marginTop: '6px' }}>
-                    支付模式创建后不可更改
+                    Payment mode cannot be changed after creation
                 </div>
             </div>
 
@@ -236,7 +236,7 @@ function SettingsTab({ campaign, onSave, saving }) {
                 <>
                     <div style={{ marginBottom: '24px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
-                            自动取消天数: {formData.auto_cancel_days} 天
+                            Auto-cancel after: {formData.auto_cancel_days} days
                         </label>
                         <input
                             type="range"
@@ -247,7 +247,7 @@ function SettingsTab({ campaign, onSave, saving }) {
                             style={{ width: '100%' }}
                         />
                         <div style={{ fontSize: '13px', color: '#666', marginTop: '6px' }}>
-                            未付款订单将在此天数后自动取消
+                            Unpaid orders will be automatically cancelled after this many days
                         </div>
                     </div>
 
@@ -259,10 +259,10 @@ function SettingsTab({ campaign, onSave, saving }) {
                                 onChange={e => setFormData({ ...formData, lock_inventory: e.target.checked })}
                                 style={{ marginRight: '8px', width: '18px', height: '18px' }}
                             />
-                            <span style={{ fontWeight: '500' }}>锁定库存</span>
+                            <span style={{ fontWeight: '500' }}>Lock inventory</span>
                         </label>
                         <div style={{ fontSize: '13px', color: '#666', marginTop: '6px', marginLeft: '26px' }}>
-                            启用后，Draft Order 创建时会锁定库存
+                            When enabled, inventory will be locked when Draft Order is created
                         </div>
                     </div>
 
@@ -274,10 +274,10 @@ function SettingsTab({ campaign, onSave, saving }) {
                                 onChange={e => setFormData({ ...formData, send_payment_reminder: e.target.checked })}
                                 style={{ marginRight: '8px', width: '18px', height: '18px' }}
                             />
-                            <span style={{ fontWeight: '500' }}>发送催款提醒</span>
+                            <span style={{ fontWeight: '500' }}>Send payment reminders</span>
                         </label>
                         <div style={{ fontSize: '13px', color: '#666', marginTop: '6px', marginLeft: '26px' }}>
-                            在订单自动取消前 {formData.reminder_days_before_cancel} 天发送催款邮件
+                            Send payment reminder email {formData.reminder_days_before_cancel} days before auto-cancel
                         </div>
                     </div>
                 </>
@@ -291,10 +291,10 @@ function SettingsTab({ campaign, onSave, saving }) {
                         onChange={e => setFormData({ ...formData, enabled: e.target.checked })}
                         style={{ marginRight: '8px', width: '18px', height: '18px' }}
                     />
-                    <span style={{ fontWeight: '500' }}>启用活动</span>
+                    <span style={{ fontWeight: '500' }}>Enable campaign</span>
                 </label>
                 <div style={{ fontSize: '13px', color: '#666', marginTop: '6px', marginLeft: '26px' }}>
-                    禁用活动后，前端将不显示预购按钮
+                    When disabled, pre-order buttons will not be displayed on the storefront
                 </div>
             </div>
 
@@ -312,7 +312,7 @@ function SettingsTab({ campaign, onSave, saving }) {
                     cursor: saving ? 'not-allowed' : 'pointer',
                     opacity: saving ? 0.6 : 1
                 }}>
-                {saving ? '保存中...' : '保存设置'}
+                {saving ? 'Saving...' : 'Save Settings'}
             </button>
         </form>
     )
@@ -330,10 +330,10 @@ function ProductsTab({ campaign, onReload, shop }) {
             }}>
                 <div style={{ fontSize: '48px', marginBottom: '12px' }}>📦</div>
                 <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600' }}>
-                    商品管理
+                    Product Management
                 </h3>
                 <p style={{ margin: '0 0 20px 0', color: '#666', fontSize: '14px' }}>
-                    使用 API 添加商品到此活动
+                    Use API to add products to this campaign
                 </p>
                 <code style={{
                     display: 'block',
@@ -354,14 +354,14 @@ function ProductsTab({ campaign, onReload, shop }) {
 }`}
                 </code>
                 <div style={{ marginTop: '16px', fontSize: '13px', color: '#666' }}>
-                    当前关联商品数: <strong>{campaign.products?.length || 0}</strong>
+                    Current linked products: <strong>{campaign.products?.length || 0}</strong>
                 </div>
             </div>
 
             {campaign.products && campaign.products.length > 0 && (
                 <div style={{ marginTop: '24px' }}>
                     <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>
-                        已关联商品
+                        Linked Products
                     </h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         {campaign.products.map(product => (
@@ -379,7 +379,7 @@ function ProductsTab({ campaign, onReload, shop }) {
                                     <div style={{ fontSize: '13px', color: '#666' }}>Variant: {product.variant_id || 'All'}</div>
                                 </div>
                                 <div style={{ fontSize: '12px', color: '#9ca3af' }}>
-                                    {new Date(product.created_at).toLocaleDateString('zh-CN')}
+                                    {new Date(product.created_at).toLocaleDateString('en-US')}
                                 </div>
                             </div>
                         ))}
@@ -403,10 +403,10 @@ function OrdersTab({ campaign, shop }) {
             }}>
                 <div style={{ fontSize: '48px', marginBottom: '16px' }}>📋</div>
                 <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600' }}>
-                    暂无订单
+                    No Orders Yet
                 </h3>
                 <p style={{ margin: 0, color: '#666' }}>
-                    此活动还没有产生任何订单
+                    This campaign has not generated any orders yet
                 </p>
             </div>
         )
@@ -415,7 +415,7 @@ function OrdersTab({ campaign, shop }) {
     return (
         <div>
             <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px' }}>
-                订单列表 ({orders.length})
+                Order List ({orders.length})
             </h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {orders.map(order => (
@@ -429,12 +429,12 @@ function OrdersTab({ campaign, shop }) {
                             <div>
                                 <strong>{order.customer_email}</strong>
                                 <div style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>
-                                    订单: {order.shopify_order_id}
+                                    Order: {order.shopify_order_id}
                                 </div>
                             </div>
                             <div style={{ textAlign: 'right' }}>
                                 <div style={{ fontWeight: '600', fontSize: '16px' }}>
-                                    ¥{order.total_amount}
+                                    ${order.total_amount}
                                 </div>
                                 <div style={{ fontSize: '13px', marginTop: '4px' }}>
                                     <StatusBadge status={order.payment_status} />
@@ -442,7 +442,7 @@ function OrdersTab({ campaign, shop }) {
                             </div>
                         </div>
                         <div style={{ fontSize: '12px', color: '#9ca3af' }}>
-                            {new Date(order.created_at).toLocaleString('zh-CN')}
+                            {new Date(order.created_at).toLocaleString('en-US')}
                         </div>
                     </div>
                 ))}
@@ -453,9 +453,9 @@ function OrdersTab({ campaign, shop }) {
 
 function StatusBadge({ status }) {
     const styles = {
-        pending: { bg: '#fef3c7', color: '#92400e', text: '待付款' },
-        paid: { bg: '#d1fae5', color: '#065f46', text: '已付款' },
-        cancelled: { bg: '#fee2e2', color: '#991b1b', text: '已取消' }
+        pending: { bg: '#fef3c7', color: '#92400e', text: 'Pending' },
+        paid: { bg: '#d1fae5', color: '#065f46', text: 'Paid' },
+        cancelled: { bg: '#fee2e2', color: '#991b1b', text: 'Cancelled' }
     }
 
     const style = styles[status] || styles.pending

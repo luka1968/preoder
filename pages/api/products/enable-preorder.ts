@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { supabaseAdmin } from '../../../lib/supabase'
 
 /**
- * 🎯 Globo 同款预购 API
+ * 🎯 Kean 同款预购 API
  * 
  * 启用预购时：
  * 1. 设置 inventory_policy = "continue"
