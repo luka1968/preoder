@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { supabaseAdmin } from '../../../../lib/supabase';
+import { UsageEnforcement } from '../../../../lib/usage-enforcement';
 import crypto from 'crypto';
 
 export const config = {
@@ -99,7 +100,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // 🔒 Check billing limit before processing preorder
-    const { UsageEnforcement } = await import('../../../../lib/usage-enforcement');
+    // UsageEnforcement is now statically imported at the top
     const usageCheck = await UsageEnforcement.checkPreorderLimit(shop);
 
     if (!usageCheck.allowed) {
