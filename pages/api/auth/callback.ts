@@ -94,7 +94,60 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // 不阻止安装流程
         }
 
-        // 9. 重定向到管理界面
+        // ✅ 9. 检查是否需要创建订阅（新安装）
+        const { data: shopData } = await supabaseAdmin
+            .from('shops')
+            .select('id, created_at, installed_at')
+            .eq('shop_domain', shop)
+            .single()
+
+        const isNewInstall = shopData && new Date(shopData.installed_at).getTime() > Date.now() - 60000 // 1分钟内安装
+        const billingEnabled = process.env.SHOPIFY_BILLING_ENABLED === 'true'
+
+        if (isNewInstall && billingEnabled && shopData.id) {
+            console.log(`✅ New installation detected, checking for subscription...`)
+
+            // 检查是否已有订阅
+            const { data: existingSub } = await supabaseAdmin
+                .from('shop_subscriptions')
+                .select('id')
+                .eq('shop_id', shopData.id)
+                .in('status', ['active', 'trialing'])
+                .single()
+
+            if (!existingSub) {
+                console.log(`✅ Creating trial subscription for ${shop}`)
+
+                try {
+                    // 创建订阅并获取确认 URL
+                    const protocol = req.headers['x-forwarded-proto'] || 'https'
+                    const host = req.headers.host
+                    const subscriptionUrl = `${protocol}://${host}/api/billing/create-subscription?shop=${shop}`
+
+                    const subscriptionResponse = await fetch(subscriptionUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+
+                    const subscriptionData = await subscriptionResponse.json()
+
+                    if (subscriptionData.success && subscriptionData.confirmation_url) {
+                        console.log(`✅ Redirecting to subscription approval: ${subscriptionData.confirmation_url}`)
+                        return res.redirect(subscriptionData.confirmation_url)
+                    } else {
+                        console.error('⚠️ Failed to create subscription:', subscriptionData.error)
+                        // 继续到正常流程
+                    }
+                } catch (subError) {
+                    console.error('⚠️ Error creating subscription:', subError)
+                    // 继续到正常流程
+                }
+            }
+        }
+
+        // 10. 重定向到管理界面
         res.redirect(`/admin?shop=${shop}`)
     } catch (error: any) {
         console.error('❌ OAuth callback error:', error)

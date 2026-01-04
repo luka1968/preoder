@@ -98,6 +98,49 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(404).json({ error: 'Shop not found' });
     }
 
+    // 🔒 Check billing limit before processing preorder
+    const { UsageEnforcement } = await import('../../../../lib/usage-enforcement');
+    const usageCheck = await UsageEnforcement.checkPreorderLimit(shop);
+
+    if (!usageCheck.allowed) {
+      console.warn('⚠️ Preorder limit exceeded:', {
+        shop,
+        current: usageCheck.current,
+        limit: usageCheck.limit
+      });
+
+      // Log the limit exceeded event
+      await supabaseAdmin
+        .from('billing_events')
+        .insert({
+          shop_id: shopData.id,
+          event_type: 'usage_limit_exceeded',
+          event_data: {
+            usage_type: 'preorder_orders',
+            current: usageCheck.current,
+            limit: usageCheck.limit,
+            order_id: order.id
+          }
+        });
+
+      // Still return 200 to Shopify to avoid retries, but don't process
+      return res.status(200).json({
+        success: false,
+        message: 'Preorder limit exceeded',
+        usage: {
+          current: usageCheck.current,
+          limit: usageCheck.limit,
+          message: usageCheck.message
+        }
+      });
+    }
+
+    console.log('✅ Usage check passed:', {
+      current: usageCheck.current,
+      limit: usageCheck.limit,
+      percentage: usageCheck.percentage
+    });
+
     // 保存到数据库
     const { data, error } = await supabaseAdmin
       .from('preorder_orders')
@@ -121,11 +164,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('✅ Preorder saved to database:', data);
 
+    // 📊 Increment usage counter after successful save
+    await UsageEnforcement.incrementPreorderUsage(shop);
+    console.log('✅ Usage counter incremented');
+
     return res.status(200).json({
       success: true,
       message: 'Preorder processed',
       orderId: order.id,
-      preorderItems: preorderItems.length
+      preorderItems: preorderItems.length,
+      usage: {
+        current: usageCheck.current + 1,
+        limit: usageCheck.limit,
+        percentage: Math.round(((usageCheck.current + 1) / usageCheck.limit) * 100)
+      }
     });
 
   } catch (error: any) {

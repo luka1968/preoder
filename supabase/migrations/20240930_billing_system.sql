@@ -86,8 +86,8 @@ INSERT INTO pricing_plans (name, price_monthly, price_yearly, features, limits) 
 ),
 (
   'Pro',
-  3.99,
-  39.99,
+  6.90,
+  69.00,
   '{
     "preorder_orders": true,
     "restock_emails": true,
@@ -105,7 +105,7 @@ INSERT INTO pricing_plans (name, price_monthly, price_yearly, features, limits) 
     "remove_branding": true
   }',
   '{
-    "preorder_orders_per_month": 100,
+    "preorder_orders_per_month": 1000,
     "restock_emails_per_month": 1000,
     "partial_payments": true,
     "discount_codes": true,
