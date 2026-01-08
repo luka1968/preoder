@@ -1,72 +1,21 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-name = "PreOrder Pro"
-client_id = "5bbd7fcb2ef91735bdcdd66359da7bf3"
+client_id = "b8ea0c427021583b002d49d93e72e858"
+name = "Kean PreOrder Pro"
 application_url = "https://shopmall.dpdns.org"
 embedded = true
 
+[webhooks]
+api_version = "2025-04"
+
 [access_scopes]
-# Use this configuration to define the access scopes required for your app
-scopes = "write_products,read_products,write_orders,read_orders,write_customers,read_customers,write_inventory,read_inventory,write_draft_orders,read_draft_orders"
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_customers,read_draft_orders,read_inventory,read_orders,read_products,read_themes,write_customers,write_draft_orders,write_inventory,write_orders,write_products,write_themes"
+optional_scopes = [ ]
+use_legacy_install_flow = false
 
 [auth]
 redirect_urls = [
-  "https://shopmall.dpdns.org/api/auth/callback"
+  "https://shopmall.dpdns.org/api/auth/callback",
+  "https://shopmall.dpdns.org/api/billing/activate-subscription"
 ]
-
-[webhooks]
-api_version = "2023-10"
-
-[pos]
-embedded = false
-
-[build]
-automatically_update_urls_on_dev = true
-dev_store_url = "your-dev-store.com"
-include_config_on_deploy = true
-
-[app_proxy]
-# App proxy configuration (if needed)
-# url = "/apps/preorder-pro"
-# subpath = "proxy"
-# prefix = "apps"
-
-# Extensions configuration
-[[extensions]]
-type = "theme_app_extension"
-name = "preorder-embed"
-handle = "preorder-embed"
-directory = "extensions/preorder-embed"
-
-[[extensions]]
-type = "checkout_post_purchase"
-name = "preorder-checkout"
-handle = "preorder-checkout"
-
-[[extensions]]
-type = "product_subscription"
-name = "preorder-subscription"
-handle = "preorder-subscription"
-
-# Web configuration
-[web]
-frontend = { command = "npm run dev", port = 3000 }
-backend = { command = "npm run dev", port = 3000 }
-
-[web.auth]
-redirect_urls = [
-  "https://shopmall.dpdns.org/api/auth/callback"
-]
-
-[web.application_url]
-url = "https://shopmall.dpdns.org"
-
-[web.webhooks]
-privacy_compliance_url = "https://shopmall.dpdns.org/api/webhooks/privacy/customers-data-request"
-mandatory_webhooks_url = "https://shopmall.dpdns.org/api/webhooks"
-
-# Legal pages (required by Shopify)
-[web.legal]
-privacy_policy_url = "https://shopmall.dpdns.org/privacy"
-terms_of_service_url = "https://shopmall.dpdns.org/terms"
-support_url = "https://shopmall.dpdns.org/support"

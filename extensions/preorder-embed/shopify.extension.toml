@@ -1,8 +1,10 @@
 api_version = "2024-01"
 
 [[extensions]]
+uid = "ee8c6843-72ee-e01a-f811-6309d2a64a79be6e600c"
 type = "theme"
 name = "PreOrder Pro"
+handle = "preorder-embed"
 
 [[extensions.targeting]]
 target = "head"
