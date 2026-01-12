@@ -2,11 +2,16 @@
 
 client_id = "b8ea0c427021583b002d49d93e72e858"
 name = "Kean PreOrder Pro"
-application_url = "https://preorder.orbrother.com"
+application_url = "https://shopmall.dpdns.org"
 embedded = true
 
 [webhooks]
 api_version = "2025-04"
+
+  [webhooks.privacy_compliance]
+  customer_deletion_url = "https://preorder.orbrother.com/api/webhooks/privacy/customers-redact"
+  customer_data_request_url = "https://preorder.orbrother.com/api/webhooks/privacy/customers-data_request"
+  shop_deletion_url = "https://preorder.orbrother.com/api/webhooks/privacy/shop-redact"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
@@ -16,6 +21,6 @@ use_legacy_install_flow = false
 
 [auth]
 redirect_urls = [
-  "https://preorder.orbrother.com/api/auth/callback",
-  "https://preorder.orbrother.com/api/billing/activate-subscription"
+  "https://shopmall.dpdns.org/api/auth/callback",
+  "https://shopmall.dpdns.org/api/billing/activate-subscription"
 ]
