@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         hasAppUrl: !!config.shopify.appUrl,
         hasScopes: !!config.shopify.scopes,
         apiKeyLength: config.shopify.apiKey?.length || 0,
-        appUrlCorrect: config.shopify.appUrl === 'https://shopmall.dpdns.org',
+        appUrlCorrect: config.shopify.appUrl === 'https://preorder.orbrother.com',
       },
       supabase: {
         hasUrl: !!config.supabase.url,
@@ -76,10 +76,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       recommendations.push('❌ 缺少 SHOPIFY_API_SECRET - 从 Shopify Partner Dashboard 获取')
     }
     if (!status.shopify.hasAppUrl) {
-      recommendations.push('❌ 缺少 SHOPIFY_APP_URL - 应该设置为 https://shopmall.dpdns.org')
+      recommendations.push('❌ 缺少 SHOPIFY_APP_URL - 应该设置为 https://preorder.orbrother.com')
     }
     if (!status.shopify.appUrlCorrect) {
-      recommendations.push(`⚠️ SHOPIFY_APP_URL 不正确 - 当前: ${config.shopify.appUrl}, 应该是: https://shopmall.dpdns.org`)
+      recommendations.push(`⚠️ SHOPIFY_APP_URL 不正确 - 当前: ${config.shopify.appUrl}, 应该是: https://preorder.orbrother.com`)
     }
     if (!status.shopify.hasScopes) {
       recommendations.push('❌ 缺少 SHOPIFY_SCOPES - 需要设置 API 权限范围')

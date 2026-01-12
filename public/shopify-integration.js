@@ -1,5 +1,5 @@
 // Shopify主题集成脚本 - 简化版预购功能
-(function() {
+(function () {
   'use strict';
 
   // 配置
@@ -73,7 +73,7 @@
   // 处理预购点击
   function handlePreorderClick(productId, variantId) {
     log('预购点击:', productId, variantId);
-    
+
     // 显示预购表单
     showPreorderModal(productId, variantId);
   }
@@ -137,7 +137,7 @@
       e.preventDefault();
       const email = document.getElementById('preorder-email').value;
       const name = document.getElementById('preorder-name').value;
-      
+
       await submitPreorder(productId, variantId, email, name);
       document.body.removeChild(modal);
     });
@@ -154,9 +154,9 @@
   async function submitPreorder(productId, variantId, email, name) {
     try {
       log('提交预购:', { productId, variantId, email, name });
-      
+
       // 调用预购 API
-      const apiUrl = CONFIG.apiUrl || 'https://shopmall.dpdns.org/api';
+      const apiUrl = CONFIG.apiUrl || 'https://preorder.orbrother.com/api';
       const response = await fetch(`${apiUrl}/preorder/create`, {
         method: 'POST',
         headers: {
@@ -172,7 +172,7 @@
       });
 
       const result = await response.json();
-      
+
       if (response.ok) {
         alert('✅ 预购成功！\n\n我们已收到您的预购信息。\n商品到货时会通知您。');
       } else {
@@ -200,7 +200,7 @@
     // 获取当前变体ID
     const variantSelect = document.querySelector('select[name="id"]');
     const variantInput = document.querySelector('input[name="id"]');
-    
+
     if (variantSelect) {
       variantId = variantSelect.value;
     } else if (variantInput) {
@@ -214,15 +214,15 @@
   function shouldShowPreorder() {
     // 方法1: 检查添加到购物车按钮状态
     const addToCartBtn = document.querySelector('button[name="add"], input[name="add"], .btn-product-add');
-    
+
     if (addToCartBtn) {
       const btnText = addToCartBtn.textContent || addToCartBtn.value || '';
       const isDisabled = addToCartBtn.disabled || addToCartBtn.hasAttribute('disabled');
       const hasSoldOutText = btnText.includes('Sold out') ||
-                            btnText.includes('Unavailable') ||
-                            btnText.includes('缺货') ||
-                            btnText.includes('售罄');
-      
+        btnText.includes('Unavailable') ||
+        btnText.includes('缺货') ||
+        btnText.includes('售罄');
+
       if (isDisabled || hasSoldOutText) {
         log('✅ Button indicates sold out:', { disabled: isDisabled, text: btnText });
         return true;
@@ -235,21 +235,21 @@
       const variantSelect = document.querySelector('select[name="id"]');
       const variantInput = document.querySelector('input[name="id"]');
       const currentVariantId = variantSelect?.value || variantInput?.value;
-      
+
       let targetVariant = null;
       if (currentVariantId) {
         targetVariant = variants.find(v => v.id.toString() === currentVariantId);
       } else {
         targetVariant = variants[0];
       }
-      
+
       if (targetVariant) {
         const isOutOfStock = (
           targetVariant.available === false ||
           (typeof targetVariant.inventory_quantity === 'number' && targetVariant.inventory_quantity <= 0) ||
           (targetVariant.inventory_management && targetVariant.inventory_quantity <= 0)
         );
-        
+
         if (isOutOfStock) {
           log('✅ Variant data indicates sold out:', targetVariant);
           return true;
@@ -266,7 +266,7 @@
     log('初始化预购功能...');
 
     const { productId, variantId } = getProductInfo();
-    
+
     if (!productId) {
       log('未找到产品ID，跳过预购初始化');
       return;
@@ -290,7 +290,7 @@
     const addToCartBtn = document.querySelector('button[name="add"], input[name="add"], .btn-product-add');
     if (addToCartBtn) {
       const preorderBtn = createPreorderButton(productId, variantId);
-      
+
       // 如果商品缺货，替换按钮；否则添加在下方
       if (shouldShowPreorder()) {
         addToCartBtn.style.display = 'none';

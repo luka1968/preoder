@@ -60,7 +60,7 @@ export default function ManualInstall() {
 
         <div style={{ background: 'white', padding: '30px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
           <h3>安装预购脚本</h3>
-          
+
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
               店铺域名：
@@ -110,14 +110,14 @@ export default function ManualInstall() {
             >
               <h4>{result.success ? '✅ 安装成功！' : '❌ 安装失败'}</h4>
               <p>{result.message || result.error}</p>
-              
+
               {result.success && (
                 <div style={{ marginTop: '15px' }}>
                   <p><strong>脚本 URL:</strong></p>
                   <code style={{ background: 'rgba(0,0,0,0.1)', padding: '5px 10px', borderRadius: '4px', display: 'block', marginTop: '5px' }}>
                     {result.scriptUrl}
                   </code>
-                  
+
                   <p style={{ marginTop: '15px' }}><strong>下一步：</strong></p>
                   <ol style={{ marginTop: '10px', lineHeight: '1.8' }}>
                     <li>创建库存为0的测试商品</li>
@@ -133,7 +133,7 @@ export default function ManualInstall() {
         <div style={{ marginTop: '40px', background: '#e7f3ff', padding: '20px', borderRadius: '8px' }}>
           <h3>🔧 手动安装方法（备用）</h3>
           <p>如果自动安装失败，可以手动添加脚本到主题：</p>
-          
+
           <ol style={{ lineHeight: '1.8' }}>
             <li>进入 Shopify Admin → Online Store → Themes</li>
             <li>点击 Actions → Edit code</li>
@@ -141,24 +141,24 @@ export default function ManualInstall() {
             <li>在 &lt;/head&gt; 标签前添加以下代码：</li>
           </ol>
 
-          <pre style={{ 
-            background: '#f8f9fa', 
-            padding: '15px', 
-            borderRadius: '6px', 
+          <pre style={{
+            background: '#f8f9fa',
+            padding: '15px',
+            borderRadius: '6px',
             overflow: 'auto',
             fontSize: '14px',
             marginTop: '10px'
           }}>
-{`<!-- PreOrder Pro -->
+            {`<!-- PreOrder Pro -->
 <script>
   window.PREORDER_CONFIG = {
     shop: '{{ shop.permanent_domain }}',
-    apiUrl: 'https://shopmall.dpdns.org/api',
+    apiUrl: 'https://preorder.orbrother.com/api',
     enabled: true,
     debug: false
   };
 </script>
-<script src="https://shopmall.dpdns.org/shopify-integration.js" async></script>`}
+<script src="https://preorder.orbrother.com/shopify-integration.js" async></script>`}
           </pre>
         </div>
 

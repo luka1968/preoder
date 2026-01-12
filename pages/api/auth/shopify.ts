@@ -4,20 +4,20 @@ import { supabaseAdmin } from '../../../lib/supabase'
 
 // 自动注入预购脚本到商店
 async function autoInjectPreorderScript(shopDomain: string, accessToken: string) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://shopmall.dpdns.org'
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://preorder.orbrother.com'
   const scriptUrl = `${appUrl}/universal-preorder.js`
-  
+
   // 首先检查是否已经存在我们的脚本
   const existingScripts = await getScriptTags(shopDomain, accessToken)
-  const ourScript = existingScripts.find((script: any) => 
+  const ourScript = existingScripts.find((script: any) =>
     script.src.includes('universal-preorder.js') || script.src.includes(appUrl)
   )
-  
+
   if (ourScript) {
     console.log('PreOrder script already exists, skipping injection')
     return
   }
-  
+
   // 创建新的script tag
   const response = await fetch(`https://${shopDomain}/admin/api/2023-10/script_tags.json`, {
     method: 'POST',
@@ -68,7 +68,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const shopDomain = shop as string
-  
+
   // 验证shop域名格式
   if (!shopDomain.match(/^[a-zA-Z0-9][a-zA-Z0-9\-]*\.myshopify\.com$/)) {
     return res.status(400).json({ error: 'Invalid shop domain' })
@@ -80,9 +80,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const appUrl = process.env.SHOPIFY_APP_URL
 
     if (!apiKey || !appUrl) {
-      console.error('Missing required environment variables:', { 
-        hasApiKey: !!apiKey, 
-        hasAppUrl: !!appUrl 
+      console.error('Missing required environment variables:', {
+        hasApiKey: !!apiKey,
+        hasAppUrl: !!appUrl
       })
       return res.status(500).json({ error: 'App configuration error' })
     }
@@ -91,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!code) {
       const redirectUri = `${appUrl}/api/auth/shopify`
       const nonce = Math.random().toString(36).substring(7)
-      
+
       const authUrl = `https://${shopDomain}/admin/oauth/authorize?` +
         `client_id=${apiKey}&` +
         `scope=${scopes}&` +
@@ -113,7 +113,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const queryParams = { ...req.query }
     delete queryParams.hmac
     delete queryParams.signature
-    
+
     const sortedParams = Object.keys(queryParams)
       .sort()
       .map(key => `${key}=${queryParams[key]}`)
@@ -154,7 +154,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // 3. 保存店铺信息到数据库
     console.log('💾 准备保存店铺信息到数据库...')
-    
+
     const shopData = {
       shop_domain: shopDomain,
       access_token: accessToken,
@@ -162,9 +162,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       plan: 'free',
       active: true
     }
-    
+
     console.log('📝 店铺数据:', { ...shopData, access_token: '***' })
-    
+
     const { data: savedShop, error: dbError } = await supabaseAdmin
       .from('shops')
       .upsert(shopData, {
@@ -199,7 +199,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error) {
     console.error('Shopify auth error:', error)
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Authentication failed',
       details: error instanceof Error ? error.message : 'Unknown error'
     })

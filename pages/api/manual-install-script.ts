@@ -17,8 +17,8 @@ export default async function handler(
     const { shop } = req.body;
 
     if (!shop) {
-      return res.status(400).json({ 
-        error: 'Missing shop parameter' 
+      return res.status(400).json({
+        error: 'Missing shop parameter'
       });
     }
 
@@ -38,7 +38,7 @@ export default async function handler(
     }
 
     const accessToken = shopData.access_token;
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://shopmall.dpdns.org';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://preorder.orbrother.com';
     const scriptUrl = `${appUrl}/shopify-integration.js`;
 
     console.log('🚀 Manual install script for:', shop);
@@ -62,8 +62,8 @@ export default async function handler(
 
     const existingScripts = await existingScriptsResponse.json();
     const scriptExists = existingScripts.script_tags?.some(
-      (script: any) => 
-        script.src === scriptUrl || 
+      (script: any) =>
+        script.src === scriptUrl ||
         script.src.includes('shopify-integration.js') ||
         script.src.includes('universal-preorder.js')
     );

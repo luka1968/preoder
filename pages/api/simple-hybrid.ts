@@ -44,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         message: '⚠️ 需要先配置环境变量才能部署混合模式',
         details: {
           shop: shop,
-          appUrl: 'https://shopmall.dpdns.org',
+          appUrl: 'https://preorder.orbrother.com',
           configurationRequired: true,
           missingConfig: [
             'SUPABASE_SERVICE_ROLE_KEY',
@@ -59,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error) {
     console.error('Simple hybrid API error:', error)
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Configuration required',
       message: '请先配置环境变量，然后重新访问此页面',
       details: error instanceof Error ? error.message : 'Unknown error'

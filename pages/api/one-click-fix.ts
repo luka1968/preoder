@@ -12,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // 一键修复 - 注入立即修复脚本
       const result = await deployInstantFix(shop)
       res.json(result)
-      
+
     } else if (req.method === 'GET') {
       if (action === 'test') {
         // 返回测试脚本
@@ -51,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error) {
     console.error('One-click fix error:', error)
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'
     })
@@ -61,8 +61,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 async function deployInstantFix(shop: string) {
   try {
     // 这里我们不需要数据库连接，直接返回成功的脚本注入方案
-    const scriptUrl = `https://shopmall.dpdns.org/instant-preorder-fix.js`
-    
+    const scriptUrl = `https://preorder.orbrother.com/instant-preorder-fix.js`
+
     return {
       success: true,
       message: '✅ 立即修复方案已准备就绪',
@@ -112,7 +112,7 @@ function generateTestScript(shop: string) {
   
   // 加载立即修复脚本
   const script = document.createElement('script');
-  script.src = 'https://shopmall.dpdns.org/instant-preorder-fix.js?v=' + Date.now();
+  script.src = 'https://preorder.orbrother.com/instant-preorder-fix.js?v=' + Date.now();
   script.onload = function() {
     console.log('✅ 立即修复脚本加载成功');
     setTimeout(() => {

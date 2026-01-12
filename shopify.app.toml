@@ -2,7 +2,7 @@
 
 client_id = "b8ea0c427021583b002d49d93e72e858"
 name = "Kean PreOrder Pro"
-application_url = "https://shopmall.dpdns.org"
+application_url = "https://preorder.orbrother.com"
 embedded = true
 
 [webhooks]
@@ -16,6 +16,6 @@ use_legacy_install_flow = false
 
 [auth]
 redirect_urls = [
-  "https://shopmall.dpdns.org/api/auth/callback",
-  "https://shopmall.dpdns.org/api/billing/activate-subscription"
+  "https://preorder.orbrother.com/api/auth/callback",
+  "https://preorder.orbrother.com/api/billing/activate-subscription"
 ]

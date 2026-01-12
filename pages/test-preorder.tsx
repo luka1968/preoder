@@ -6,14 +6,14 @@ export default function TestPreorder() {
 
   const testPreorderScript = () => {
     setTestResult('正在测试预购脚本...')
-    
+
     // 模拟产品页面环境
     window.meta = {
       product: {
         id: '12345678901234567890'
       }
     }
-    
+
     window.Shopify = {
       shop: 'arivi-shop.myshopify.com'
     }
@@ -32,12 +32,12 @@ export default function TestPreorder() {
 
   const testPreorderAPI = async () => {
     setTestResult('正在测试预购API...')
-    
+
     try {
       // 首先测试API健康状态
       const healthResponse = await fetch('/api/test-preorder')
       const healthResult = await healthResponse.json()
-      
+
       if (!healthResponse.ok) {
         throw new Error('API健康检查失败')
       }
@@ -61,14 +61,14 @@ export default function TestPreorder() {
 
       let result
       const contentType = response.headers.get('content-type')
-      
+
       if (contentType && contentType.includes('application/json')) {
         result = await response.json()
       } else {
         const text = await response.text()
         throw new Error(`API返回非JSON响应: ${text.substring(0, 200)}...`)
       }
-      
+
       if (response.ok) {
         setTestResult(`✅ 预购API测试成功！\n\n响应状态: ${response.status}\n\n结果:\n${JSON.stringify(result, null, 2)}`)
       } else {
@@ -84,10 +84,10 @@ export default function TestPreorder() {
       <Head>
         <title>预购功能测试 - PreOrder Pro</title>
       </Head>
-      
+
       <div style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
         <h1>🧪 预购功能测试页面</h1>
-        
+
         <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
           <h2>测试说明</h2>
           <p>这个页面用于测试PreOrder Pro的预购功能是否正常工作。</p>
@@ -101,7 +101,7 @@ export default function TestPreorder() {
           <div style={{ background: 'white', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
             <h3>🎯 前端脚本测试</h3>
             <p>测试预购脚本是否能正确加载并显示预购按钮。</p>
-            <button 
+            <button
               onClick={testPreorderScript}
               style={{
                 background: '#007bff',
@@ -120,7 +120,7 @@ export default function TestPreorder() {
           <div style={{ background: 'white', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
             <h3>🔌 API端点测试</h3>
             <p>测试预购API是否能正确处理预购请求。</p>
-            <button 
+            <button
               onClick={testPreorderAPI}
               style={{
                 background: '#28a745',
@@ -138,11 +138,11 @@ export default function TestPreorder() {
         </div>
 
         {testResult && (
-          <div style={{ 
-            marginTop: '30px', 
-            padding: '20px', 
-            background: '#f8f9fa', 
-            border: '1px solid #ddd', 
+          <div style={{
+            marginTop: '30px',
+            padding: '20px',
+            background: '#f8f9fa',
+            border: '1px solid #ddd',
             borderRadius: '8px',
             whiteSpace: 'pre-wrap',
             fontFamily: 'monospace'
@@ -159,7 +159,7 @@ export default function TestPreorder() {
               <strong>添加脚本到主题</strong>
               <p>在Shopify主题的 <code>theme.liquid</code> 文件中，在 <code>&lt;/head&gt;</code> 标签前添加：</p>
               <code style={{ background: '#f1f1f1', padding: '10px', display: 'block', marginTop: '10px' }}>
-                &lt;script src="https://shopmall.dpdns.org/shopify-integration.js"&gt;&lt;/script&gt;
+                &lt;script src="https://preorder.orbrother.com/shopify-integration.js"&gt;&lt;/script&gt;
               </code>
             </li>
             <li>
@@ -178,14 +178,14 @@ export default function TestPreorder() {
           <h3>🛍️ 模拟产品页面（用于测试）</h3>
           <div style={{ display: 'flex', gap: '20px' }}>
             <div style={{ flex: 1 }}>
-              <div 
-                className="product-image-main" 
-                style={{ 
-                  position: 'relative', 
-                  background: '#f0f0f0', 
-                  height: '200px', 
-                  display: 'flex', 
-                  alignItems: 'center', 
+              <div
+                className="product-image-main"
+                style={{
+                  position: 'relative',
+                  background: '#f0f0f0',
+                  height: '200px',
+                  display: 'flex',
+                  alignItems: 'center',
                   justifyContent: 'center',
                   borderRadius: '8px'
                 }}
@@ -196,14 +196,14 @@ export default function TestPreorder() {
             <div style={{ flex: 1 }}>
               <h4>测试商品</h4>
               <p>价格: ¥99.00</p>
-              <button 
-                name="add" 
-                disabled 
-                style={{ 
-                  width: '100%', 
-                  padding: '12px', 
-                  background: '#ccc', 
-                  border: 'none', 
+              <button
+                name="add"
+                disabled
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: '#ccc',
+                  border: 'none',
                   borderRadius: '6px',
                   marginBottom: '10px'
                 }}

@@ -10,7 +10,7 @@ export default function OneClickFix() {
 
   const executeOneClickFix = () => {
     setMessage('🚀 正在执行一键修复...')
-    
+
     // 模拟修复过程
     setTimeout(() => {
       setMessage('✅ 一键修复完成！预购功能已激活')
@@ -21,21 +21,21 @@ export default function OneClickFix() {
   const testPreorderFunction = () => {
     const testUrl = `https://${shop}/products/test-01?variant=46938889552121`
     const newWindow = window.open(testUrl, '_blank')
-    
+
     // 等待页面加载后自动注入脚本
     setTimeout(() => {
       if (newWindow) {
         try {
           newWindow.postMessage({
             type: 'INJECT_PREORDER_SCRIPT',
-            scriptUrl: 'https://shopmall.dpdns.org/instant-preorder-fix.js'
+            scriptUrl: 'https://preorder.orbrother.com/instant-preorder-fix.js'
           }, '*')
         } catch (e) {
           console.log('跨域限制，需要手动运行脚本')
         }
       }
     }, 3000)
-    
+
     setMessage(`
 🧪 测试步骤：
 1. 新页面已打开产品页面
@@ -43,7 +43,7 @@ export default function OneClickFix() {
 3. 运行以下代码：
 
 const script = document.createElement('script');
-script.src = 'https://shopmall.dpdns.org/instant-preorder-fix.js';
+script.src = 'https://preorder.orbrother.com/instant-preorder-fix.js';
 document.head.appendChild(script);
 
 4. 应该立即看到预购按钮替换 "Sold out" 按钮
@@ -55,7 +55,7 @@ document.head.appendChild(script);
       <Head>
         <title>PreOrder Pro - 一键修复</title>
       </Head>
-      
+
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-50 py-8">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-2xl shadow-2xl p-8 border border-orange-100">
@@ -125,7 +125,7 @@ document.head.appendChild(script);
               <h3 className="text-2xl font-bold text-center text-gray-800 mb-6">
                 🎯 专业级一键修复
               </h3>
-              
+
               {!isFixed ? (
                 <div className="text-center">
                   <p className="text-gray-700 mb-6">
@@ -224,7 +224,7 @@ document.head.appendChild(script);
               >
                 返回主页
               </button>
-              
+
               <a
                 href={`https://${shop}/products/test-01?variant=46938889552121`}
                 target="_blank"

@@ -1,18 +1,18 @@
 // PreOrder Pro - 立即修复版本
 // 专业级一次性解决方案，无需重新安装应用
 
-(function() {
+(function () {
   'use strict';
-  
+
   console.log('🚀 PreOrder Pro 立即修复版本启动...');
-  
+
   // 防止重复加载
   if (window.PreOrderInstantFix) {
     console.log('✅ 立即修复版本已运行');
     return;
   }
   window.PreOrderInstantFix = true;
-  
+
   // 配置
   const CONFIG = {
     debug: true,
@@ -20,13 +20,13 @@
     shop: window.Shopify?.shop || 'arivi-shop.myshopify.com',
     mode: 'instant_fix'
   };
-  
+
   console.log('📊 配置信息:', CONFIG);
-  
+
   // 注入专业级样式
   function injectProfessionalStyles() {
     if (document.getElementById('preorder-instant-styles')) return;
-    
+
     const styles = `
       /* PreOrder Pro - 专业级样式 */
       .preorder-btn-instant {
@@ -171,37 +171,37 @@
         pointer-events: none !important;
       }
     `;
-    
+
     const styleSheet = document.createElement('style');
     styleSheet.id = 'preorder-instant-styles';
     styleSheet.textContent = styles;
     document.head.appendChild(styleSheet);
-    
+
     console.log('✅ 专业级样式已注入');
   }
-  
+
   // 智能检测售罄状态 - 多重检测机制
   function detectSoldOutWithMultipleMethods() {
     console.log('🔍 开始智能售罄检测...');
-    
+
     const detectionResults = [];
-    
+
     // 方法1: 检查禁用按钮 (最常见)
     const disabledButtons = document.querySelectorAll('button:disabled, input:disabled');
     console.log('找到禁用按钮:', disabledButtons.length);
-    
+
     for (let i = 0; i < disabledButtons.length; i++) {
       const btn = disabledButtons[i];
       const text = (btn.textContent || btn.value || '').toLowerCase().trim();
       console.log(`按钮 ${i + 1} 文本: "${text}"`);
-      
-      if (text.includes('sold out') || 
-          text.includes('unavailable') || 
-          text.includes('out of stock') ||
-          text.includes('缺货') ||
-          text.includes('售罄') ||
-          text.includes('sold') ||
-          text.includes('out')) {
+
+      if (text.includes('sold out') ||
+        text.includes('unavailable') ||
+        text.includes('out of stock') ||
+        text.includes('缺货') ||
+        text.includes('售罄') ||
+        text.includes('sold') ||
+        text.includes('out')) {
         detectionResults.push({
           method: 'disabled_button',
           element: btn,
@@ -210,7 +210,7 @@
         });
       }
     }
-    
+
     // 方法2: 检查按钮文本 (即使未禁用)
     const allButtons = document.querySelectorAll('button, input[type="submit"], input[type="button"]');
     for (const btn of allButtons) {
@@ -224,7 +224,7 @@
         });
       }
     }
-    
+
     // 方法3: 检查特定类名
     const soldOutElements = document.querySelectorAll('.sold-out, .unavailable, .out-of-stock, [class*="sold"], [class*="unavailable"]');
     if (soldOutElements.length > 0) {
@@ -238,7 +238,7 @@
         });
       }
     }
-    
+
     // 方法4: 检查页面文本内容
     const bodyText = document.body.textContent.toLowerCase();
     if (bodyText.includes('sold out') || bodyText.includes('out of stock')) {
@@ -252,7 +252,7 @@
         });
       }
     }
-    
+
     // 方法5: Shopify 产品数据检查
     if (window.meta?.product) {
       const product = window.meta.product;
@@ -268,15 +268,15 @@
         }
       }
     }
-    
+
     console.log('检测结果:', detectionResults);
-    
+
     // 选择置信度最高的结果
     if (detectionResults.length > 0) {
-      const bestResult = detectionResults.reduce((best, current) => 
+      const bestResult = detectionResults.reduce((best, current) =>
         current.confidence > best.confidence ? current : best
       );
-      
+
       console.log('✅ 最佳检测结果:', bestResult);
       return {
         found: true,
@@ -286,11 +286,11 @@
         text: bestResult.text
       };
     }
-    
+
     console.log('❌ 未检测到售罄状态');
     return { found: false, button: null, method: 'none' };
   }
-  
+
   // 创建专业级预购按钮
   function createProfessionalPreorderButton() {
     const button = document.createElement('button');
@@ -299,23 +299,23 @@
       <span class="preorder-icon">🛒</span>
       <span class="preorder-text">立即预订 Pre-Order Now</span>
     `;
-    
-    button.addEventListener('click', function(e) {
+
+    button.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       showProfessionalModal();
     });
-    
+
     return button;
   }
-  
+
   // 显示专业级成功模态框
   function showProfessionalModal() {
     // 移除现有模态框
     const existingModal = document.getElementById('preorder-success-modal');
     if (existingModal) existingModal.remove();
-    
+
     const modal = document.createElement('div');
     modal.id = 'preorder-success-modal';
     modal.style.cssText = `
@@ -332,7 +332,7 @@
       backdrop-filter: blur(8px) !important;
       animation: modalFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
     `;
-    
+
     const content = document.createElement('div');
     content.style.cssText = `
       background: white !important;
@@ -346,7 +346,7 @@
       animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
       position: relative !important;
     `;
-    
+
     content.innerHTML = `
       <div style="font-size: 80px; margin-bottom: 30px; animation: successBounce 1.2s ease-out;">🎉</div>
       <h2 style="color: #333; margin-bottom: 20px; font-size: 32px; margin-top: 0; font-weight: 800;">预购成功！</h2>
@@ -367,7 +367,7 @@
                 style="background: #ff6b35; color: white; border: none; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 16px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);">
           关闭
         </button>
-        <button onclick="window.open('https://shopmall.dpdns.org', '_blank')" 
+        <button onclick="window.open('https://preorder.orbrother.com', '_blank')" 
                 style="background: #6c757d; color: white; border: none; padding: 15px 30px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 16px; transition: all 0.2s;">
           管理应用
         </button>
@@ -377,10 +377,10 @@
         </button>
       </div>
     `;
-    
+
     modal.appendChild(content);
     document.body.appendChild(modal);
-    
+
     // 添加动画样式
     const animationStyles = `
       @keyframes modalFadeIn {
@@ -397,32 +397,32 @@
         60% { transform: translateY(-8px) scale(1.05); }
       }
     `;
-    
+
     if (!document.getElementById('preorder-modal-animations')) {
       const animationSheet = document.createElement('style');
       animationSheet.id = 'preorder-modal-animations';
       animationSheet.textContent = animationStyles;
       document.head.appendChild(animationSheet);
     }
-    
+
     // 10秒后自动关闭
     setTimeout(() => {
       if (modal.parentNode) {
         modal.remove();
       }
     }, 10000);
-    
+
     console.log('✅ 专业级成功模态框已显示');
   }
-  
+
   // 智能插入预购按钮
   function smartInsertPreorderButton(soldOutButton, preorderButton) {
     console.log('🎯 智能插入预购按钮...');
-    
+
     if (soldOutButton) {
       // 添加隐藏动画到售罄按钮
       soldOutButton.classList.add('sold-out-hidden');
-      
+
       // 延迟插入预购按钮，创建平滑过渡
       setTimeout(() => {
         soldOutButton.style.display = 'none';
@@ -442,7 +442,7 @@
         '.product-single__form',
         '.product'
       ];
-      
+
       let inserted = false;
       for (const selector of insertTargets) {
         const target = document.querySelector(selector);
@@ -453,7 +453,7 @@
           break;
         }
       }
-      
+
       if (!inserted) {
         // 最后的备选方案
         const container = document.querySelector('main, .main, #main, .container, body');
@@ -464,33 +464,33 @@
       }
     }
   }
-  
+
   // 主初始化函数
   function initInstantPreorderFix() {
     console.log('🚀 PreOrder Pro 立即修复版本初始化...');
-    
+
     // 注入专业级样式
     injectProfessionalStyles();
-    
+
     // 智能检测售罄状态
     const soldOutDetection = detectSoldOutWithMultipleMethods();
-    
+
     if (!soldOutDetection.found) {
       console.log('❌ 产品未售罄，预购功能待机');
       console.log('💡 提示: 确保产品库存为0或按钮显示"Sold out"');
       return;
     }
-    
+
     console.log('✅ 检测到售罄产品，激活预购功能');
     console.log('📊 检测方法:', soldOutDetection.method);
     console.log('🎯 置信度:', (soldOutDetection.confidence * 100) + '%');
-    
+
     // 创建专业级预购按钮
     const preorderButton = createProfessionalPreorderButton();
-    
+
     // 智能插入预购按钮
     smartInsertPreorderButton(soldOutDetection.button, preorderButton);
-    
+
     // 添加预购徽章到产品图片
     const productImage = document.querySelector('.product__photo img, .product-single__photo img, .product-image img');
     if (productImage && productImage.parentNode) {
@@ -501,9 +501,9 @@
       productImage.parentNode.appendChild(badge);
       console.log('✅ 预购徽章已添加');
     }
-    
+
     console.log('🎉 PreOrder Pro 立即修复版本初始化完成！');
-    
+
     // 发送成功事件
     if (window.dispatchEvent) {
       window.dispatchEvent(new CustomEvent('preorder:activated', {
@@ -516,21 +516,21 @@
       }));
     }
   }
-  
+
   // 多重启动机制 - 确保在各种情况下都能运行
   function startWithMultipleAttempts() {
     let attempts = 0;
     const maxAttempts = 8;
-    
+
     function tryInit() {
       attempts++;
       console.log(`🔄 初始化尝试 ${attempts}/${maxAttempts}`);
-      
+
       // 检查页面是否准备就绪
-      const isReady = document.readyState === 'complete' || 
-                     document.querySelector('button, input') ||
-                     document.querySelector('.product, .product-form');
-      
+      const isReady = document.readyState === 'complete' ||
+        document.querySelector('button, input') ||
+        document.querySelector('.product, .product-form');
+
       if (isReady) {
         initInstantPreorderFix();
       } else if (attempts < maxAttempts) {
@@ -541,7 +541,7 @@
         initInstantPreorderFix();
       }
     }
-    
+
     // 立即尝试
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', tryInit);
@@ -549,12 +549,12 @@
     } else {
       tryInit();
     }
-    
+
     // 额外的延迟初始化，处理动态加载的内容
     setTimeout(tryInit, 3000);
     setTimeout(tryInit, 6000);
   }
-  
+
   // 全局暴露调试接口
   window.PreOrderInstantFix = {
     init: initInstantPreorderFix,
@@ -563,11 +563,11 @@
     version: CONFIG.version,
     restart: startWithMultipleAttempts
   };
-  
+
   // 启动立即修复系统
   startWithMultipleAttempts();
-  
+
   console.log('🎯 PreOrder Pro 立即修复版本已加载！');
   console.log('🔧 调试命令: window.PreOrderInstantFix.restart()');
-  
+
 })();

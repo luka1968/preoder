@@ -1,33 +1,33 @@
 // PreOrder Pro - 混合模式前端脚本
 // 智能检测 App Embed Block，如果没有则启用 Script Tag 模式
 
-(function() {
+(function () {
   'use strict';
-  
+
   // 配置
   const CONFIG = {
     debug: true,
     version: '1.0.0',
     mode: 'hybrid',
     shop: window.Shopify?.shop || window.location.hostname,
-    apiUrl: 'https://shopmall.dpdns.org/api'
+    apiUrl: 'https://preorder.orbrother.com/api'
   };
-  
+
   const log = (...args) => {
     if (CONFIG.debug) {
       console.log('[PreOrder Hybrid]', ...args);
     }
   };
-  
+
   log('🚀 PreOrder Pro 混合模式启动', CONFIG);
-  
+
   // 防止重复加载
   if (window.PreOrderHybridLoaded) {
     log('✅ 混合模式已加载，跳过');
     return;
   }
   window.PreOrderHybridLoaded = true;
-  
+
   // 检测是否已有 App Embed Block
   function detectAppEmbedBlock() {
     // 检查是否已有 App Embed 注入的元素
@@ -37,7 +37,7 @@
       'script[src*="universal-preorder"]',
       '.preorder-embed-active'
     ];
-    
+
     for (const indicator of indicators) {
       if (indicator.startsWith('window.')) {
         if (window[indicator.split('.')[1]]) {
@@ -51,17 +51,17 @@
         }
       }
     }
-    
+
     log('❌ 未检测到 App Embed Block');
     return false;
   }
-  
+
   // 创建预购按钮样式
   function injectStyles() {
     if (document.getElementById('preorder-hybrid-styles')) {
       return;
     }
-    
+
     const styles = `
       /* PreOrder Pro - 混合模式样式 */
       .preorder-btn-hybrid {
@@ -160,19 +160,19 @@
         }
       }
     `;
-    
+
     const styleSheet = document.createElement('style');
     styleSheet.id = 'preorder-hybrid-styles';
     styleSheet.textContent = styles;
     document.head.appendChild(styleSheet);
-    
+
     log('✅ 混合模式样式已注入');
   }
-  
+
   // 检测售罄状态
   function detectSoldOutStatus() {
     log('🔍 检测售罄状态...');
-    
+
     // 多种检测方法
     const detectionMethods = [
       // 方法1: 检查禁用按钮
@@ -186,7 +186,7 @@
         }
         return null;
       },
-      
+
       // 方法2: 检查特定类名
       () => {
         const soldOutElements = document.querySelectorAll('.sold-out, .unavailable, .out-of-stock');
@@ -196,7 +196,7 @@
         }
         return null;
       },
-      
+
       // 方法3: 检查页面文本
       () => {
         const bodyText = document.body.textContent.toLowerCase();
@@ -206,7 +206,7 @@
         }
         return null;
       },
-      
+
       // 方法4: 检查 Shopify 产品数据
       () => {
         if (window.meta?.product?.variants) {
@@ -221,7 +221,7 @@
         return null;
       }
     ];
-    
+
     for (const method of detectionMethods) {
       const result = method();
       if (result) {
@@ -229,11 +229,11 @@
         return result;
       }
     }
-    
+
     log('❌ 未检测到售罄状态');
     return { found: false, button: null, method: 'none' };
   }
-  
+
   // 创建预购按钮
   function createPreorderButton() {
     const button = document.createElement('button');
@@ -242,17 +242,17 @@
       <span style="margin-right: 8px;">🛒</span>
       <span>立即预订 Pre-Order Now</span>
     `;
-    
-    button.addEventListener('click', function(e) {
+
+    button.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
-      
+
       showPreorderModal();
     });
-    
+
     return button;
   }
-  
+
   // 显示预购模态框
   function showPreorderModal() {
     // 移除现有模态框
@@ -260,7 +260,7 @@
     if (existingModal) {
       existingModal.remove();
     }
-    
+
     const modal = document.createElement('div');
     modal.id = 'preorder-modal-hybrid';
     modal.style.cssText = `
@@ -277,7 +277,7 @@
       backdrop-filter: blur(5px) !important;
       animation: fadeIn 0.3s ease-out !important;
     `;
-    
+
     const content = document.createElement('div');
     content.style.cssText = `
       background: white !important;
@@ -291,7 +291,7 @@
       animation: slideUp 0.3s ease-out !important;
       position: relative !important;
     `;
-    
+
     content.innerHTML = `
       <div style="font-size: 64px; margin-bottom: 24px; animation: bounce 1s ease-out;">🎉</div>
       <h2 style="color: #333; margin-bottom: 16px; font-size: 28px; margin-top: 0; font-weight: 700;">预购成功！</h2>
@@ -306,16 +306,16 @@
                 style="background: #ff6b35; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s;">
           关闭
         </button>
-        <button onclick="window.open('https://shopmall.dpdns.org', '_blank')" 
+        <button onclick="window.open('https://preorder.orbrother.com', '_blank')" 
                 style="background: #f5f5f5; color: #333; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s;">
           管理应用
         </button>
       </div>
     `;
-    
+
     modal.appendChild(content);
     document.body.appendChild(modal);
-    
+
     // 添加动画样式
     const animationStyles = `
       @keyframes fadeIn {
@@ -332,57 +332,57 @@
         60% { transform: translateY(-5px); }
       }
     `;
-    
+
     if (!document.getElementById('preorder-modal-animations')) {
       const animationSheet = document.createElement('style');
       animationSheet.id = 'preorder-modal-animations';
       animationSheet.textContent = animationStyles;
       document.head.appendChild(animationSheet);
     }
-    
+
     // 5秒后自动关闭
     setTimeout(() => {
       if (modal.parentNode) {
         modal.remove();
       }
     }, 8000);
-    
+
     log('✅ 预购模态框已显示');
   }
-  
+
   // 主初始化函数
   function initHybridPreorder() {
     log('🚀 初始化混合预购系统...');
-    
+
     // 检查是否已有 App Embed Block
     const hasAppEmbed = detectAppEmbedBlock();
-    
+
     if (hasAppEmbed) {
       log('✅ App Embed Block 已激活，混合模式待机');
       // App Embed Block 已处理，我们作为备用
       window.PreOrderHybridMode = 'standby';
       return;
     }
-    
+
     log('🔄 App Embed Block 未激活，启用 Script Tag 模式');
     window.PreOrderHybridMode = 'active';
-    
+
     // 注入样式
     injectStyles();
-    
+
     // 检测售罄状态
     const soldOutStatus = detectSoldOutStatus();
-    
+
     if (!soldOutStatus.found) {
       log('❌ 产品未售罄，跳过预购按钮创建');
       return;
     }
-    
+
     log('✅ 产品已售罄，创建预购按钮');
-    
+
     // 创建预购按钮
     const preorderButton = createPreorderButton();
-    
+
     // 插入预购按钮
     if (soldOutStatus.button) {
       // 隐藏原按钮
@@ -401,7 +401,7 @@
         '.product-single',
         '.product'
       ];
-      
+
       let inserted = false;
       for (const selector of insertTargets) {
         const target = document.querySelector(selector);
@@ -412,7 +412,7 @@
           break;
         }
       }
-      
+
       if (!inserted) {
         // 最后的备选方案
         const container = document.querySelector('main, .main, #main, .container') || document.body;
@@ -420,20 +420,20 @@
         log('⚠️ 预购按钮插入到备选位置');
       }
     }
-    
+
     log('🎉 混合预购系统初始化完成！');
   }
-  
+
   // 启动系统
   function startHybridSystem() {
     // 多次尝试初始化，确保页面完全加载
     let attempts = 0;
     const maxAttempts = 5;
-    
+
     function tryInit() {
       attempts++;
       log(`🔄 初始化尝试 ${attempts}/${maxAttempts}`);
-      
+
       if (document.readyState === 'complete' || document.querySelector('button, input')) {
         initHybridPreorder();
       } else if (attempts < maxAttempts) {
@@ -442,14 +442,14 @@
         log('❌ 达到最大尝试次数，初始化结束');
       }
     }
-    
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', tryInit);
     } else {
       tryInit();
     }
   }
-  
+
   // 全局暴露
   window.PreOrderHybrid = {
     init: initHybridPreorder,
@@ -457,10 +457,10 @@
     config: CONFIG,
     mode: window.PreOrderHybridMode || 'unknown'
   };
-  
+
   // 启动混合系统
   startHybridSystem();
-  
+
   log('🎯 PreOrder Pro 混合模式已加载并启动！');
-  
+
 })();

@@ -1,15 +1,15 @@
 // PreOrder Pro - Professional Edition
 // Enterprise-grade Shopify preorder solution
 
-(function() {
+(function () {
   'use strict';
-  
+
   // Professional Configuration
   const PROFESSIONAL_CONFIG = {
     version: '2.0.0',
     mode: 'professional',
     debug: false,
-    apiUrl: 'https://shopmall.dpdns.org/api',
+    apiUrl: 'https://preorder.orbrother.com/api',
     shop: window.Shopify?.shop || 'unknown',
     performance: {
       maxInitAttempts: 10,
@@ -22,19 +22,19 @@
       modalTimeout: 12000
     }
   };
-  
+
   // Professional Logger
   class ProfessionalLogger {
     constructor(debug = false) {
       this.debug = debug;
       this.logs = [];
     }
-    
+
     log(level, message, data = null) {
       const timestamp = new Date().toISOString();
       const logEntry = { timestamp, level, message, data };
       this.logs.push(logEntry);
-      
+
       if (this.debug || level === 'error') {
         const prefix = `[PreOrder Pro ${level.toUpperCase()}]`;
         if (data) {
@@ -44,16 +44,16 @@
         }
       }
     }
-    
+
     info(message, data) { this.log('info', message, data); }
     warn(message, data) { this.log('warn', message, data); }
     error(message, data) { this.log('error', message, data); }
     debug(message, data) { this.log('debug', message, data); }
-    
+
     getLogs() { return this.logs; }
     exportLogs() { return JSON.stringify(this.logs, null, 2); }
   }
-  
+
   // Professional Detection Engine
   class SoldOutDetectionEngine {
     constructor(logger) {
@@ -67,12 +67,12 @@
         this.detectFormState.bind(this)
       ];
     }
-    
+
     async detect() {
       this.logger.info('Starting professional sold-out detection');
-      
+
       const results = [];
-      
+
       for (let i = 0; i < this.detectionMethods.length; i++) {
         const method = this.detectionMethods[i];
         try {
@@ -84,31 +84,31 @@
           this.logger.error(`Detection method ${i} failed`, error);
         }
       }
-      
+
       if (results.length === 0) {
         this.logger.warn('No sold-out status detected');
         return null;
       }
-      
+
       // Select best result based on confidence score
-      const bestResult = results.reduce((best, current) => 
+      const bestResult = results.reduce((best, current) =>
         current.confidence > best.confidence ? current : best
       );
-      
+
       this.logger.info('Best detection result', bestResult);
       return bestResult;
     }
-    
+
     detectDisabledButtons() {
       const buttons = document.querySelectorAll('button:disabled, input:disabled');
-      
+
       for (const button of buttons) {
         const text = (button.textContent || button.value || '').toLowerCase().trim();
         const soldOutKeywords = [
           'sold out', 'unavailable', 'out of stock', 'sold', 'out',
           '缺货', '售罄', '无库存', 'épuisé', 'ausverkauft', 'agotado'
         ];
-        
+
         if (soldOutKeywords.some(keyword => text.includes(keyword))) {
           return {
             method: 'disabled_button',
@@ -121,10 +121,10 @@
       }
       return null;
     }
-    
+
     detectButtonText() {
       const buttons = document.querySelectorAll('button, input[type="submit"], input[type="button"]');
-      
+
       for (const button of buttons) {
         const text = (button.textContent || button.value || '').toLowerCase().trim();
         if (text.includes('sold out') || text.includes('unavailable')) {
@@ -139,13 +139,13 @@
       }
       return null;
     }
-    
+
     detectClassNames() {
       const selectors = [
         '.sold-out', '.unavailable', '.out-of-stock',
         '[class*="sold"]', '[class*="unavailable"]', '[class*="disabled"]'
       ];
-      
+
       for (const selector of selectors) {
         const elements = document.querySelectorAll(selector);
         if (elements.length > 0) {
@@ -163,13 +163,13 @@
       }
       return null;
     }
-    
+
     detectShopifyData() {
       // Check Shopify product data
       if (window.meta?.product?.variants) {
         const variants = window.meta.product.variants;
         const allSoldOut = variants.every(v => !v.available);
-        
+
         if (allSoldOut) {
           const button = document.querySelector('.product-form button, form[action*="/cart/add"] button');
           if (button) {
@@ -183,7 +183,7 @@
           }
         }
       }
-      
+
       // Check Shopify theme variables
       if (window.theme?.product?.available === false) {
         const button = document.querySelector('.product-form button');
@@ -197,14 +197,14 @@
           };
         }
       }
-      
+
       return null;
     }
-    
+
     detectPageContent() {
       const bodyText = document.body.textContent.toLowerCase();
       const soldOutIndicators = ['sold out', 'out of stock', 'unavailable'];
-      
+
       if (soldOutIndicators.some(indicator => bodyText.includes(indicator))) {
         const button = document.querySelector('form[action*="/cart/add"] button, .product-form button');
         if (button) {
@@ -219,10 +219,10 @@
       }
       return null;
     }
-    
+
     detectFormState() {
       const forms = document.querySelectorAll('form[action*="/cart/add"], .product-form');
-      
+
       for (const form of forms) {
         const submitButton = form.querySelector('button[type="submit"], input[type="submit"]');
         if (submitButton && submitButton.disabled) {
@@ -238,7 +238,7 @@
       return null;
     }
   }
-  
+
   // Professional UI Manager
   class ProfessionalUIManager {
     constructor(logger, config) {
@@ -246,10 +246,10 @@
       this.config = config;
       this.stylesInjected = false;
     }
-    
+
     injectStyles() {
       if (this.stylesInjected) return;
-      
+
       const styles = `
         /* PreOrder Pro - Professional Styles */
         .preorder-professional {
@@ -446,51 +446,51 @@
           }
         }
       `;
-      
+
       const styleSheet = document.createElement('style');
       styleSheet.id = 'preorder-professional-styles';
       styleSheet.textContent = styles;
       document.head.appendChild(styleSheet);
-      
+
       this.stylesInjected = true;
       this.logger.info('Professional styles injected');
     }
-    
+
     createPreorderButton(config = {}) {
       const button = document.createElement('button');
       button.className = 'preorder-professional';
-      
-      const buttonText = config.buttonText || 
-                        this.config.buttonText || 
-                        '立即预订 Pre-Order Now';
-      
+
+      const buttonText = config.buttonText ||
+        this.config.buttonText ||
+        '立即预订 Pre-Order Now';
+
       button.innerHTML = `
         <span class="preorder-professional-icon">🛒</span>
         <span class="preorder-professional-text">${buttonText}</span>
       `;
-      
+
       button.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         this.showSuccessModal();
       });
-      
+
       this.logger.info('Professional preorder button created');
       return button;
     }
-    
+
     showSuccessModal() {
       // Remove existing modal
       const existingModal = document.getElementById('preorder-professional-modal');
       if (existingModal) existingModal.remove();
-      
+
       const modal = document.createElement('div');
       modal.id = 'preorder-professional-modal';
       modal.className = 'preorder-professional-modal';
-      
+
       const content = document.createElement('div');
       content.className = 'preorder-professional-modal-content';
-      
+
       content.innerHTML = `
         <div style="font-size: 100px; margin-bottom: 40px; animation: successProfessionalBounce 1.5s ease-out;">🎉</div>
         <h2 style="color: #333; margin-bottom: 25px; font-size: 36px; margin-top: 0; font-weight: 800;">预购成功！</h2>
@@ -515,7 +515,7 @@
                   style="background: #ff6b35; color: white; border: none; padding: 18px 36px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 16px; transition: all 0.3s; box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);">
             关闭
           </button>
-          <button onclick="window.open('https://shopmall.dpdns.org', '_blank')" 
+          <button onclick="window.open('https://preorder.orbrother.com', '_blank')" 
                   style="background: #6c757d; color: white; border: none; padding: 18px 36px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 16px; transition: all 0.3s;">
             管理应用
           </button>
@@ -525,10 +525,10 @@
           </button>
         </div>
       `;
-      
+
       modal.appendChild(content);
       document.body.appendChild(modal);
-      
+
       // Add success animation styles
       const animationStyles = `
         @keyframes successProfessionalBounce {
@@ -537,45 +537,45 @@
           60% { transform: translateY(-10px) scale(1.05); }
         }
       `;
-      
+
       if (!document.getElementById('preorder-professional-animations')) {
         const animationSheet = document.createElement('style');
         animationSheet.id = 'preorder-professional-animations';
         animationSheet.textContent = animationStyles;
         document.head.appendChild(animationSheet);
       }
-      
+
       // Auto-close after timeout
       setTimeout(() => {
         if (modal.parentNode) {
           modal.remove();
         }
       }, this.config.ui.modalTimeout);
-      
+
       this.logger.info('Professional success modal displayed');
     }
-    
+
     addPreorderBadge() {
       const productImages = document.querySelectorAll(
         '.product__photo img, .product-single__photo img, .product-image img, .product-media img'
       );
-      
+
       if (productImages.length > 0) {
         const imageContainer = productImages[0].parentNode;
         if (imageContainer && !imageContainer.querySelector('.preorder-professional-badge')) {
           const badge = document.createElement('div');
           badge.className = 'preorder-professional-badge';
           badge.textContent = 'Pre-Order';
-          
+
           imageContainer.style.position = 'relative';
           imageContainer.appendChild(badge);
-          
+
           this.logger.info('Professional preorder badge added');
         }
       }
     }
   }
-  
+
   // Professional PreOrder Manager
   class ProfessionalPreOrderManager {
     constructor() {
@@ -584,56 +584,56 @@
       this.uiManager = new ProfessionalUIManager(this.logger, PROFESSIONAL_CONFIG);
       this.initialized = false;
     }
-    
+
     async init(config = {}) {
       if (this.initialized) {
         this.logger.warn('Professional PreOrder Manager already initialized');
         return;
       }
-      
+
       this.logger.info('Initializing Professional PreOrder Manager', { config, version: PROFESSIONAL_CONFIG.version });
-      
+
       // Merge configuration
       Object.assign(PROFESSIONAL_CONFIG, config);
-      
+
       // Inject professional styles
       this.uiManager.injectStyles();
-      
+
       // Detect sold-out status
       const soldOutResult = await this.detectionEngine.detect();
-      
+
       if (!soldOutResult) {
         this.logger.info('Product not sold out, preorder functionality on standby');
         return;
       }
-      
+
       this.logger.info('Sold-out product detected, activating preorder functionality', soldOutResult);
-      
+
       // Create and insert preorder button
       const preorderButton = this.uiManager.createPreorderButton(PROFESSIONAL_CONFIG);
       this.insertPreorderButton(soldOutResult.element, preorderButton);
-      
+
       // Add preorder badge
       this.uiManager.addPreorderBadge();
-      
+
       // Mark as initialized
       this.initialized = true;
-      
+
       // Dispatch professional event
       this.dispatchProfessionalEvent('preorder:professional_activated', {
         version: PROFESSIONAL_CONFIG.version,
         detection: soldOutResult,
         timestamp: new Date().toISOString()
       });
-      
+
       this.logger.info('Professional PreOrder Manager initialization complete');
     }
-    
+
     insertPreorderButton(soldOutButton, preorderButton) {
       if (soldOutButton) {
         // Professional transition effect
         soldOutButton.classList.add('sold-out-professional-hidden');
-        
+
         setTimeout(() => {
           soldOutButton.style.display = 'none';
           soldOutButton.parentNode.insertBefore(preorderButton, soldOutButton.nextSibling);
@@ -652,7 +652,7 @@
           '.product-single__form',
           '.product'
         ];
-        
+
         let inserted = false;
         for (const selector of insertionTargets) {
           const target = document.querySelector(selector);
@@ -663,7 +663,7 @@
             break;
           }
         }
-        
+
         if (!inserted) {
           const fallbackContainer = document.querySelector('main, .main, #main, .container, body');
           if (fallbackContainer) {
@@ -673,7 +673,7 @@
         }
       }
     }
-    
+
     dispatchProfessionalEvent(eventName, detail) {
       if (window.dispatchEvent) {
         const event = new CustomEvent(eventName, { detail });
@@ -681,21 +681,21 @@
         this.logger.info('Professional event dispatched', { eventName, detail });
       }
     }
-    
+
     getLogs() {
       return this.logger.getLogs();
     }
-    
+
     exportLogs() {
       return this.logger.exportLogs();
     }
-    
+
     restart() {
       this.initialized = false;
       this.init(PROFESSIONAL_CONFIG);
     }
   }
-  
+
   // Initialize Professional PreOrder System
   function initializeProfessionalSystem() {
     // Prevent duplicate initialization
@@ -704,24 +704,24 @@
       return;
     }
     window.PreOrderProfessionalLoaded = true;
-    
+
     // Create professional manager
     const professionalManager = new ProfessionalPreOrderManager();
-    
+
     // Initialize with configuration from App Embed Block or defaults
     const config = window.PREORDER_PRO_CONFIG || PROFESSIONAL_CONFIG;
-    
+
     // Multi-attempt initialization for reliability
     let attempts = 0;
     const maxAttempts = PROFESSIONAL_CONFIG.performance.maxInitAttempts;
-    
+
     function attemptInit() {
       attempts++;
       console.log(`🔄 Professional initialization attempt ${attempts}/${maxAttempts}`);
-      
-      const isReady = document.readyState === 'complete' || 
-                     document.querySelector('button, input, .product, .product-form');
-      
+
+      const isReady = document.readyState === 'complete' ||
+        document.querySelector('button, input, .product, .product-form');
+
       if (isReady) {
         professionalManager.init(config);
       } else if (attempts < maxAttempts) {
@@ -731,7 +731,7 @@
         professionalManager.init(config);
       }
     }
-    
+
     // Start initialization
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', attemptInit);
@@ -739,11 +739,11 @@
     } else {
       attemptInit();
     }
-    
+
     // Additional delayed attempts for dynamic content
     setTimeout(attemptInit, 3000);
     setTimeout(attemptInit, 6000);
-    
+
     // Expose professional API
     window.PreOrderPro = {
       manager: professionalManager,
@@ -754,13 +754,13 @@
       config: PROFESSIONAL_CONFIG,
       version: PROFESSIONAL_CONFIG.version
     };
-    
+
     console.log('🎯 PreOrder Pro Professional Edition loaded successfully');
     console.log('📊 Version:', PROFESSIONAL_CONFIG.version);
     console.log('🔧 Debug commands: window.PreOrderPro.restart(), window.PreOrderPro.getLogs()');
   }
-  
+
   // Start Professional System
   initializeProfessionalSystem();
-  
+
 })();

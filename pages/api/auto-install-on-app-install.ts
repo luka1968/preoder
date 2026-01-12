@@ -16,18 +16,18 @@ export default async function handler(
     const { shop, accessToken } = req.body;
 
     if (!shop || !accessToken) {
-      return res.status(400).json({ 
-        error: 'Missing required parameters: shop and accessToken' 
+      return res.status(400).json({
+        error: 'Missing required parameters: shop and accessToken'
       });
     }
 
     console.log('🚀 Auto-installing PreOrder script for:', shop);
 
     // 获取当前部署的URL
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 
-                   process.env.VERCEL_URL || 
-                   'https://shopmall.dpdns.org';
-    
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ||
+      process.env.VERCEL_URL ||
+      'https://preorder.orbrother.com';
+
     const scriptUrl = `${appUrl}/shopify-integration.js`;
 
     // 检查是否已存在相同的脚本

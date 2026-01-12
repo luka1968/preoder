@@ -78,7 +78,7 @@ Auto-injected into theme.liquid <head> section
 <script>
   window.PREORDER_PRO_CONFIG = {
     shop: '{{ shop.permanent_domain }}',
-    apiUrl: 'https://shopmall.dpdns.org/api',
+    apiUrl: 'https://preorder.orbrother.com/api',
     version: '2.0.0',
     mode: 'app_embed',
     enabled: {{ block.settings.enabled | default: true }},
@@ -102,7 +102,7 @@ Auto-injected into theme.liquid <head> section
   
   // Load the professional preorder script
   const script = document.createElement('script');
-  script.src = 'https://shopmall.dpdns.org/professional-preorder.js';
+  script.src = 'https://preorder.orbrother.com/professional-preorder.js';
   script.async = true;
   script.onload = function() {
     console.log('✅ Professional PreOrder Script loaded via App Embed');
@@ -128,7 +128,7 @@ Auto-injected into theme.liquid <head> section
     
     // Fallback to instant fix script
     const fallbackScript = document.createElement('script');
-    fallbackScript.src = 'https://shopmall.dpdns.org/instant-preorder-fix.js';
+    fallbackScript.src = 'https://preorder.orbrother.com/instant-preorder-fix.js';
     document.head.appendChild(fallbackScript);
   };
   
@@ -167,7 +167,7 @@ Auto-injected into theme.liquid <head> section
       "type": "text",
       "id": "api_url",
       "label": "API URL",
-      "default": "https://shopmall.dpdns.org/api",
+      "default": "https://preorder.orbrother.com/api",
       "info": "PreOrder Pro API endpoint"
     },
     {
