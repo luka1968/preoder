@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Layout from '../components/Layout'
-ChartBarIcon,
+import {
+  ChartBarIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
   UsersIcon,
