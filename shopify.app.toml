@@ -1,6 +1,6 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "9893cd2c51baacdc60ee206b76074ae4"
+client_id = "9893cd2c51baacdc60ee260d7b974ae4"
 name = "Kean PreOrder Pro"
 application_url = "https://preorder.orbrother.com"
 embedded = true
