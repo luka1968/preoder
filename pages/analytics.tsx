@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Layout from '../components/Layout'
-import { 
-  ChartBarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+ChartBarIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   UsersIcon,
   ShoppingCartIcon,
   EnvelopeIcon,
@@ -93,9 +92,9 @@ export default function AnalyticsPage() {
 
   const getChangeIcon = (current: number, previous: number) => {
     if (current > previous) {
-      return <TrendingUpIcon className="h-4 w-4 text-green-500" />
+      return <ArrowTrendingUpIcon className="h-4 w-4 text-green-500" />
     } else if (current < previous) {
-      return <TrendingDownIcon className="h-4 w-4 text-red-500" />
+      return <ArrowTrendingDownIcon className="h-4 w-4 text-red-500" />
     }
     return null
   }
@@ -166,11 +165,10 @@ export default function AnalyticsPage() {
               <button
                 key={option.value}
                 onClick={() => setTimeRange(option.value as any)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  timeRange === option.value
-                    ? 'bg-primary-100 text-primary-700 border border-primary-200'
-                    : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
-                }`}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${timeRange === option.value
+                  ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                  : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'
+                  }`}
               >
                 {option.label}
               </button>
@@ -195,9 +193,8 @@ export default function AnalyticsPage() {
                   <div className="text-2xl font-semibold text-gray-900">
                     {analytics.preorders.total}
                   </div>
-                  <div className={`ml-2 flex items-baseline text-sm font-semibold ${
-                    getChangeColor(analytics.preorders.thisMonth, analytics.preorders.lastMonth)
-                  }`}>
+                  <div className={`ml-2 flex items-baseline text-sm font-semibold ${getChangeColor(analytics.preorders.thisMonth, analytics.preorders.lastMonth)
+                    }`}>
                     {getChangeIcon(analytics.preorders.thisMonth, analytics.preorders.lastMonth)}
                     <span className="sr-only">
                       {analytics.preorders.thisMonth > analytics.preorders.lastMonth ? 'Increased' : 'Decreased'} by
@@ -291,10 +288,10 @@ export default function AnalyticsPage() {
             <div className="h-64 flex items-end justify-between space-x-2">
               {analytics.trends.preordersByDay.map((day, index) => (
                 <div key={index} className="flex-1 flex flex-col items-center">
-                  <div 
+                  <div
                     className="w-full bg-blue-500 rounded-t"
-                    style={{ 
-                      height: `${Math.max((day.count / Math.max(...analytics.trends.preordersByDay.map(d => d.count))) * 200, 4)}px` 
+                    style={{
+                      height: `${Math.max((day.count / Math.max(...analytics.trends.preordersByDay.map(d => d.count))) * 200, 4)}px`
                     }}
                   ></div>
                   <div className="text-xs text-gray-500 mt-2 transform -rotate-45 origin-top-left">

@@ -22,5 +22,6 @@ use_legacy_install_flow = false
 [auth]
 redirect_urls = [
   "https://preorder.orbrother.com/api/auth/callback",
-  "https://preorder.orbrother.com/api/billing/activate-subscription"
+  "https://preorder.orbrother.com/api/billing/activate-subscription",
+  "https://preorder.orbrother.com/api/auth/shopify"
 ]

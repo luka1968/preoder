@@ -89,7 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // 如果没有code参数，开始OAuth流程
     if (!code) {
-      const redirectUri = `${appUrl}/api/auth/shopify`
+      const redirectUri = `${appUrl}/api/auth/callback`
       const nonce = Math.random().toString(36).substring(7)
 
       const authUrl = `https://${shopDomain}/admin/oauth/authorize?` +
