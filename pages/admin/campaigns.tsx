@@ -40,10 +40,13 @@ export default function CampaignsPage() {
             if (data.success) {
                 await loadCampaigns()
                 setShowCreateModal(false)
+            } else {
+                console.error('Campaign creation failed:', data)
+                alert(data.error || 'Failed to create campaign')
             }
         } catch (error) {
             console.error('Failed to create campaign:', error)
-            alert('Failed to create campaign')
+            alert('Failed to connect to server')
         }
     }
 
