@@ -210,7 +210,9 @@ function SettingsTab({ campaign, onSave, saving }) {
                         padding: '10px 14px',
                         border: '1px solid #d1d5db',
                         borderRadius: '8px',
-                        fontSize: '15px'
+                        fontSize: '15px',
+                        background: 'white',
+                        color: '#111827'
                     }}
                 />
             </div>
@@ -319,70 +321,322 @@ function SettingsTab({ campaign, onSave, saving }) {
 }
 
 function ProductsTab({ campaign, onReload, shop }) {
+    const [showSelector, setShowSelector] = useState(false)
+    const [searchQuery, setSearchQuery] = useState('')
+    const [searchResults, setSearchResults] = useState([])
+    const [searching, setSearching] = useState(false)
+    const [adding, setAdding] = useState(false)
+
+    async function searchProducts() {
+        if (!searchQuery.trim()) return
+
+        try {
+            setSearching(true)
+            const response = await fetch(`/api/products/search?shop=${shop}&query=${encodeURIComponent(searchQuery)}`)
+            const data = await response.json()
+            if (data.success) {
+                setSearchResults(data.products)
+            }
+        } catch (error) {
+            console.error('Failed to search products:', error)
+            alert('Failed to search products')
+        } finally {
+            setSearching(false)
+        }
+    }
+
+    async function addProduct(productId, variantId) {
+        try {
+            setAdding(true)
+            const response = await fetch(`/api/campaigns/${campaign.id}/products?shop=${shop}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    products: [{ product_id: productId, variant_id: variantId }]
+                })
+            })
+            const data = await response.json()
+            if (data.success) {
+                await onReload()
+                setShowSelector(false)
+                setSearchQuery('')
+                setSearchResults([])
+            } else {
+                alert(data.error || 'Failed to add product')
+            }
+        } catch (error) {
+            console.error('Failed to add product:', error)
+            alert('Failed to add product')
+        } finally {
+            setAdding(false)
+        }
+    }
+
+    async function removeProduct(productId) {
+        if (!confirm('Remove this product from the campaign?')) return
+
+        try {
+            const response = await fetch(`/api/campaigns/${campaign.id}/products?shop=${shop}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ product_id: productId })
+            })
+            const data = await response.json()
+            if (data.success) {
+                await onReload()
+            } else {
+                alert(data.error || 'Failed to remove product')
+            }
+        } catch (error) {
+            console.error('Failed to remove product:', error)
+            alert('Failed to remove product')
+        }
+    }
+
     return (
         <div>
-            <div style={{
-                background: '#f9fafb',
-                border: '1px solid #e5e7eb',
-                borderRadius: '12px',
-                padding: '24px',
-                textAlign: 'center'
-            }}>
-                <div style={{ fontSize: '48px', marginBottom: '12px' }}>📦</div>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600' }}>
-                    Product Management
+            {/* Header with Add Button */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600' }}>
+                    Campaign Products ({campaign.products?.length || 0})
                 </h3>
-                <p style={{ margin: '0 0 20px 0', color: '#666', fontSize: '14px' }}>
-                    Use API to add products to this campaign
-                </p>
-                <code style={{
-                    display: 'block',
-                    background: '#1f2937',
-                    color: '#10b981',
-                    padding: '16px',
-                    borderRadius: '8px',
-                    fontSize: '13px',
-                    textAlign: 'left',
-                    whiteSpace: 'pre',
-                    overflow: 'auto'
-                }}>
-                    {`POST /api/campaigns/${campaign.id}/products?shop=${shop}
-{
-  "products": [
-    { "product_id": "123", "variant_id": "456" }
-  ]
-}`}
-                </code>
-                <div style={{ marginTop: '16px', fontSize: '13px', color: '#666' }}>
-                    Current linked products: <strong>{campaign.products?.length || 0}</strong>
-                </div>
+                <button
+                    onClick={() => setShowSelector(true)}
+                    style={{
+                        background: '#2563eb',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        cursor: 'pointer'
+                    }}>
+                    + Add Products
+                </button>
             </div>
 
-            {campaign.products && campaign.products.length > 0 && (
-                <div style={{ marginTop: '24px' }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>
-                        Linked Products
-                    </h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {campaign.products.map(product => (
-                            <div key={product.id} style={{
-                                padding: '12px 16px',
-                                background: 'white',
-                                border: '1px solid #e5e7eb',
-                                borderRadius: '8px',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center'
-                            }}>
-                                <div>
-                                    <div style={{ fontWeight: '500' }}>Product: {product.product_id}</div>
-                                    <div style={{ fontSize: '13px', color: '#666' }}>Variant: {product.variant_id || 'All'}</div>
+            {/* Product List */}
+            {campaign.products && campaign.products.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {campaign.products.map(product => (
+                        <div key={product.id} style={{
+                            padding: '16px',
+                            background: 'white',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <div>
+                                <div style={{ fontWeight: '600', marginBottom: '4px' }}>
+                                    Product ID: {product.product_id}
                                 </div>
-                                <div style={{ fontSize: '12px', color: '#9ca3af' }}>
-                                    {new Date(product.created_at).toLocaleDateString('en-US')}
+                                <div style={{ fontSize: '13px', color: '#666' }}>
+                                    Variant: {product.variant_id || 'All variants'}
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '4px' }}>
+                                    Added {new Date(product.created_at).toLocaleDateString()}
                                 </div>
                             </div>
-                        ))}
+                            <button
+                                onClick={() => removeProduct(product.product_id)}
+                                style={{
+                                    background: '#fee2e2',
+                                    color: '#dc2626',
+                                    border: 'none',
+                                    padding: '8px 16px',
+                                    borderRadius: '6px',
+                                    fontSize: '13px',
+                                    fontWeight: '500',
+                                    cursor: 'pointer'
+                                }}>
+                                Remove
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div style={{
+                    textAlign: 'center',
+                    padding: '60px 20px',
+                    background: '#f9fafb',
+                    borderRadius: '12px',
+                    border: '2px dashed #e5e7eb'
+                }}>
+                    <div style={{ fontSize: '48px', marginBottom: '16px' }}>📦</div>
+                    <h3 style={{ margin: '0 0 8px 0', fontSize: '18px', fontWeight: '600' }}>
+                        No Products Added
+                    </h3>
+                    <p style={{ margin: 0, color: '#666' }}>
+                        Click "Add Products" to start adding products to this campaign
+                    </p>
+                </div>
+            )}
+
+            {/* Product Selector Modal */}
+            {showSelector && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0,0,0,0.5)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 1000
+                }}
+                    onClick={() => setShowSelector(false)}>
+                    <div
+                        style={{
+                            background: 'white',
+                            color: '#1f2937',
+                            borderRadius: '16px',
+                            padding: '30px',
+                            maxWidth: '700px',
+                            width: '90%',
+                            maxHeight: '80vh',
+                            overflow: 'auto'
+                        }}
+                        onClick={e => e.stopPropagation()}>
+                        <h2 style={{ margin: '0 0 20px 0', fontSize: '24px', fontWeight: '600' }}>
+                            Add Products to Campaign
+                        </h2>
+
+                        {/* Search Bar */}
+                        <div style={{ marginBottom: '20px' }}>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={e => setSearchQuery(e.target.value)}
+                                    onKeyPress={e => e.key === 'Enter' && searchProducts()}
+                                    placeholder="Search products by name..."
+                                    style={{
+                                        flex: 1,
+                                        padding: '12px 16px',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '8px',
+                                        fontSize: '15px',
+                                        background: 'white',
+                                        color: '#111827'
+                                    }}
+                                />
+                                <button
+                                    onClick={searchProducts}
+                                    disabled={searching}
+                                    style={{
+                                        background: '#2563eb',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '12px 24px',
+                                        borderRadius: '8px',
+                                        fontSize: '15px',
+                                        fontWeight: '500',
+                                        cursor: searching ? 'not-allowed' : 'pointer',
+                                        opacity: searching ? 0.6 : 1
+                                    }}>
+                                    {searching ? 'Searching...' : 'Search'}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Search Results */}
+                        {searchResults.length > 0 && (
+                            <div style={{ maxHeight: '400px', overflow: 'auto' }}>
+                                {searchResults.map(product => (
+                                    <div key={product.id} style={{
+                                        marginBottom: '16px',
+                                        padding: '16px',
+                                        border: '1px solid #e5e7eb',
+                                        borderRadius: '8px'
+                                    }}>
+                                        <div style={{ display: 'flex', gap: '16px', marginBottom: '12px' }}>
+                                            {product.image && (
+                                                <img
+                                                    src={product.image}
+                                                    alt={product.title}
+                                                    style={{
+                                                        width: '60px',
+                                                        height: '60px',
+                                                        objectFit: 'cover',
+                                                        borderRadius: '6px'
+                                                    }}
+                                                />
+                                            )}
+                                            <div style={{ flex: 1 }}>
+                                                <div style={{ fontWeight: '600', marginBottom: '4px' }}>
+                                                    {product.title}
+                                                </div>
+                                                <div style={{ fontSize: '13px', color: '#666' }}>
+                                                    {product.variants.length} variant(s)
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Variants */}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            {product.variants.map(variant => (
+                                                <div key={variant.id} style={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    padding: '8px 12px',
+                                                    background: '#f9fafb',
+                                                    borderRadius: '6px'
+                                                }}>
+                                                    <div style={{ fontSize: '14px' }}>
+                                                        <span style={{ fontWeight: '500' }}>{variant.title}</span>
+                                                        {variant.sku && (
+                                                            <span style={{ color: '#666', marginLeft: '8px' }}>
+                                                                SKU: {variant.sku}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => addProduct(product.id, variant.id)}
+                                                        disabled={adding}
+                                                        style={{
+                                                            background: '#10b981',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            padding: '6px 16px',
+                                                            borderRadius: '6px',
+                                                            fontSize: '13px',
+                                                            fontWeight: '500',
+                                                            cursor: adding ? 'not-allowed' : 'pointer',
+                                                            opacity: adding ? 0.6 : 1
+                                                        }}>
+                                                        Add
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Close Button */}
+                        <div style={{ marginTop: '20px', textAlign: 'right' }}>
+                            <button
+                                onClick={() => setShowSelector(false)}
+                                style={{
+                                    background: '#f3f4f6',
+                                    color: '#374151',
+                                    border: 'none',
+                                    padding: '10px 24px',
+                                    borderRadius: '8px',
+                                    fontSize: '15px',
+                                    fontWeight: '500',
+                                    cursor: 'pointer'
+                                }}>
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

@@ -248,6 +248,7 @@ function CreateCampaignModal({ onClose, onCreate }) {
             <div
                 style={{
                     background: 'white',
+                    color: '#1f2937',
                     borderRadius: '16px',
                     padding: '30px',
                     maxWidth: '500px',
@@ -275,7 +276,9 @@ function CreateCampaignModal({ onClose, onCreate }) {
                                 padding: '10px 14px',
                                 border: '1px solid #d1d5db',
                                 borderRadius: '8px',
-                                fontSize: '15px'
+                                fontSize: '15px',
+                                background: 'white',
+                                color: '#111827'
                             }}
                         />
                     </div>
@@ -292,7 +295,9 @@ function CreateCampaignModal({ onClose, onCreate }) {
                                 padding: '10px 14px',
                                 border: '1px solid #d1d5db',
                                 borderRadius: '8px',
-                                fontSize: '15px'
+                                fontSize: '15px',
+                                background: 'white',
+                                color: '#111827'
                             }}>
                             <option value="immediate">Immediate Pay</option>
                             <option value="pay_later">Pay Later</option>
@@ -351,6 +356,7 @@ function CreateCampaignModal({ onClose, onCreate }) {
                                 border: '1px solid #d1d5db',
                                 borderRadius: '8px',
                                 background: 'white',
+                                color: '#374151',
                                 cursor: 'pointer',
                                 fontSize: '15px',
                                 fontWeight: '500'
