@@ -1,19 +1,53 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
+import Script from 'next/script'
 
 export default function Home() {
   const router = useRouter()
   const [shopParam, setShopParam] = useState('')
+  const [isEmbedded, setIsEmbedded] = useState(false)
 
   useEffect(() => {
     // 获取URL参数
-    const { shop, host } = router.query
-    
+    const { shop, host, embedded } = router.query
+
     if (shop && typeof shop === 'string') {
       setShopParam(shop)
     }
+
+    // 检查是否在 Shopify Admin iframe 中
+    if (embedded === '1' || host) {
+      setIsEmbedded(true)
+    }
+
+    // 初始化 Shopify App Bridge（如果在 iframe 中）
+    if (typeof window !== 'undefined' && (embedded === '1' || host)) {
+      const initAppBridge = async () => {
+        try {
+          // 动态导入 App Bridge
+          const createApp = (await import('@shopify/app-bridge')).default
+
+          const apiKey = process.env.NEXT_PUBLIC_SHOPIFY_API_KEY || '9893cd2c51baacdc60ee260d7b974ae4'
+
+          if (shop && host) {
+            const app = createApp({
+              apiKey: apiKey,
+              host: host as string,
+              forceRedirect: true
+            })
+
+            console.log('✅ Shopify App Bridge initialized')
+          }
+        } catch (error) {
+          console.error('❌ Failed to initialize App Bridge:', error)
+        }
+      }
+
+      initAppBridge()
+    }
   }, [router.query])
+
 
   const navigateToProducts = () => {
     if (shopParam) {
@@ -41,7 +75,7 @@ export default function Home() {
         <title>PreOrder Pro - Shopify预购插件</title>
         <meta name="description" content="专业的Shopify预购解决方案" />
       </Head>
-      
+
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="container mx-auto px-4 py-16">
           {/* Header */}
@@ -68,7 +102,7 @@ export default function Home() {
                 自动检测缺货商品，显示预购按钮和徽章，提升客户体验
               </p>
             </div>
-            
+
             <div className="bg-white rounded-lg shadow-lg p-8 text-center">
               <div className="text-4xl mb-4">📧</div>
               <h3 className="text-xl font-semibold mb-4">到货通知</h3>
@@ -76,7 +110,7 @@ export default function Home() {
                 收集客户邮箱，商品到货时自动发送通知邮件
               </p>
             </div>
-            
+
             <div className="bg-white rounded-lg shadow-lg p-8 text-center">
               <div className="text-4xl mb-4">📊</div>
               <h3 className="text-xl font-semibold mb-4">数据分析</h3>
@@ -96,7 +130,7 @@ export default function Home() {
                 🧱 一键启用 App Embed Block
               </button>
             </div>
-            
+
             <div className="space-x-4">
               <button
                 onClick={navigateToProducts}
@@ -104,7 +138,7 @@ export default function Home() {
               >
                 🚀 管理预购产品
               </button>
-              
+
               <button
                 onClick={navigateToTest}
                 className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300"
@@ -112,7 +146,7 @@ export default function Home() {
                 🧪 测试预购功能
               </button>
             </div>
-            
+
             <p className="text-gray-500 text-sm">
               推荐：先启用 App Embed Block，然后测试预购功能
             </p>
@@ -121,7 +155,7 @@ export default function Home() {
           {/* App Embed Guide */}
           <div className="mt-16 bg-white rounded-lg shadow-lg p-8">
             <h2 className="text-2xl font-bold mb-6 text-center">🧱 App Embed Block - 零代码集成</h2>
-            
+
             <div className="grid md:grid-cols-2 gap-8">
               <div>
                 <h3 className="text-lg font-semibold mb-4 text-orange-600">✨ 全新方案优势</h3>
@@ -133,7 +167,7 @@ export default function Home() {
                   <li>✅ <strong>安全且易于维护</strong></li>
                 </ul>
               </div>
-              
+
               <div>
                 <h3 className="text-lg font-semibold mb-4 text-blue-600">🚀 使用步骤</h3>
                 <ol className="text-sm text-gray-600 space-y-2">
@@ -144,7 +178,7 @@ export default function Home() {
                 </ol>
               </div>
             </div>
-            
+
             <div className="mt-8 bg-gradient-to-r from-orange-50 to-blue-50 border border-orange-200 rounded-lg p-6">
               <p className="text-center text-gray-700">
                 <strong>🎯 这是目前最佳的 Shopify 应用集成方案</strong><br />
