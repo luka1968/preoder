@@ -26,8 +26,25 @@ export async function registerWebhooksForShop(shop: string, accessToken: string)
             topic: 'app/uninstalled',
             address: `${appUrl}/api/webhooks/app/uninstalled`,
             format: 'json'
+        },
+        // GDPR Privacy Webhooks (mandatory for Shopify app approval)
+        {
+            topic: 'shop/redact',
+            address: `${appUrl}/api/webhooks/privacy/shop-redact`,
+            format: 'json'
+        },
+        {
+            topic: 'customers/redact',
+            address: `${appUrl}/api/webhooks/privacy/customers-redact`,
+            format: 'json'
+        },
+        {
+            topic: 'customers/data_request',
+            address: `${appUrl}/api/webhooks/privacy/customers-data_request`,
+            format: 'json'
         }
     ];
+
 
     for (const webhook of webhooks) {
         try {

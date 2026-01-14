@@ -239,5 +239,151 @@ Successfully processed app uninstall for shop your-shop.myshopify.com
 
 ---
 
-**最后更新**：2025-11-21  
-**修复版本**：使用 SHOPIFY_API_SECRET 进行 webhook 验证
+## 🔒 测试 GDPR Privacy Webhooks
+
+### 概述
+
+Shopify 要求所有应用实现三个 GDPR 隐私 webhooks：
+- `shop/redact` - 店铺数据删除（卸载后 48 小时触发）
+- `customers/redact` - 客户数据删除
+- `customers/data_request` - 客户数据导出请求
+
+### 方法 1：使用 Shopify CLI（推荐）
+
+#### 测试 shop/redact
+
+```bash
+shopify app webhook trigger --topic shop/redact --shop kean-17076.myshopify.com
+```
+
+**期望结果**：
+- Vercel logs 显示 `[GDPR] Processing shop/redact for: kean-17076.myshopify.com`
+- Supabase 中该店铺的所有数据被删除
+- 返回 HTTP 200
+
+#### 测试 customers/redact
+
+```bash
+shopify app webhook trigger --topic customers/redact --shop kean-17076.myshopify.com
+```
+
+**期望结果**：
+- Vercel logs 显示 `[GDPR] Anonymizing X preorder records`
+- `preorder_orders` 表中客户邮箱变为 `redacted-{timestamp}@privacy.invalid`
+- 返回 HTTP 200
+
+#### 测试 customers/data_request
+
+```bash
+shopify app webhook trigger --topic customers/data_request --shop kean-17076.myshopify.com
+```
+
+**期望结果**：
+- Vercel logs 显示导出的客户数据 JSON
+- 包含 `preorder_orders` 和 `back_in_stock_subscriptions`
+- 返回 HTTP 200
+
+### 方法 2：手动测试（高级）
+
+#### 测试 shop/redact
+
+```bash
+curl -X POST "https://preorder.orbrother.com/api/webhooks/privacy/shop-redact" \
+  -H "Content-Type: application/json" \
+  -H "X-Shopify-Hmac-SHA256: <CALCULATED_SIGNATURE>" \
+  -H "X-Shopify-Shop-Domain: test-shop.myshopify.com" \
+  -H "X-Shopify-Topic: shop/redact" \
+  -d '{"shop_id":123456,"shop_domain":"test-shop.myshopify.com"}'
+```
+
+### 验证步骤
+
+#### 1. 验证 shop/redact
+
+**测试前**：
+```sql
+-- 检查店铺数据存在
+SELECT * FROM shops WHERE shop_domain = 'kean-17076.myshopify.com';
+SELECT COUNT(*) FROM products_rules WHERE shop_id = '<shop_id>';
+SELECT COUNT(*) FROM preorder_orders WHERE shop_id = '<shop_id>';
+```
+
+**触发 webhook**：
+```bash
+shopify app webhook trigger --topic shop/redact --shop kean-17076.myshopify.com
+```
+
+**测试后**：
+```sql
+-- 验证所有数据已删除
+SELECT * FROM shops WHERE shop_domain = 'kean-17076.myshopify.com';
+-- 应该返回 0 行
+```
+
+#### 2. 验证 customers/redact
+
+**测试前**：
+```sql
+-- 检查客户邮箱
+SELECT customer_email FROM preorder_orders 
+WHERE shop_id = '<shop_id>' AND customer_email = 'test@example.com';
+```
+
+**触发 webhook**：
+```bash
+shopify app webhook trigger --topic customers/redact --shop kean-17076.myshopify.com
+```
+
+**测试后**：
+```sql
+-- 验证邮箱已匿名化
+SELECT customer_email FROM preorder_orders 
+WHERE shop_id = '<shop_id>' AND customer_email LIKE 'redacted-%@privacy.invalid';
+```
+
+#### 3. 验证 customers/data_request
+
+**检查 Vercel logs**：
+```bash
+vercel logs --filter="[GDPR] Exported data"
+```
+
+应该看到类似输出：
+```json
+{
+  "customer_email": "customer@example.com",
+  "export_date": "2026-01-14T11:00:00.000Z",
+  "preorder_orders": [...],
+  "back_in_stock_subscriptions": [...],
+  "data_summary": {
+    "total_preorders": 5,
+    "total_subscriptions": 2
+  }
+}
+```
+
+### 常见问题
+
+**Q: 如何验证 webhooks 已注册？**
+
+访问 Shopify Partner Dashboard:
+1. Apps → Your App → API access → Webhooks
+2. 应该看到 6 个 webhooks（包括 3 个 privacy webhooks）
+
+**Q: shop/redact 什么时候触发？**
+
+- 手动测试：使用 Shopify CLI 立即触发
+- 生产环境：卸载应用后 48 小时自动触发
+
+**Q: 如果删除失败怎么办？**
+
+Privacy webhooks 必须在 5 秒内返回 HTTP 200，即使操作失败：
+- 错误会记录到 Vercel logs
+- Shopify 仍然认为 webhook 成功
+- 需要手动检查 logs 并修复问题
+
+---
+
+**最后更新**：2026-01-14  
+**修复版本**：使用 SHOPIFY_API_SECRET 进行 webhook 验证  
+**新增功能**：GDPR Privacy Webhooks (shop/redact, customers/redact, customers/data_request)

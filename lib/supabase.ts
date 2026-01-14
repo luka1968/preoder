@@ -219,6 +219,235 @@ export async function deleteShop(shopId: string): Promise<void> {
   }
 }
 
+// GDPR-compliant data deletion functions
+
+/**
+ * Permanently delete all data associated with a shop (GDPR shop/redact webhook)
+ * This is triggered 48 hours after app uninstallation
+ */
+export async function deleteShopData(shopDomain: string): Promise<void> {
+  console.log(`[GDPR] Starting shop data deletion for: ${shopDomain}`)
+
+  try {
+    // Get shop ID first
+    const shop = await getShopByDomain(shopDomain)
+    if (!shop) {
+      console.log(`[GDPR] Shop not found: ${shopDomain}`)
+      return
+    }
+
+    const shopId = shop.id
+
+    // Log deletion event before removing data (for audit trail)
+    await logActivity(
+      shopId,
+      'gdpr_shop_redact',
+      `GDPR shop data deletion initiated for ${shopDomain}`,
+      {
+        shop_id: shopId,
+        shop_domain: shopDomain,
+        deletion_timestamp: new Date().toISOString()
+      }
+    )
+
+    // Delete data in order (respecting foreign key dependencies)
+    // Note: Some tables have CASCADE delete, but we do it explicitly for clarity
+
+    console.log(`[GDPR] Deleting products_rules for shop ${shopId}`)
+    await supabaseAdmin.from('products_rules').delete().eq('shop_id', shopId)
+
+    console.log(`[GDPR] Deleting preorder_settings for shop ${shopId}`)
+    await supabaseAdmin.from('preorder_settings').delete().eq('shop_id', shopId)
+
+    console.log(`[GDPR] Deleting frontend_settings for shop ${shopId}`)
+    await supabaseAdmin.from('frontend_settings').delete().eq('shop_id', shopId)
+
+    console.log(`[GDPR] Deleting preorder_orders for shop ${shopId}`)
+    await supabaseAdmin.from('preorder_orders').delete().eq('shop_id', shopId)
+
+    console.log(`[GDPR] Deleting back_in_stock_subscriptions for shop ${shopId}`)
+    await supabaseAdmin.from('back_in_stock_subscriptions').delete().eq('shop_id', shopId)
+
+    console.log(`[GDPR] Deleting shop_subscriptions for shop ${shopId}`)
+    await supabaseAdmin.from('shop_subscriptions').delete().eq('shop_id', shopId)
+
+    console.log(`[GDPR] Deleting usage_tracking for shop ${shopId}`)
+    await supabaseAdmin.from('usage_tracking').delete().eq('shop_id', shopId)
+
+    console.log(`[GDPR] Deleting billing_events for shop ${shopId}`)
+    await supabaseAdmin.from('billing_events').delete().eq('shop_id', shopId)
+
+    // Delete logs last (except the GDPR deletion log which we'll keep briefly)
+    console.log(`[GDPR] Deleting activity_logs for shop ${shopId}`)
+    await supabaseAdmin
+      .from('logs')
+      .delete()
+      .eq('shop_id', shopId)
+      .neq('activity_type', 'gdpr_shop_redact')
+
+    // Finally, delete the shop record itself
+    console.log(`[GDPR] Deleting shop record for ${shopId}`)
+    await supabaseAdmin.from('shops').delete().eq('id', shopId)
+
+    console.log(`[GDPR] ✅ Successfully deleted all data for shop: ${shopDomain}`)
+
+  } catch (error) {
+    console.error(`[GDPR] ❌ Error deleting shop data for ${shopDomain}:`, error)
+    throw error
+  }
+}
+
+/**
+ * Anonymize customer PII (GDPR customers/redact webhook)
+ * Replaces customer email with anonymized placeholder while keeping order records
+ */
+export async function deleteCustomerData(
+  shopId: string,
+  customerEmail: string
+): Promise<void> {
+  console.log(`[GDPR] Starting customer data anonymization for: ${customerEmail}`)
+
+  try {
+    const timestamp = new Date().getTime()
+    const anonymizedEmail = `redacted-${timestamp}@privacy.invalid`
+
+    // Log deletion event before anonymizing
+    await logActivity(
+      shopId,
+      'gdpr_customer_redact',
+      `GDPR customer data redaction for ${customerEmail}`,
+      {
+        shop_id: shopId,
+        original_email: customerEmail,
+        anonymized_email: anonymizedEmail,
+        redaction_timestamp: new Date().toISOString()
+      }
+    )
+
+    // Anonymize email in preorder_orders
+    const { data: orders, error: fetchError } = await supabaseAdmin
+      .from('preorder_orders')
+      .select('id')
+      .eq('shop_id', shopId)
+      .eq('customer_email', customerEmail)
+
+    if (fetchError) {
+      throw fetchError
+    }
+
+    if (orders && orders.length > 0) {
+      console.log(`[GDPR] Anonymizing ${orders.length} preorder records`)
+      const { error: updateError } = await supabaseAdmin
+        .from('preorder_orders')
+        .update({ customer_email: anonymizedEmail })
+        .eq('shop_id', shopId)
+        .eq('customer_email', customerEmail)
+
+      if (updateError) {
+        throw updateError
+      }
+    }
+
+    // Delete back-in-stock subscriptions (these can be fully removed)
+    const { data: subscriptions, error: subFetchError } = await supabaseAdmin
+      .from('back_in_stock_subscriptions')
+      .select('id')
+      .eq('shop_id', shopId)
+      .eq('customer_email', customerEmail)
+
+    if (subFetchError) {
+      throw subFetchError
+    }
+
+    if (subscriptions && subscriptions.length > 0) {
+      console.log(`[GDPR] Deleting ${subscriptions.length} back-in-stock subscriptions`)
+      const { error: deleteError } = await supabaseAdmin
+        .from('back_in_stock_subscriptions')
+        .delete()
+        .eq('shop_id', shopId)
+        .eq('customer_email', customerEmail)
+
+      if (deleteError) {
+        throw deleteError
+      }
+    }
+
+    console.log(`[GDPR] ✅ Successfully anonymized customer data: ${customerEmail}`)
+
+  } catch (error) {
+    console.error(`[GDPR] ❌ Error anonymizing customer data for ${customerEmail}:`, error)
+    throw error
+  }
+}
+
+/**
+ * Export all customer data (GDPR customers/data_request webhook)
+ * Returns JSON object with all data associated with customer email
+ */
+export async function exportCustomerData(
+  shopId: string,
+  customerEmail: string
+): Promise<object> {
+  console.log(`[GDPR] Exporting customer data for: ${customerEmail}`)
+
+  try {
+    // Log data export request
+    await logActivity(
+      shopId,
+      'gdpr_customer_data_request',
+      `GDPR customer data export request for ${customerEmail}`,
+      {
+        shop_id: shopId,
+        customer_email: customerEmail,
+        request_timestamp: new Date().toISOString()
+      }
+    )
+
+    // Fetch preorder orders
+    const { data: orders, error: ordersError } = await supabaseAdmin
+      .from('preorder_orders')
+      .select('*')
+      .eq('shop_id', shopId)
+      .eq('customer_email', customerEmail)
+
+    if (ordersError) {
+      throw ordersError
+    }
+
+    // Fetch back-in-stock subscriptions
+    const { data: subscriptions, error: subsError } = await supabaseAdmin
+      .from('back_in_stock_subscriptions')
+      .select('*')
+      .eq('shop_id', shopId)
+      .eq('customer_email', customerEmail)
+
+    if (subsError) {
+      throw subsError
+    }
+
+    const exportData = {
+      customer_email: customerEmail,
+      export_date: new Date().toISOString(),
+      preorder_orders: orders || [],
+      back_in_stock_subscriptions: subscriptions || [],
+      data_summary: {
+        total_preorders: orders?.length || 0,
+        total_subscriptions: subscriptions?.length || 0
+      }
+    }
+
+    console.log(`[GDPR] ✅ Successfully exported customer data: ${customerEmail}`)
+    console.log(`[GDPR] Export summary:`, exportData.data_summary)
+
+    return exportData
+
+  } catch (error) {
+    console.error(`[GDPR] ❌ Error exporting customer data for ${customerEmail}:`, error)
+    throw error
+  }
+}
+
+
 // Preorder settings functions
 export async function getPreorderSettings(shopId: string): Promise<PreorderSettings | null> {
   const { data, error } = await supabaseAdmin

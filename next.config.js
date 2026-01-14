@@ -8,7 +8,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  
+
   // NEXT_PUBLIC_ prefixed variables are automatically available on client side
   // No need to configure them in env section
 
@@ -29,6 +29,15 @@ const nextConfig = {
           {
             key: 'Access-Control-Allow-Headers',
             value: 'Content-Type, Authorization',
+          },
+        ],
+      },
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-ancestors https://*.myshopify.com https://admin.shopify.com;",
           },
         ],
       },
